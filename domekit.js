@@ -25,12 +25,16 @@
         domekit.points.push(new domekit.Point3D(0,1,1))
         domekit.points.push(new domekit.Point3D(1,0,1))
         domekit.points.push(new domekit.Point3D(1,1,1))
-        var scale = domekit.canvasEl.width * 0.8
+
+        // scale and center
+        var width = domekit.canvasEl.width;
+        var scale = width * 0.8
+        var offset = (width - scale)/2
         for(var i = 0; i < domekit.points.length; i++) {
           point = domekit.points[i]
-          point.x *= scale;
-          point.y *= scale;
-          point.z *= scale;
+          point.x *= scale; point.x += offset;
+          point.y *= scale; point.y += offset;
+          point.z *= scale; point.z += offset;
         }
       },
 
