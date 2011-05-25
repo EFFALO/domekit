@@ -1,0 +1,29 @@
+<html>
+  <head>
+    <title>
+      DOMEKIT
+    </title>
+    <script type='text/javascript' src='domekit.js'></script>
+  </head>
+  <body>
+    <div id='canvas-title'>
+      DOMEKIT DRAWING SURFACE ENVISIONED
+    </div>
+    <div>
+      <canvas id="domekit-visual-efforts" width="400" height="400">
+        YOU NEED CANVAS. TRY FF, CHROME, KONQUEROR, SAFARI.
+      </canvas>
+    </div>
+    <div id="canvas-bookend">
+    </div>
+    <script>
+      (function() {
+          var forwardMessage = document.
+            getElementById('canvas-title').
+            innerText;
+          document.getElementById('canvas-bookend').
+            innerHTML = forwardMessage.split('').reverse().join('');
+      })()
+      </script>
+  </body>
+</html>
