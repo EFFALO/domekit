@@ -6,7 +6,9 @@
 
       canvasEl : null,
 
-      ctx : null,
+      context : null,
+
+      pointSize : 10,
 
       points : [],
 
@@ -39,20 +41,19 @@
       },
 
       drawPoint : function(point, size, color) {
-        domekit.ctx.save();
-        domekit.ctx.beginPath();
-        domekit.ctx.fillStyle = color;
-        domekit.ctx.arc(point.x, point.y, size, 0, 2*Math.PI, true);
-        domekit.ctx.fill();
-        domekit.ctx.restore();
+        domekit.context.save();
+        domekit.context.beginPath();
+        domekit.context.fillStyle = color;
+        domekit.context.arc(point.x, point.y, size, 0, 2*Math.PI, true);
+        domekit.context.fill();
+        domekit.context.restore();
       },
 
       render : function() {
         points = domekit.points
         drawPoint = domekit.drawPoint
         for(var i = 0; i < points.length; i++) {
-          console.log('hey');
-          drawPoint(points[i], 10, "rgb(0,200,0)");
+          drawPoint(points[i], domekit.pointSize, "rgb(0,200,0)");
         }
       },
 
@@ -60,11 +61,11 @@
         var canvas = domekit.canvasEl = document.getElementById('domekit-visual-efforts');
 
         if(canvas.getContext){
-          domekit.ctx = canvas.getContext('2d');
+          domekit.context = canvas.getContext('2d');
         } else {
           throw new Error(canvas.innerHTML);
         }
-        return !!domekit.ctx;
+        return !!domekit.context;
       }
     };
 
