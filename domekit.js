@@ -8,9 +8,9 @@
 
       context : null,
 
-      pointSize : 10.0,
+      scale : 1,
 
-      distance : 100.0,
+      pointSize : 10.0,
 
       points : [],
 
@@ -21,7 +21,7 @@
       offsets : {
         x : 250.0,
         y : 250.0,
-        z : 10.0
+        z : 250.0
       },
 
       Point3D : function(x,y,z) {
@@ -30,13 +30,13 @@
         this.z = z || 0.0;
       },
 
-      project : function(xy, z, xyOffset, zOffset, distance) {
-        return ((distance * xy) / (z - zOffset)) + xyOffset;
+      project : function(xy, z, xyOffset, zOffset) {
+        return (xy - xyOffset) / (z * 0.3 + zOffset) * 200 + xyOffset;
+        //return (xy - xyOffset) / (z * 0.3 + zOffset) * 200 + xyOffset;
       },
 
       projectPoints : function() {
         var project = domekit.project;
-        var distance = domekit.distance;
         var xOffset = domekit.offsets.x;
         var yOffset = domekit.offsets.y;
         var zOffset = domekit.offsets.z;
@@ -48,8 +48,8 @@
 
         for(var i = 0; i < points.length; i++) {
           point = projectedPoints[i] = new Point3D();
-          point.x = project(points[i].x, points[i].z, xOffset, zOffset, distance);
-          point.y = project(points[i].y, points[i].z, yOffset, zOffset, distance);
+          point.x = project(points[i].x, points[i].z, xOffset, zOffset);
+          point.y = project(points[i].y, points[i].z, yOffset, zOffset);
           point.z = points[i].z;
         }
       },
@@ -57,16 +57,16 @@
       generatePoints : function() {
         domekit.points.push(new domekit.Point3D(0.0,0.0,0.0))
         domekit.points.push(new domekit.Point3D(0.0,1.0,0.0))
-        domekit.points.push(new domekit.Point3D(1.0,0.0,0.0))
-        domekit.points.push(new domekit.Point3D(1.0,1.0,0.0))
         domekit.points.push(new domekit.Point3D(0.0,0.0,1.0))
         domekit.points.push(new domekit.Point3D(0.0,1.0,1.0))
+        domekit.points.push(new domekit.Point3D(1.0,0.0,0.0))
+        domekit.points.push(new domekit.Point3D(1.0,1.0,0.0))
         domekit.points.push(new domekit.Point3D(1.0,0.0,1.0))
         domekit.points.push(new domekit.Point3D(1.0,1.0,1.0))
 
         // scale and center
         var width = domekit.canvasEl.width;
-        var scale = width * 0.8;
+        var scale = width * domekit.scale;
         var point;
         for(var i = 0; i < domekit.points.length; i++) {
           point = domekit.points[i]
