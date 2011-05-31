@@ -30,6 +30,53 @@
         this.z = z || 0.0;
       },
 
+      generatePoints : function() {
+        domekit.points.push(new domekit.Point3D(.5,.5,.5))
+        domekit.points.push(new domekit.Point3D(.5,.5,-.5))
+        domekit.points.push(new domekit.Point3D(.5,-.5,.5))
+        domekit.points.push(new domekit.Point3D(.5,-.5,-.5))
+        domekit.points.push(new domekit.Point3D(-.5,.5,.5))
+        domekit.points.push(new domekit.Point3D(-.5,.5,-.5))
+        domekit.points.push(new domekit.Point3D(-.5,-.5,.5))
+        domekit.points.push(new domekit.Point3D(-.5,-.5,-.5))
+      },
+      
+      generateConnections: function() {
+        var connections = [];
+        var point1;
+        var point2;
+        var matched;
+        var connection;
+        for (var i = 0; i < domekit.points.length; i++) {
+          point1 = domekit.points[i];
+          for (var j = 0; j < domekit.points.length; j++) {
+            point2 = domekit.points[j];
+            matched = 0;
+            if (point1.x === point2.x) matched++;
+            if (point1.y === point2.y) matched++;
+            if (point1.z === point2.z) matched++;
+            connection = [i, j];
+
+            if (matched == 2) connections.push(connection);
+          }
+        }
+        domekit.connections = connections;
+        //also must remove duplicate connections
+      },
+
+      scalePoints : function() {
+        // scale and center
+        var width = domekit.canvasEl.width;
+        var scale = width * domekit.scale;
+        var point;
+        for(var i = 0; i < domekit.points.length; i++) {
+          point = domekit.points[i]
+          point.x *= scale;
+          point.y *= scale;
+          point.z *= scale;
+        }
+      },
+
       project : function(xy, z, xyOffset, zOffset) {
         return (xy - xyOffset) / (z * 0.3 + zOffset) * 200 + xyOffset;
         //return (xy - xyOffset) / (z * 0.3 + zOffset) * 200 + xyOffset;
@@ -53,31 +100,7 @@
           point.z = points[i].z;
         }
       },
-
-      generatePoints : function() {
-        domekit.points.push(new domekit.Point3D(.5,.5,.5))
-        domekit.points.push(new domekit.Point3D(.5,.5,-.5))
-        domekit.points.push(new domekit.Point3D(.5,-.5,.5))
-        domekit.points.push(new domekit.Point3D(.5,-.5,-.5))
-        domekit.points.push(new domekit.Point3D(-.5,.5,.5))
-        domekit.points.push(new domekit.Point3D(-.5,.5,-.5))
-        domekit.points.push(new domekit.Point3D(-.5,-.5,.5))
-        domekit.points.push(new domekit.Point3D(-.5,-.5,-.5))
-      },
       
-      scalePoints : function() {
-        // scale and center
-        var width = domekit.canvasEl.width;
-        var scale = width * domekit.scale;
-        var point;
-        for(var i = 0; i < domekit.points.length; i++) {
-          point = domekit.points[i]
-          point.x *= scale;
-          point.y *= scale;
-          point.z *= scale;
-        }
-      },
-
       drawPoint : function(point, size, color) {
         domekit.context.save();
         domekit.context.beginPath();
@@ -86,29 +109,6 @@
         domekit.context.fill();
         domekit.context.closePath();
         domekit.context.restore();
-      },
-
-      generateConnections: function() {
-        var connections = [];
-        var point1;
-        var point2;
-        var matched;
-        var connection;
-        for (var i = 0; i < domekit.points.length; i++) {
-          point1 = domekit.points[i];
-          for (var j = 0; j < domekit.points.length; j++) {
-            point2 = domekit.points[j];
-            matched = 0;
-            if (point1.x === point2.x) matched++;
-            if (point1.y === point2.y) matched++;
-            if (point1.z === point2.z) matched++;
-            connection = [i, j];
-
-            if (matched == 2) connections.push(connection);
-          }
-        }
-        domekit.connections = connections;
-        //also must remove duplicate connections
       },
 
       drawConnection : function(point1, point2, color) {
