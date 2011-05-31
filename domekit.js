@@ -20,8 +20,7 @@
 
       offsets : {
         x : 250.0,
-        y : 250.0,
-        z : 250.0
+        y : 250.0
       },
 
       Point3D : function(x,y,z) {
@@ -76,17 +75,21 @@
           point.z *= scale;
         }
       },
-
-      project : function(xy, z, xyOffset, zOffset) {
-        return (xy - xyOffset) / (z * 0.3 + zOffset) * 200 + xyOffset;
-        //return (xy - xyOffset) / (z * 0.3 + zOffset) * 200 + xyOffset;
+      
+      // xy: x or y value of point being projected
+      // z: z value of point being projected
+      // zCameraOffset: z axis displacement, distance of object from camera
+      // zDepth: z falloff scale, controls depth of projection
+      // xyOffset: offset to translate projected value to canvas origin
+      // scale: canvas size scale
+      project : function(xy, z, zCameraOffset, zDepth, xyOffset, scale) {
+        return xy / (z * zDepth + zCameraOffset) * scale + xyOffset;
       },
 
       projectPoints : function() {
         var project = domekit.project;
         var xOffset = domekit.offsets.x;
         var yOffset = domekit.offsets.y;
-        var zOffset = domekit.offsets.z;
 
         var points = domekit.points;
         var projectedPoints = domekit.projectedPoints;
@@ -95,8 +98,8 @@
 
         for(var i = 0; i < points.length; i++) {
           point = projectedPoints[i] = new Point3D();
-          point.x = project(points[i].x, points[i].z, xOffset, zOffset);
-          point.y = project(points[i].y, points[i].z, yOffset, zOffset);
+          point.x = project(points[i].x, points[i].z, .5, .2, xOffset, 200);
+          point.y = project(points[i].y, points[i].z, .5, .2, yOffset, 200);
           point.z = points[i].z;
         }
       },
@@ -150,7 +153,7 @@
     if(domekit.initCanvas()) {
       domekit.generatePoints();
       domekit.generateConnections();
-      domekit.scalePoints();
+      //domekit.scalePoints();
       domekit.projectPoints();
       domekit.render();
     } else {
