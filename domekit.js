@@ -55,15 +55,17 @@
       },
 
       generatePoints : function() {
-        domekit.points.push(new domekit.Point3D(0.0,0.0,0.0))
-        domekit.points.push(new domekit.Point3D(0.0,1.0,0.0))
-        domekit.points.push(new domekit.Point3D(0.0,0.0,1.0))
-        domekit.points.push(new domekit.Point3D(0.0,1.0,1.0))
-        domekit.points.push(new domekit.Point3D(1.0,0.0,0.0))
-        domekit.points.push(new domekit.Point3D(1.0,1.0,0.0))
-        domekit.points.push(new domekit.Point3D(1.0,0.0,1.0))
-        domekit.points.push(new domekit.Point3D(1.0,1.0,1.0))
-
+        domekit.points.push(new domekit.Point3D(.5,.5,.5))
+        domekit.points.push(new domekit.Point3D(.5,.5,-.5))
+        domekit.points.push(new domekit.Point3D(.5,-.5,.5))
+        domekit.points.push(new domekit.Point3D(.5,-.5,-.5))
+        domekit.points.push(new domekit.Point3D(-.5,.5,.5))
+        domekit.points.push(new domekit.Point3D(-.5,.5,-.5))
+        domekit.points.push(new domekit.Point3D(-.5,-.5,.5))
+        domekit.points.push(new domekit.Point3D(-.5,-.5,-.5))
+      },
+      
+      scalePoints : function() {
         // scale and center
         var width = domekit.canvasEl.width;
         var scale = width * domekit.scale;
@@ -100,7 +102,7 @@
             if (point1.x === point2.x) matched++;
             if (point1.y === point2.y) matched++;
             if (point1.z === point2.z) matched++;
-            connection = [domekit.projectedPoints[i], domekit.projectedPoints[j]];
+            connection = [i, j];
 
             if (matched == 2) connections.push(connection);
           }
@@ -121,7 +123,7 @@
       },
 
       render : function() {
-        var projectedPoints = domekit.projectedPoints
+        var projectedPoints = domekit.projectedPoints;
         var connections = domekit.connections;
         var drawPoint = domekit.drawPoint;
         var drawConnection = domekit.drawConnection;
@@ -129,7 +131,7 @@
           drawPoint(projectedPoints[i], domekit.pointSize, "rgb(200,0,0)");
         }
         for(var i = 0; i < connections.length; i++) {
-          drawConnection(connections[i][0], connections[i][1], "rgb(0,200,0)");
+          drawConnection(projectedPoints[connections[i][0]], projectedPoints[connections[i][1]], "rgb(0,200,0)");
         }
       },
 
@@ -147,8 +149,9 @@
 
     if(domekit.initCanvas()) {
       domekit.generatePoints();
-      domekit.projectPoints();
       domekit.generateConnections();
+      domekit.scalePoints();
+      domekit.projectPoints();
       domekit.render();
     } else {
       console.log('it dont work gud')
