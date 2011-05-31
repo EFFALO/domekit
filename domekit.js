@@ -29,6 +29,10 @@
         this.z = z || 0.0;
       },
 
+      atanh : function(data) {
+        return 0.5 * Math.log((1 + data) / (1 - data));
+      },
+
       generatePoints : function() {
         domekit.points.push(new domekit.Point3D(.5,.5,.5))
         domekit.points.push(new domekit.Point3D(.5,.5,-.5))
@@ -62,19 +66,6 @@
         domekit.connections = connections;
         //also must remove duplicate connections
       },
-
-      scalePoints : function() {
-        // scale and center
-        var width = domekit.canvasEl.width;
-        var scale = width * domekit.scale;
-        var point;
-        for(var i = 0; i < domekit.points.length; i++) {
-          point = domekit.points[i]
-          point.x *= scale;
-          point.y *= scale;
-          point.z *= scale;
-        }
-      },
       
       // xy: x or y value of point being projected
       // z: z value of point being projected
@@ -85,6 +76,39 @@
       project : function(xy, z, zCameraOffset, zDepth, xyOffset, scale) {
         return xy / (z * zDepth + zCameraOffset) * scale + xyOffset;
       },
+      
+      //axis: 0:X, 1:Y, 2:Z
+      rotate : function(axis, radians) {
+        var points = domekit.points;
+        var distance;
+        var angle;
+        if(axis==0){
+          for(var i=0; i<points.length; i++){
+            distance = Math.sqrt(points[i].y * points[i].y + points[i].z * points[i].z);
+            angle = Math.atan(points[i].y/points[i].z)+radians;
+            points[i].y = distance*Math.sin(angle);
+            points[i].z = distance*Math.cos(angle);
+          }
+        }
+        if(axis==1){
+          for(var i=0; i<points.length; i++){
+            distance = Math.sqrt(points[i].x * points[i].x + points[i].z * points[i].z);
+            angle = Math.atan(points[i].x/points[i].z)+radians;
+            points[i].x = distance*Math.sin(angle);
+            points[i].z = distance*Math.cos(angle);
+          }
+        }
+        if(axis==2){
+          for(var i=0; i<points.length; i++){
+            distance = Math.sqrt(points[i].x * points[i].x + points[i].y * points[i].y);
+            angle = Math.atan(points[i].x/points[i].y)+radians;
+            points[i].x = distance*Math.sin(angle);
+            points[i].y = distance*Math.cos(angle);
+          }
+        }
+        
+      },
+      
 
       projectPoints : function() {
         var project = domekit.project;
@@ -98,8 +122,8 @@
 
         for(var i = 0; i < points.length; i++) {
           point = projectedPoints[i] = new Point3D();
-          point.x = project(points[i].x, points[i].z, .5, .2, xOffset, 200);
-          point.y = project(points[i].y, points[i].z, .5, .2, yOffset, 200);
+          point.x = project(points[i].x, points[i].z, .5, .2, xOffset, 100);
+          point.y = project(points[i].y, points[i].z, .5, .2, yOffset, 100);
           point.z = points[i].z;
         }
       },
@@ -153,9 +177,13 @@
     if(domekit.initCanvas()) {
       domekit.generatePoints();
       domekit.generateConnections();
-      //domekit.scalePoints();
       domekit.projectPoints();
       domekit.render();
+      for(var i=0; i<20; i++){
+        domekit.rotate(2,.04);
+        domekit.projectPoints();
+        domekit.render();
+      }
     } else {
       console.log('it dont work gud')
     }
