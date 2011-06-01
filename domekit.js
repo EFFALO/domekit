@@ -72,39 +72,37 @@
       project : function(xy, z, zCameraOffset, zDepth, xyOffset, scale) {
         return xy / (z * zDepth + zCameraOffset) * scale + xyOffset;
       },
-      
-      //axis: 0:X, 1:Y, 2:Z
-      rotate : function(axis, radians) {
+
+      rotate : function(rotationAxis, rotationAngleInRadians) {
         var points = domekit.points;
+        var point;
         var distance;
         var angle;
-        if(axis==0){
-          for(var i=0; i<points.length; i++){
-            distance = Math.sqrt(points[i].y * points[i].y + points[i].z * points[i].z);
-            angle = Math.atan2(points[i].y,points[i].z)+radians;
-            points[i].y = distance*Math.sin(angle);
-            points[i].z = distance*Math.cos(angle);
-          }
+
+        //how to name these better?
+        var axis1;
+        var axis2;
+
+        if (rotationAxis === 'x') {
+          axis1 = 'y';
+          axis2 = 'z';
+        } else if (rotationAxis === 'y') {
+          axis1 = 'x';
+          axis2 = 'z';
+        } else if (rotationAxis === 'z') {
+          axis1 = 'x';
+          axis2 = 'y';
         }
-        if(axis==1){
-          for(var i=0; i<points.length; i++){
-            distance = Math.sqrt(points[i].x * points[i].x + points[i].z * points[i].z);
-            angle = Math.atan2(points[i].x,points[i].z)+radians;
-            points[i].x = distance*Math.sin(angle);
-            points[i].z = distance*Math.cos(angle);
-          }
-        }
-        if(axis==2){
-          for(var i=0; i<points.length; i++){
-            distance = Math.sqrt(points[i].x * points[i].x + points[i].y * points[i].y);
-            angle = Math.atan2(points[i].x,points[i].y)+radians;
-            points[i].x = distance*Math.sin(angle);
-            points[i].y = distance*Math.cos(angle);
-          }
+
+        for(var i = 0; i < points.length; i++) {
+          point = points[i];
+          distance = Math.sqrt(point[axis1] * point[axis1] + point[axis2] * point[axis2]);
+          angle = Math.atan2(point[axis1], point[axis2]) + rotationAngleInRadians;
+          point[axis1] = distance * Math.sin(angle);
+          point[axis2] = distance * Math.cos(angle);
         }
         
       },
-      
 
       projectPoints : function() {
         var project = domekit.project;
@@ -184,9 +182,9 @@
       domekit.render();
       setInterval(function() {
         domekit.clearCanvas();
-        domekit.rotate(0,Math.PI/128);
-        domekit.rotate(1,Math.PI/108);
-        domekit.rotate(2,Math.PI/62);
+        domekit.rotate('x', Math.PI/128);
+        domekit.rotate('y', Math.PI/108);
+        domekit.rotate('z', Math.PI/62);
         domekit.projectPoints();
         domekit.render();
       }, 1000/55);
