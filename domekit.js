@@ -167,6 +167,13 @@
           throw new Error(canvas.innerHTML);
         }
         return !!domekit.context;
+      },
+
+      clearCanvas : function() {
+        var context = domekit.context;
+        var width = domekit.canvasEl.width;
+        var height = domekit.canvasEl.height;
+        context.clearRect(0, 0, width, height);
       }
     };
 
@@ -176,7 +183,7 @@
       domekit.projectPoints();
       domekit.render();
       setInterval(function() {
-        domekit.context.clearRect ( 0 , 0 , 500 , 500 );
+        domekit.clearCanvas();
         domekit.rotate(0,Math.PI/128);
         domekit.rotate(1,Math.PI/108);
         domekit.rotate(2,Math.PI/62);
