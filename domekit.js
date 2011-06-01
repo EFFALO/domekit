@@ -10,7 +10,7 @@
 
       scale : 1,
 
-      pointSize : 10.0,
+      pointSize : 4.0,
 
       points : [],
 
@@ -27,10 +27,6 @@
         this.x = x || 0.0;
         this.y = y || 0.0;
         this.z = z || 0.0;
-      },
-
-      atanh : function(data) {
-        return 0.5 * Math.log((1 + data) / (1 - data));
       },
 
       generatePoints : function() {
@@ -85,7 +81,7 @@
         if(axis==0){
           for(var i=0; i<points.length; i++){
             distance = Math.sqrt(points[i].y * points[i].y + points[i].z * points[i].z);
-            angle = Math.atan(points[i].y/points[i].z)+radians;
+            angle = Math.atan2(points[i].y,points[i].z)+radians;
             points[i].y = distance*Math.sin(angle);
             points[i].z = distance*Math.cos(angle);
           }
@@ -93,7 +89,7 @@
         if(axis==1){
           for(var i=0; i<points.length; i++){
             distance = Math.sqrt(points[i].x * points[i].x + points[i].z * points[i].z);
-            angle = Math.atan(points[i].x/points[i].z)+radians;
+            angle = Math.atan2(points[i].x,points[i].z)+radians;
             points[i].x = distance*Math.sin(angle);
             points[i].z = distance*Math.cos(angle);
           }
@@ -101,7 +97,7 @@
         if(axis==2){
           for(var i=0; i<points.length; i++){
             distance = Math.sqrt(points[i].x * points[i].x + points[i].y * points[i].y);
-            angle = Math.atan(points[i].x/points[i].y)+radians;
+            angle = Math.atan2(points[i].x,points[i].y)+radians;
             points[i].x = distance*Math.sin(angle);
             points[i].y = distance*Math.cos(angle);
           }
@@ -122,8 +118,8 @@
 
         for(var i = 0; i < points.length; i++) {
           point = projectedPoints[i] = new Point3D();
-          point.x = project(points[i].x, points[i].z, .5, .2, xOffset, 100);
-          point.y = project(points[i].y, points[i].z, .5, .2, yOffset, 100);
+          point.x = project(points[i].x, points[i].z, .5, .005, xOffset, 100);
+          point.y = project(points[i].y, points[i].z, .5, .005, yOffset, 100);
           point.z = points[i].z;
         }
       },
@@ -154,11 +150,11 @@
         var connections = domekit.connections;
         var drawPoint = domekit.drawPoint;
         var drawConnection = domekit.drawConnection;
-        for(var i = 0; i < projectedPoints.length; i++) {
-          drawPoint(projectedPoints[i], domekit.pointSize, "rgb(200,0,0)");
-        }
         for(var i = 0; i < connections.length; i++) {
-          drawConnection(projectedPoints[connections[i][0]], projectedPoints[connections[i][1]], "rgb(0,200,0)");
+          drawConnection(projectedPoints[connections[i][0]], projectedPoints[connections[i][1]], "rgb(10,200,30)");
+        }
+        for(var i = 0; i < projectedPoints.length; i++) {
+          drawPoint(projectedPoints[i], domekit.pointSize, "rgb(150,0,200)");
         }
       },
 
@@ -179,11 +175,14 @@
       domekit.generateConnections();
       domekit.projectPoints();
       domekit.render();
-      for(var i=0; i<20; i++){
-        domekit.rotate(2,.04);
+      setInterval(function() {
+        domekit.context.clearRect ( 0 , 0 , 500 , 500 );
+        domekit.rotate(0,Math.PI/128);
+        domekit.rotate(1,Math.PI/108);
+        domekit.rotate(2,Math.PI/62);
         domekit.projectPoints();
         domekit.render();
-      }
+      }, 1000/55);
     } else {
       console.log('it dont work gud')
     }
