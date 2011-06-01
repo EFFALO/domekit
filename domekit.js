@@ -180,14 +180,21 @@
       domekit.generateConnections();
       domekit.projectPoints();
       domekit.render();
+
+      var i = 0;
       setInterval(function() {
-        domekit.clearCanvas();
-        domekit.rotate('x', Math.PI/128);
-        domekit.rotate('y', Math.PI/108);
-        domekit.rotate('z', Math.PI/62);
+        if(i > 20) {
+          i = 1;
+          domekit.clearCanvas();
+        }
+        console.log(i)
+        domekit.rotate('x', Math.PI/18 * i);
+        domekit.rotate('y', Math.PI/17 * i);
+        domekit.rotate('z', Math.PI/12 * i);
         domekit.projectPoints();
         domekit.render();
-      }, 1000/55);
+        i++;
+      }, 1000/20);
     } else {
       console.log('it dont work gud')
     }
