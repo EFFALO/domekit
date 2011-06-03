@@ -23,14 +23,14 @@ domekit.Controller = function() {
 }
 
 domekit.Controller.prototype.generatePoints = function() {
-        this.points.push(new this.Point3D(.5,.5,.5))
-        this.points.push(new this.Point3D(.5,.5,-.5))
-        this.points.push(new this.Point3D(.5,-.5,.5))
-        this.points.push(new this.Point3D(.5,-.5,-.5))
-        this.points.push(new this.Point3D(-.5,.5,.5))
-        this.points.push(new this.Point3D(-.5,.5,-.5))
-        this.points.push(new this.Point3D(-.5,-.5,.5))
-        this.points.push(new this.Point3D(-.5,-.5,-.5))
+        this.points.push(new domekit.Point3D(.5,.5,.5))
+        this.points.push(new domekit.Point3D(.5,.5,-.5))
+        this.points.push(new domekit.Point3D(.5,-.5,.5))
+        this.points.push(new domekit.Point3D(.5,-.5,-.5))
+        this.points.push(new domekit.Point3D(-.5,.5,.5))
+        this.points.push(new domekit.Point3D(-.5,.5,-.5))
+        this.points.push(new domekit.Point3D(-.5,-.5,.5))
+        this.points.push(new domekit.Point3D(-.5,-.5,-.5))
 }
 
 domekit.Controller.prototype.generateConnections = function() {
@@ -98,19 +98,17 @@ domekit.Controller.prototype.rotate = function(rotationAxis, rotationAngleInRadi
 }
 
 domekit.Controller.prototype.projectPoints = function() {
-        var project = this.project;
         var xOffset = this.offsets.x;
         var yOffset = this.offsets.y;
 
         var points = this.points;
         var projectedPoints = this.projectedPoints;
-        var Point3D = this.Point3D;
         var point;
 
         for(var i = 0; i < points.length; i++) {
-          point = projectedPoints[i] = new Point3D();
-          point.x = project(points[i].x, points[i].z, .5, .005, xOffset, 100);
-          point.y = project(points[i].y, points[i].z, .5, .005, yOffset, 100);
+          point = projectedPoints[i] = new domekit.Point3D();
+          point.x = this.project(points[i].x, points[i].z, .5, .005, xOffset, 100);
+          point.y = this.project(points[i].y, points[i].z, .5, .005, yOffset, 100);
           point.z = points[i].z;
         }
 }
@@ -139,13 +137,11 @@ domekit.Controller.prototype.drawConnection = function(point1, point2, color) {
 domekit.Controller.prototype.render = function() {
         var projectedPoints = this.projectedPoints;
         var connections = this.connections;
-        var drawPoint = this.drawPoint;
-        var drawConnection = this.drawConnection;
         for(var i = 0; i < connections.length; i++) {
-          drawConnection(projectedPoints[connections[i][0]], projectedPoints[connections[i][1]], "rgb(10,200,30)");
+          this.drawConnection(projectedPoints[connections[i][0]], projectedPoints[connections[i][1]], "rgb(10,200,30)");
         }
         for(var i = 0; i < projectedPoints.length; i++) {
-          drawPoint(projectedPoints[i], this.pointSize, "rgb(150,0,200)");
+          this.drawPoint(projectedPoints[i], this.pointSize, "rgb(150,0,200)");
         }
 }
 
@@ -161,10 +157,9 @@ domekit.Controller.prototype.initCanvas = function() {
 },
 
 domekit.Controller.prototype.clearCanvas = function() {
-        var context = this.context;
         var width = this.canvasEl.width;
         var height = this.canvasEl.height;
-        context.clearRect(0, 0, width, height);
+        this.context.clearRect(0, 0, width, height);
 }
 
 domekit.Controller.prototype.run = function() {
@@ -175,15 +170,15 @@ domekit.Controller.prototype.run = function() {
       this.render();
 
       var i = 0;
-      setInterval(function() {
-          this.clearCanvas();
-        console.log(i)
+      var runloop = goog.bind(function() {
+        this.clearCanvas();
         this.rotate('x', Math.PI/120);
         this.rotate('y', Math.PI/170);
         this.rotate('z', Math.PI/20);
         this.projectPoints();
         this.render();
-      }, 1000/30);
+      }, this);
+      setInterval(runloop, 1000/30);
     } else {
       console.log('it dont work gud')
     }
