@@ -1,55 +1,48 @@
-(function() {
+goog.provide('domekit.Point3D');
+goog.provide('domekit.View');
+goog.provide('domekit.Controller');
 
-  var application = function() {
+domekit.Point3D = function(x,y,z) {
+  this.x = x || 0.0;
+  this.y = y || 0.0;
+  this.z = z || 0.0;
+}
 
-    var domekit = {
-
-      canvasEl : null,
-
-      context : null,
-
-      scale : 1,
-
-      pointSize : 4.0,
-
-      points : [],
-
-      projectedPoints : [],
-
-      connections : [],
-
-      offsets : {
+domekit.Controller = function() {
+      this.canvasEl = null;
+      this.context = null
+      this.scale = 1;
+      this.pointSize = 4.0;
+      this.points = [];
+      this.projectedPoints = [];
+      this.connections = [];
+      this.offsets = {
         x : 250.0,
         y : 250.0
-      },
+      };
+}
 
-      Point3D : function(x,y,z) {
-        this.x = x || 0.0;
-        this.y = y || 0.0;
-        this.z = z || 0.0;
-      },
+domekit.Controller.prototype.generatePoints = function() {
+        this.points.push(new this.Point3D(.5,.5,.5))
+        this.points.push(new this.Point3D(.5,.5,-.5))
+        this.points.push(new this.Point3D(.5,-.5,.5))
+        this.points.push(new this.Point3D(.5,-.5,-.5))
+        this.points.push(new this.Point3D(-.5,.5,.5))
+        this.points.push(new this.Point3D(-.5,.5,-.5))
+        this.points.push(new this.Point3D(-.5,-.5,.5))
+        this.points.push(new this.Point3D(-.5,-.5,-.5))
+}
 
-      generatePoints : function() {
-        domekit.points.push(new domekit.Point3D(.5,.5,.5))
-        domekit.points.push(new domekit.Point3D(.5,.5,-.5))
-        domekit.points.push(new domekit.Point3D(.5,-.5,.5))
-        domekit.points.push(new domekit.Point3D(.5,-.5,-.5))
-        domekit.points.push(new domekit.Point3D(-.5,.5,.5))
-        domekit.points.push(new domekit.Point3D(-.5,.5,-.5))
-        domekit.points.push(new domekit.Point3D(-.5,-.5,.5))
-        domekit.points.push(new domekit.Point3D(-.5,-.5,-.5))
-      },
-      
-      generateConnections: function() {
+domekit.Controller.prototype.generateConnections = function() {
         var connections = [];
         var point1;
         var point2;
         var matched;
         var connection;
-        for (var i = 0; i < domekit.points.length; i++) {
-          point1 = domekit.points[i];
-          for (var j = 0; j < domekit.points.length; j++) {
-            point2 = domekit.points[j];
+        for (var i = 0; i < this.points.length; i++) {
+          point1 = this.points[i];
+          for (var j = 0; j < this.points.length; j++) {
+            point2 = this.points[j];
             matched = 0;
             if (point1.x === point2.x) matched++;
             if (point1.y === point2.y) matched++;
@@ -59,22 +52,22 @@
             if (matched == 2) connections.push(connection);
           }
         }
-        domekit.connections = connections;
+        this.connections = connections;
         //also must remove duplicate connections
-      },
-      
-      // xy: x or y value of point being projected
-      // z: z value of point being projected
-      // zCameraOffset: z axis displacement, distance of object from camera
-      // zDepth: z falloff scale, controls depth of projection
-      // xyOffset: offset to translate projected value to canvas origin
-      // scale: canvas size scale
-      project : function(xy, z, zCameraOffset, zDepth, xyOffset, scale) {
-        return xy / (z * zDepth + zCameraOffset) * scale + xyOffset;
-      },
+}
 
-      rotate : function(rotationAxis, rotationAngleInRadians) {
-        var points = domekit.points;
+// xy: x or y value of point being projected
+// z: z value of point being projected
+// zCameraOffset: z axis displacement, distance of object from camera
+// zDepth: z falloff scale, controls depth of projection
+// xyOffset: offset to translate projected value to canvas origin
+// scale: canvas size scale
+domekit.Controller.prototype.project = function(xy, z, zCameraOffset, zDepth, xyOffset, scale) {
+        return xy / (z * zDepth + zCameraOffset) * scale + xyOffset;
+}
+
+domekit.Controller.prototype.rotate = function(rotationAxis, rotationAngleInRadians) {
+        var points = this.points;
         var point;
         var distance;
         var angle;
@@ -101,17 +94,17 @@
           point[axis1] = distance * Math.sin(angle);
           point[axis2] = distance * Math.cos(angle);
         }
-        
-      },
 
-      projectPoints : function() {
-        var project = domekit.project;
-        var xOffset = domekit.offsets.x;
-        var yOffset = domekit.offsets.y;
+}
 
-        var points = domekit.points;
-        var projectedPoints = domekit.projectedPoints;
-        var Point3D = domekit.Point3D;
+domekit.Controller.prototype.projectPoints = function() {
+        var project = this.project;
+        var xOffset = this.offsets.x;
+        var yOffset = this.offsets.y;
+
+        var points = this.points;
+        var projectedPoints = this.projectedPoints;
+        var Point3D = this.Point3D;
         var point;
 
         for(var i = 0; i < points.length; i++) {
@@ -120,87 +113,84 @@
           point.y = project(points[i].y, points[i].z, .5, .005, yOffset, 100);
           point.z = points[i].z;
         }
-      },
+}
       
-      drawPoint : function(point, size, color) {
-        domekit.context.save();
-        domekit.context.beginPath();
-        domekit.context.fillStyle = color;
-        domekit.context.arc(point.x, point.y, size, 0.0, 2*Math.PI, true);
-        domekit.context.fill();
-        domekit.context.closePath();
-        domekit.context.restore();
-      },
+domekit.Controller.prototype.drawPoint = function(point, size, color) {
+        this.context.save();
+        this.context.beginPath();
+        this.context.fillStyle = color;
+        this.context.arc(point.x, point.y, size, 0.0, 2*Math.PI, true);
+        this.context.fill();
+        this.context.closePath();
+        this.context.restore();
+}
 
-      drawConnection : function(point1, point2, color) {
-        domekit.context.save();
-        domekit.context.beginPath();
-        domekit.context.strokeStyle = color;
-        domekit.context.moveTo(point1.x, point1.y);
-        domekit.context.lineTo(point2.x, point2.y);
-        domekit.context.stroke();
-        domekit.context.closePath();
-        domekit.context.restore();
-      },
+domekit.Controller.prototype.drawConnection = function(point1, point2, color) {
+        this.context.save();
+        this.context.beginPath();
+        this.context.strokeStyle = color;
+        this.context.moveTo(point1.x, point1.y);
+        this.context.lineTo(point2.x, point2.y);
+        this.context.stroke();
+        this.context.closePath();
+        this.context.restore();
+}
 
-      render : function() {
-        var projectedPoints = domekit.projectedPoints;
-        var connections = domekit.connections;
-        var drawPoint = domekit.drawPoint;
-        var drawConnection = domekit.drawConnection;
+domekit.Controller.prototype.render = function() {
+        var projectedPoints = this.projectedPoints;
+        var connections = this.connections;
+        var drawPoint = this.drawPoint;
+        var drawConnection = this.drawConnection;
         for(var i = 0; i < connections.length; i++) {
           drawConnection(projectedPoints[connections[i][0]], projectedPoints[connections[i][1]], "rgb(10,200,30)");
         }
         for(var i = 0; i < projectedPoints.length; i++) {
-          drawPoint(projectedPoints[i], domekit.pointSize, "rgb(150,0,200)");
+          drawPoint(projectedPoints[i], this.pointSize, "rgb(150,0,200)");
         }
-      },
+}
 
-      initCanvas : function() {
-        var canvas = domekit.canvasEl = document.getElementById('domekit-visual-efforts');
+domekit.Controller.prototype.initCanvas = function() {
+        var canvas = this.canvasEl = document.getElementById('domekit-visual-efforts');
 
         if(canvas.getContext){
-          domekit.context = canvas.getContext('2d');
+          this.context = canvas.getContext('2d');
         } else {
           throw new Error(canvas.innerHTML);
         }
-        return !!domekit.context;
-      },
+        return !!this.context;
+},
 
-      clearCanvas : function() {
-        var context = domekit.context;
-        var width = domekit.canvasEl.width;
-        var height = domekit.canvasEl.height;
+domekit.Controller.prototype.clearCanvas = function() {
+        var context = this.context;
+        var width = this.canvasEl.width;
+        var height = this.canvasEl.height;
         context.clearRect(0, 0, width, height);
-      }
-    };
+}
 
-    if(domekit.initCanvas()) {
-      domekit.generatePoints();
-      domekit.generateConnections();
-      domekit.projectPoints();
-      domekit.render();
+domekit.Controller.prototype.run = function() {
+    if(this.initCanvas()) {
+      this.generatePoints();
+      this.generateConnections();
+      this.projectPoints();
+      this.render();
 
       var i = 0;
       setInterval(function() {
-        if(i > 20) {
-          i = 1;
-          domekit.clearCanvas();
-        }
+          this.clearCanvas();
         console.log(i)
-        domekit.rotate('x', Math.PI/18 * i);
-        domekit.rotate('y', Math.PI/17 * i);
-        domekit.rotate('z', Math.PI/12 * i);
-        domekit.projectPoints();
-        domekit.render();
-        i++;
-      }, 1000/20);
+        this.rotate('x', Math.PI/120);
+        this.rotate('y', Math.PI/170);
+        this.rotate('z', Math.PI/20);
+        this.projectPoints();
+        this.render();
+      }, 1000/30);
     } else {
       console.log('it dont work gud')
     }
+}
 
-  };
-
-  window.onload = application;
-})()
+window.onload = function() {
+  var app = new domekit.Controller();
+  app.run();
+}
 
