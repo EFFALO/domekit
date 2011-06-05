@@ -30,37 +30,56 @@
       },
 
       generatePoints : function() {
-        domekit.points.push(new domekit.Point3D(.5,.5,.5))
-        domekit.points.push(new domekit.Point3D(.5,.5,-.5))
-        domekit.points.push(new domekit.Point3D(.5,-.5,.5))
-        domekit.points.push(new domekit.Point3D(.5,-.5,-.5))
-        domekit.points.push(new domekit.Point3D(-.5,.5,.5))
-        domekit.points.push(new domekit.Point3D(-.5,.5,-.5))
-        domekit.points.push(new domekit.Point3D(-.5,-.5,.5))
-        domekit.points.push(new domekit.Point3D(-.5,-.5,-.5))
-      },
-      
-      generateConnections: function() {
-        var connections = [];
-        var point1;
-        var point2;
-        var matched;
-        var connection;
-        for (var i = 0; i < domekit.points.length; i++) {
-          point1 = domekit.points[i];
-          for (var j = 0; j < domekit.points.length; j++) {
-            point2 = domekit.points[j];
-            matched = 0;
-            if (point1.x === point2.x) matched++;
-            if (point1.y === point2.y) matched++;
-            if (point1.z === point2.z) matched++;
-            connection = [i, j];
+        var phi = (1 + Math.sqrt(5)) / 2;
 
-            if (matched == 2) connections.push(connection);
-          }
-        }
+        domekit.points.push(new domekit.Point3D(0, 1, phi));
+        domekit.points.push(new domekit.Point3D(0, -1, phi));
+        domekit.points.push(new domekit.Point3D(0, -1, -phi));
+        domekit.points.push(new domekit.Point3D(0, 1, -phi));
+        domekit.points.push(new domekit.Point3D(phi, 0, 1));
+        domekit.points.push(new domekit.Point3D(-phi, 0, 1));
+        domekit.points.push(new domekit.Point3D(-phi, 0, -1));
+        domekit.points.push(new domekit.Point3D(phi, 0, -1));
+        domekit.points.push(new domekit.Point3D(1, phi, 0));
+        domekit.points.push(new domekit.Point3D(-1, phi, 0));
+        domekit.points.push(new domekit.Point3D(-1, -phi, 0));
+        domekit.points.push(new domekit.Point3D(1, -phi, 0));
+      },
+
+      generateConnections: function() {
+        var connections = [
+                            [0,1],
+                            [0,4],
+                            [0,5],
+                            [0,8],
+                            [0,9],
+                            [1,4],
+                            [1,5],
+                            [1,10],
+                            [1,11],
+                            [2,3],
+                            [2,6],
+                            [2,7],
+                            [2,10],
+                            [2,11],
+                            [3,6],
+                            [3,7],
+                            [3,8],
+                            [3,9],
+                            [4,7],
+                            [4,8],
+                            [4,11],
+                            [5,6],
+                            [5,9],
+                            [5,10],
+                            [6,9],
+                            [6,10],
+                            [7,8],
+                            [7,11],
+                            [8,9],
+                            [10,11]
+                          ];
         domekit.connections = connections;
-        //also must remove duplicate connections
       },
       
       // xy: x or y value of point being projected
@@ -116,8 +135,8 @@
 
         for(var i = 0; i < points.length; i++) {
           point = projectedPoints[i] = new Point3D();
-          point.x = project(points[i].x, points[i].z, .5, .005, xOffset, 100);
-          point.y = project(points[i].y, points[i].z, .5, .005, yOffset, 100);
+          point.x = project(points[i].x, points[i].z, 1, .005, xOffset, 100);
+          point.y = project(points[i].y, points[i].z, 1, .005, yOffset, 100);
           point.z = points[i].z;
         }
       },
@@ -181,19 +200,13 @@
       domekit.projectPoints();
       domekit.render();
 
-      var i = 0;
       setInterval(function() {
-        if(i > 20) {
-          i = 1;
           domekit.clearCanvas();
-        }
-        console.log(i)
-        domekit.rotate('x', Math.PI/18 * i);
-        domekit.rotate('y', Math.PI/17 * i);
-        domekit.rotate('z', Math.PI/12 * i);
+        domekit.rotate('x', Math.PI/60);
+        domekit.rotate('y', Math.PI/60);
+        domekit.rotate('z', Math.PI/60);
         domekit.projectPoints();
         domekit.render();
-        i++;
       }, 1000/20);
     } else {
       console.log('it dont work gud')
