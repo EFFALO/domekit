@@ -1,1 +1,1 @@
-run Rack::Directory.new("/Users/andrew/Code/github/domekit")
+run Rack::Directory.new(Dir.getwd)
