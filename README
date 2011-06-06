@@ -3,4 +3,21 @@ domekit.cc incoming
 reference geodesic dome generation algorithms:
 http://www.antiprism.com/other/dome/index.html
 
+usage:
+domekit.html is our sample application, open that thang in a browser
+domekit.js is our code
+
+We are using google closure library for dependencies and utilities.
+It comes distributed with our repo. You can get google's through subversion if you like:
+svn checkout http://closure-library.googlecode.com/svn/trunk/ closure-library
+
+We'll soon be distributing closure-script, when we start compiling.
+
+If you have ruby and the rack gem installed on your machine, you can just:
+rackup
+then surf to http://localhost:9292/domekit.html
+
+If you have ruby but need rack, grab it with:
+gem install rack
+
 Thanks!!!
