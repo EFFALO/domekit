@@ -75,6 +75,29 @@ domekit.Controller.prototype.generateConnections = function() {
   this.connections = connections;
 }
 
+domekit.Controller.prototype.findNeighbors = function(index) {
+  var neighbors = [];
+  var current;
+  var closest = 1000000;  //Far out, man
+  var points = this.points;
+
+  //build array of locations equal to the closest point to point[index]
+  for(var i = 0; i < points.length; i++) {
+    if(i != index) {
+      current = Math.floor(100*Math.sqrt((points[index].x-points[i].x) * (points[index].x-points[i].x) +
+                                           (points[index].y-points[i].y) * (points[index].y-points[i].y) +
+                                           (points[index].z-points[i].z) * (points[index].z-points[i].z)));
+      if(current == closest) neighbors.push(i);
+      else if (current < closest){  //clear and start building again
+        neighbors.length = 0;
+        neighbors.push(i);
+        closest = current;
+      }
+    }
+  }
+  return neighbors;
+}
+
 // xy: x or y value of point being projected
 // z: z value of point being projected
 // zCameraOffset: z axis displacement, distance of object from camera
@@ -184,14 +207,25 @@ domekit.Controller.prototype.clearCanvas = function() {
 }
 
 domekit.Controller.prototype.run = function() {
+  var inspector = [];
+
   if(this.initCanvas()) {
     this.generatePoints();
     this.generateConnections();
+    this.rotate('x', Math.PI/2);
+    this.rotate('y', Math.PI/1.6);
+    this.rotate('z', Math.PI/6);
     this.projectPoints();
     this.render();
 
-    var i = 0;
-    var runloop = goog.bind(function() {
+    var i = 6;    
+    inspector = this.findNeighbors(i);
+    this.drawPoint(this.projectedPoints[i], 12, "rgb(30,180,30)");
+    for(i = 0; i < inspector.length; i++){
+      this.drawPoint(this.projectedPoints[i], 8, "rgb(150,0,200)");
+    }
+
+    /*var runloop = goog.bind(function() {
       this.clearCanvas();
       this.rotate('x', Math.PI/60);
       this.rotate('y', Math.PI/60);
@@ -199,7 +233,7 @@ domekit.Controller.prototype.run = function() {
       this.projectPoints();
       this.render();
     }, this);
-    setInterval(runloop, 1000/20);
+    setInterval(runloop, 1000/20);*/
   } else {
     console.log('it dont work gud')
   }
