@@ -221,6 +221,7 @@ domekit.Controller.prototype.run = function() {
     this.render();
 
     var neighbors = [];
+    
     var whichNeighbor = 6;  //which point's neighbors are you searching?
     var i;
     neighbors = this.findNeighbors(whichNeighbor);
