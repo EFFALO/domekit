@@ -75,28 +75,6 @@ domekit.Controller.prototype.generateConnections = function() {
   this.connections = connections;
 }
 
-domekit.Controller.prototype.findNeighbors = function(index) {
-  var neighbors = [];
-  var current;
-  var closest = 1000000;  //Far out, man
-  var points = this.points;
-
-  //build array of locations equal to the closest point to point[index]
-  for(var i = 0; i < points.length; i++) {
-    if(i != index) {
-      current = Math.floor(100*Math.sqrt((points[index].x-points[i].x) * (points[index].x-points[i].x) +
-                                           (points[index].y-points[i].y) * (points[index].y-points[i].y) +
-                                           (points[index].z-points[i].z) * (points[index].z-points[i].z)));
-      if(current == closest) neighbors.push(i);
-      else if (current < closest){  //clear and start building again
-        neighbors.length = 0;
-        neighbors.push(i);
-        closest = current;
-      }
-    }
-  }
-  return neighbors;
-}
 
 // xy: x or y value of point being projected
 // z: z value of point being projected
@@ -145,7 +123,7 @@ domekit.Controller.prototype.projectPoints = function() {
 
   var points = this.points;
   var projectedPoints = this.projectedPoints;
-  var project = this.project
+  var project = this.project;
   var point;
 
   for(var i = 0; i < points.length; i++) {
@@ -206,9 +184,33 @@ domekit.Controller.prototype.clearCanvas = function() {
   this.context.clearRect(0, 0, width, height);
 }
 
-domekit.Controller.prototype.run = function() {
-  var inspector = [];
 
+domekit.Controller.prototype.findNeighbors = function(index) {
+  var neighbors = [];
+  var current;
+  var closest = 100000.0;  //Far out, man
+  var points = this.points;
+
+  for(var i = 0; i < this.points.length; i++) {
+    if(i != index) {
+      current = Math.sqrt( ((points[i].x-points[index].x)*(points[i].x-points[index].x)) + ((points[i].y-points[index].y)*(points[i].y-points[index].y)) + ((points[i].z-points[index].z)*(points[i].z-points[index].z)) );
+      current+=.00000002;
+      if (current < closest) closest = current;
+    }
+  }
+  for(i = 0; i < this.points.length; i++){
+    if (i != index){
+      current = Math.sqrt( ((points[i].x-points[index].x)*(points[i].x-points[index].x)) + ((points[i].y-points[index].y)*(points[i].y-points[index].y)) + ((points[i].z-points[index].z)*(points[i].z-points[index].z)) );
+      current+=.00000002;
+      if(Math.floor(current*10000.0) == Math.floor(closest*10000.0)) neighbors.push(i);
+    }
+  }
+  return neighbors;
+}
+
+
+
+domekit.Controller.prototype.run = function() {
   if(this.initCanvas()) {
     this.generatePoints();
     this.generateConnections();
@@ -218,22 +220,25 @@ domekit.Controller.prototype.run = function() {
     this.projectPoints();
     this.render();
 
-    var i = 6;    
-    inspector = this.findNeighbors(i);
-    this.drawPoint(this.projectedPoints[i], 12, "rgb(30,180,30)");
-    for(i = 0; i < inspector.length; i++){
-      this.drawPoint(this.projectedPoints[i], 8, "rgb(150,0,200)");
-    }
+    var neighbors = [];
+    var whichNeighbor = 6;  //which point's neighbors are you searching?
+    var i;
+    neighbors = this.findNeighbors(whichNeighbor);
 
-    /*var runloop = goog.bind(function() {
+    var runloop = goog.bind(function() {
       this.clearCanvas();
       this.rotate('x', Math.PI/60);
       this.rotate('y', Math.PI/60);
       this.rotate('z', Math.PI/60);
       this.projectPoints();
       this.render();
+      
+      this.drawPoint(this.projectedPoints[whichNeighbor], 12, "rgb(30,180,30)");
+      for(i = 0; i < neighbors.length; i++){
+        this.drawPoint(this.projectedPoints[neighbors[i]], 8, "rgb(150,0,200)");
+      }
     }, this);
-    setInterval(runloop, 1000/20);*/
+    setInterval(runloop, 1000/20);
   } else {
     console.log('it dont work gud')
   }
