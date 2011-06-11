@@ -40,38 +40,19 @@ domekit.Controller.prototype.generatePoints = function() {
 }
 
 domekit.Controller.prototype.generateConnections = function() {
-  var connections = [
-    [0,1],
-    [0,4],
-    [0,5],
-    [0,8],
-    [0,9],
-    [1,4],
-    [1,5],
-    [1,10],
-    [1,11],
-    [2,3],
-    [2,6],
-    [2,7],
-    [2,10],
-    [2,11],
-    [3,6],
-    [3,7],
-    [3,8],
-    [3,9],
-    [4,7],
-    [4,8],
-    [4,11],
-    [5,6],
-    [5,9],
-    [5,10],
-    [6,9],
-    [6,10],
-    [7,8],
-    [7,11],
-    [8,9],
-    [10,11]
-  ];
+  var connections = [];
+  var neighbors = [];
+  var i,j;
+  for(i=0;i<this.points.length;i++){
+    neighbors = this.findNeighbors(i);
+    for(j=0;j<neighbors.length;j++) connections.push([i,neighbors[j]]);
+  }
+  for(i=0;i<connections.length;i++){
+    neighbors = connections[i];
+    for(j=i;j<connections.length;j++){
+      if(neighbors[0] == connections[j][1] && neighbors[1] == connections[j][0]) connections.splice(j,1);
+    }
+  }
   this.connections = connections;
 }
 
