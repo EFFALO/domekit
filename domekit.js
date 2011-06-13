@@ -189,23 +189,33 @@ domekit.Controller.prototype.findNeighbors = function(index) {
   return neighbors;
 }
 
+// 2V (j=1), 4V (j=2), 8V (j=3)
 domekit.Controller.prototype.twoV = function() {
-  var midx, midy, midz;
-  var connections = this.connections;
-  for(var i = 0; i < connections.length; i++){
-    midx = (this.points[connections[i][1]].x-this.points[connections[i][0]].x)/2 + this.points[connections[i][0]].x;
-    midy = (this.points[connections[i][1]].y-this.points[connections[i][0]].y)/2 + this.points[connections[i][0]].y;
-    midz = (this.points[connections[i][1]].z-this.points[connections[i][0]].z)/2 + this.points[connections[i][0]].z;    
-    this.points.push(new domekit.Point3D(midx, midy, midz));
+  for(var j=0; j<2; j++){  
+    var midx, midy, midz;
+    var connections = this.connections;
+    for(var i = 0; i < connections.length; i++){
+      midx = (this.points[connections[i][1]].x-this.points[connections[i][0]].x)/2 + this.points[connections[i][0]].x;
+      midy = (this.points[connections[i][1]].y-this.points[connections[i][0]].y)/2 + this.points[connections[i][0]].y;
+      midz = (this.points[connections[i][1]].z-this.points[connections[i][0]].z)/2 + this.points[connections[i][0]].z;    
+      this.points.push(new domekit.Point3D(midx, midy, midz));
+    }
+    this.generateConnections();
   }
-  this.generateConnections();
-  //var distance;
-  //var angle;
-  //for(i = 0; i < this.points.length; i++){
-    //distance = Math.sqrt(this.points[i].x * this.points[i].x + this.points[i].y * this.points[i].y + this.points[i].z * this.points[i].z);
-    //console.log(distance);
-    //angle = Math.atan2(points[i].y, points[i].x);
-  //}
+  var distance;
+  var maxdistance = 0;
+  var difference;
+  for(i = 0; i < this.points.length; i++){
+    distance = Math.sqrt(this.points[i].x * this.points[i].x + this.points[i].y * this.points[i].y + this.points[i].z * this.points[i].z);
+    if (distance > maxdistance) maxdistance = distance;
+  }
+  for(i = 0; i < this.points.length; i++){
+    distance = Math.sqrt(this.points[i].x * this.points[i].x + this.points[i].y * this.points[i].y + this.points[i].z * this.points[i].z);
+    difference = maxdistance/distance;
+    this.points[i].x *= difference;
+    this.points[i].y *= difference;
+    this.points[i].z *= difference;
+  }
 }
 
 domekit.Controller.prototype.run = function() {
