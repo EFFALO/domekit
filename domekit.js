@@ -189,7 +189,24 @@ domekit.Controller.prototype.findNeighbors = function(index) {
   return neighbors;
 }
 
-
+domekit.Controller.prototype.twoV = function() {
+  var midx, midy, midz;
+  var connections = this.connections;
+  for(var i = 0; i < connections.length; i++){
+    midx = (this.points[connections[i][1]].x-this.points[connections[i][0]].x)/2 + this.points[connections[i][0]].x;
+    midy = (this.points[connections[i][1]].y-this.points[connections[i][0]].y)/2 + this.points[connections[i][0]].y;
+    midz = (this.points[connections[i][1]].z-this.points[connections[i][0]].z)/2 + this.points[connections[i][0]].z;    
+    this.points.push(new domekit.Point3D(midx, midy, midz));
+  }
+  this.generateConnections();
+  //var distance;
+  //var angle;
+  //for(i = 0; i < this.points.length; i++){
+    //distance = Math.sqrt(this.points[i].x * this.points[i].x + this.points[i].y * this.points[i].y + this.points[i].z * this.points[i].z);
+    //console.log(distance);
+    //angle = Math.atan2(points[i].y, points[i].x);
+  //}
+}
 
 domekit.Controller.prototype.run = function() {
   if(this.initCanvas()) {
@@ -201,6 +218,8 @@ domekit.Controller.prototype.run = function() {
     this.projectPoints();
     this.render();
 
+    this.twoV();
+      
     var neighbors = [];
     
     var whichNeighbor = 6;  //which point's neighbors are you searching?
@@ -214,7 +233,7 @@ domekit.Controller.prototype.run = function() {
       this.rotate('z', Math.PI/60);
       this.projectPoints();
       this.render();
-      
+
       this.drawPoint(this.projectedPoints[whichNeighbor], 12, "rgb(30,180,30)");
       for(i = 0; i < neighbors.length; i++){
         this.drawPoint(this.projectedPoints[neighbors[i]], 8, "rgb(150,0,200)");
