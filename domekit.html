@@ -4,16 +4,17 @@
       DOMEKIT
     </title>
     <script type='text/javascript' src='google-closure-library/closure/goog/base.js'></script>
+    <script>
+      goog.require('goog.ui.Component');
+      goog.require('goog.dom');
+    </script>
     <script type='text/javascript' src='domekit.js'></script>
   </head>
   <body>
     <div id='canvas-title'>
       DOMEKIT DRAWING SURFACE ENVISIONED
     </div>
-    <div>
-      <canvas id="domekit-visual-efforts" width="500" height="500" style="border: solid 1px black;">
-        YOU NEED CANVAS. TRY FF, CHROME, KONQUEROR, SAFARI.
-      </canvas>
+    <div id='canvas-goes-here'>
     </div>
     <div id="canvas-bookend">
     </div>
@@ -24,8 +25,12 @@
             innerText;
           document.getElementById('canvas-bookend').
           innerHTML = forwardMessage.split('').
-            reverse().
+            sort().
             join('');
+          var domekitController = new domekit.Controller();
+          var goesHere = document.getElementById('canvas-goes-here');
+          domekitController.render(goesHere);
+          domekitController.run();
       })()
     </script>
   </body>

@@ -1,5 +1,4 @@
 goog.provide('domekit.Point3D');
-goog.provide('domekit.View');
 goog.provide('domekit.Controller');
 
 domekit.Point3D = function(x,y,z) {
@@ -9,7 +8,7 @@ domekit.Point3D = function(x,y,z) {
 }
 
 domekit.Controller = function() {
-  this.canvasEl = null;
+  goog.base(this);
   this.context = null
   this.scale = 1;
   this.pointSize = 4.0;
@@ -20,6 +19,21 @@ domekit.Controller = function() {
     x : 250.0,
     y : 250.0
   };
+}
+goog.inherits(domekit.Controller, goog.ui.Component);
+
+domekit.Controller.prototype.createDom = function() {
+  goog.base(this, 'createDom');
+  var canvas = goog.dom.createDom('canvas', {
+    id     : 'domekit-visual-efforts',
+    width  : 500,
+    height : 500
+  });
+  this.setElementInternal(canvas);
+}
+
+domekit.Controller.prototype.enterDocument = function() {
+  goog.base(this, 'enterDocument');
 }
 
 domekit.Controller.prototype.generatePoints = function() {
@@ -137,7 +151,7 @@ domekit.Controller.prototype.drawConnection = function(point1, point2, color) {
   this.context.restore();
 }
 
-domekit.Controller.prototype.render = function() {
+domekit.Controller.prototype.renderCanvas = function() {
   var projectedPoints = this.projectedPoints;
   var connections = this.connections;
   for(var i = 0; i < connections.length; i++) {
@@ -149,7 +163,7 @@ domekit.Controller.prototype.render = function() {
 }
 
 domekit.Controller.prototype.initCanvas = function() {
-  var canvas = this.canvasEl = document.getElementById('domekit-visual-efforts');
+  var canvas = this.getElement();
 
   if(canvas.getContext){
     this.context = canvas.getContext('2d');
@@ -160,8 +174,9 @@ domekit.Controller.prototype.initCanvas = function() {
 },
 
 domekit.Controller.prototype.clearCanvas = function() {
-  var width = this.canvasEl.width;
-  var height = this.canvasEl.height;
+  var canvas = this.getElement();
+  var width = canvas.width;
+  var height = canvas.height;
   this.context.clearRect(0, 0, width, height);
 }
 
@@ -226,7 +241,7 @@ domekit.Controller.prototype.run = function() {
     this.rotate('y', Math.PI/1.6);
     this.rotate('z', Math.PI/6);
     this.projectPoints();
-    this.render();
+    this.renderCanvas();
 
     this.twoV();
       
@@ -242,7 +257,7 @@ domekit.Controller.prototype.run = function() {
       this.rotate('y', Math.PI/60);
       this.rotate('z', Math.PI/60);
       this.projectPoints();
-      this.render();
+      this.renderCanvas();
 
       this.drawPoint(this.projectedPoints[whichNeighbor], 12, "rgb(30,180,30)");
       for(i = 0; i < neighbors.length; i++){
@@ -251,12 +266,7 @@ domekit.Controller.prototype.run = function() {
     }, this);
     setInterval(runloop, 1000/20);
   } else {
-    console.log('it dont work gud')
+    console.log("Couldn't initCanvas")
   }
-}
-
-window.onload = function() {
-  var app = new domekit.Controller();
-  app.run();
 }
 
