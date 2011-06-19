@@ -6,6 +6,7 @@ http://www.antiprism.com/other/dome/index.html
 usage:
 domekit.html is our sample application, open that thang in a browser
 domekit.js is our code
+domekit.cc/generator/index.html is the domekit.cc dome generator
 
 We are using google closure library for dependencies and utilities.
 It comes distributed with our repo. You can get google's through subversion if you like:
