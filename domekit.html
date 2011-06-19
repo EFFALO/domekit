@@ -7,8 +7,34 @@
     <script>
       goog.require('goog.ui.Component');
       goog.require('goog.dom');
+      goog.require('goog.ui.Slider');
     </script>
     <script type='text/javascript' src='domekit.js'></script>
+  <style>
+    .goog-slider-horizontal {
+      background-color: blue;
+      position: relative;
+      overflow: hidden;
+      width: 10em;
+      height: 1em;
+    }
+
+    .goog-slider-thumb {
+      position: absolute;
+      background-color: black;
+      overflow: hidden;
+    }
+
+    .goog-slider-horizontal .goog-slider-thumb {
+      top: 0;
+      width: 20px;
+      height: 100px;
+    }
+    #s-h {
+      margin-bottom: 2em;
+    }
+  </style>
+
   </head>
   <body>
     <div id='canvas-title'>
@@ -17,6 +43,10 @@
     <div id='canvas-goes-here'>
     </div>
     <div id="canvas-bookend">
+    </div>
+    <div id="slider-goes-here">
+    </div>
+    <div id="slider-value">
     </div>
     <script>
       (function() {
@@ -31,6 +61,12 @@
           var goesHere = document.getElementById('canvas-goes-here');
           domekitController.render(goesHere);
           domekitController.run();
+          var sliderGoesHere = document.getElementById('slider-goes-here');
+          var slider = new goog.ui.Slider();
+          slider.render(sliderGoesHere);
+          slider.addEventListener(goog.ui.Component.EventType.CHANGE, function() {
+            document.getElementById('slider-value').innerHTML = slider.getValue();
+          });
       })()
     </script>
   </body>
