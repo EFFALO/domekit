@@ -7,7 +7,7 @@ domekit.Point3D = function(x,y,z) {
   this.z = z || 0.0;
 }
 
-domekit.Controller = function() {
+domekit.Controller = function(width, height) {
   goog.base(this);
   this.context = null
   this.scale = 1;
@@ -15,9 +15,11 @@ domekit.Controller = function() {
   this.points = [];
   this.projectedPoints = [];
   this.connections = [];
+  this.width = width || 500;
+  this.height = height || 500;
   this.offsets = {
-    x : 250.0,
-    y : 250.0
+    x : this.width / 2,
+    y : this.height / 2
   };
 }
 goog.inherits(domekit.Controller, goog.ui.Component);
@@ -26,8 +28,8 @@ domekit.Controller.prototype.createDom = function() {
   goog.base(this, 'createDom');
   var canvas = goog.dom.createDom('canvas', {
     id     : 'domekit-visual-efforts',
-    width  : 500,
-    height : 500
+    width  : this.width,
+    height : this.height
   });
   this.setElementInternal(canvas);
 }
