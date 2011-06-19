@@ -6,6 +6,10 @@
 		<link rel="stylesheet" href="../style/reset-min.css" type="text/css" />
 		<link rel="stylesheet" href="../style/style.css" type="text/css" media="screen" />
     <script type='text/javascript' src='../../google-closure-library/closure/goog/base.js'></script>
+    <script type='text/javascript'>
+      goog.require('goog.ui.Component');
+      goog.require('goog.dom');
+    </script>
     <script type='text/javascript' src='../../domekit.js'></script>
 		<script type="text/javascript">
 		  var _gaq = _gaq || [];
@@ -43,9 +47,6 @@
 			<div id="generator">
 				<div id="visualization">
 					<div id="scaledview">
-            <canvas id="domekit-visual-efforts" width="600" height="350">
-              YOU NEED CANVAS. TRY FF, CHROME, KONQUEROR, SAFARI.
-            </canvas>
 					</div><!-- /scaledview -->
 					<div class="clear"></div>
 					<div id="topview">
@@ -162,6 +163,12 @@
       <!-- /FOOTER INCLUDE -->
 
 		</div> <!-- /container -->
-		
+    <script type='text/javascript'>
+      // domekit INITIALIZE
+      var domekitController = new domekit.Controller(600, 350);
+      var goesHere = document.getElementById('scaledview');
+      domekitController.render(goesHere);
+      domekitController.run();
+    </script>
 	</body>
 </html>
