@@ -1,6 +1,10 @@
 goog.provide('domekit.Point3D');
 goog.provide('domekit.Controller');
 
+goog.require('goog.ui.Component');
+goog.require('goog.dom');
+goog.require('goog.ui.Slider');
+
 domekit.Point3D = function(x,y,z) {
   this.x = x || 0.0;
   this.y = y || 0.0;
@@ -266,7 +270,7 @@ domekit.Controller.prototype.run = function() {
         this.drawPoint(this.projectedPoints[neighbors[i]], 8, "rgb(150,0,200)");
       }
     }, this);
-    setInterval(runloop, 1000/20);
+    setInterval(runloop, 1000/45);
   } else {
     console.log("Couldn't initCanvas")
   }
