@@ -65,7 +65,7 @@
           var slider = new goog.ui.Slider();
           slider.render(sliderGoesHere);
           slider.addEventListener(goog.ui.Component.EventType.CHANGE, function() {
-            document.getElementById('slider-value').innerHTML = slider.getValue();
+            domekitController.rotate('y', (2*Math.PI)/100);
           });
       })()
     </script>

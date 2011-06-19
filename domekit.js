@@ -253,9 +253,9 @@ domekit.Controller.prototype.run = function() {
 
     var runloop = goog.bind(function() {
       this.clearCanvas();
-      this.rotate('x', Math.PI/60);
-      this.rotate('y', Math.PI/60);
-      this.rotate('z', Math.PI/60);
+      // this.rotate('x', Math.PI/60);
+      // this.rotate('y', Math.PI/60);
+      // this.rotate('z', Math.PI/60);
       this.projectPoints();
       this.renderCanvas();
 
