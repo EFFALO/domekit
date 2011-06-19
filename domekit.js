@@ -7,16 +7,17 @@ domekit.Point3D = function(x,y,z) {
   this.z = z || 0.0;
 }
 
-domekit.Controller = function(width, height) {
+domekit.Controller = function(width, height, scale) {
   goog.base(this);
   this.context = null
-  this.scale = 1;
+  this.scale = scale || 0.9;
   this.pointSize = 4.0;
   this.points = [];
   this.projectedPoints = [];
   this.connections = [];
   this.width = width || 500;
   this.height = height || 500;
+  this.maximumRadius = Math.min(this.width, this.height) / 2;
   this.offsets = {
     x : this.width / 2,
     y : this.height / 2
@@ -78,9 +79,9 @@ domekit.Controller.prototype.generateConnections = function() {
 // zCameraOffset: z axis displacement, distance of object from camera
 // zDepth: z falloff scale, controls depth of projection
 // xyOffset: offset to translate projected value to canvas origin
-// scale: canvas size scale
+// scale: canvas size scale relative to maximum
 domekit.Controller.prototype.project = function(xy, z, zCameraOffset, zDepth, xyOffset, scale) {
-  return xy / (z * zDepth + zCameraOffset) * scale + xyOffset;
+  return xy / (z * zDepth + zCameraOffset) * (scale * this.maximumRadius) + xyOffset;
 }
 
 domekit.Controller.prototype.rotate = function(rotationAxis, rotationAngleInRadians) {
@@ -120,14 +121,13 @@ domekit.Controller.prototype.projectPoints = function() {
 
   var points = this.points;
   var projectedPoints = this.projectedPoints;
-  var project = this.project;
   var point;
 
   for(var i = 0; i < points.length; i++) {
     point = projectedPoints[i] = new domekit.Point3D();
 
-    point.x = project(points[i].x, points[i].z, 1, .005, xOffset, 100);
-    point.y = project(points[i].y, points[i].z, 1, .005, yOffset, 100);
+    point.x = this.project(points[i].x, points[i].z, 2, .005, xOffset, this.scale);
+    point.y = this.project(points[i].y, points[i].z, 2, .005, yOffset, this.scale);
     point.z = points[i].z;
   }
 }
