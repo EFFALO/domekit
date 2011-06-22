@@ -229,11 +229,10 @@ domekit.Controller.prototype.subdivideTriangles = function(v) {
   if (v === 8) triangleDivisionLoops = 3;
 
   for(var j = 0; j <= triangleDivisionLoops; j++) {
-    var midx, midy, midz;
-    var connections = this.connections;
-    // create mid points
-    for(var i = 0; i < connections.length; i++){
-      var newPoint = this.calculateMidpoint(this.points[connections[i][0]], this.points[connections[i][1]]);
+    for(var i = 0; i < this.connections.length; i++) {
+      var point1 = this.points[ this.connections[i][0] ];
+      var point2 = this.points[ this.connections[i][1] ];
+      var newPoint = this.calculateMidpoint(point1, point2);
       this.points.push(newPoint);
     }
     this.generateConnections();
