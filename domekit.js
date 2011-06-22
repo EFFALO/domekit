@@ -41,6 +41,15 @@ domekit.Controller.prototype.createDom = function() {
 
 domekit.Controller.prototype.enterDocument = function() {
   goog.base(this, 'enterDocument');
+
+  var canvas = this.getElement();
+
+  if(canvas.getContext){
+    this.context = canvas.getContext('2d');
+  } else {
+    throw new Error(canvas.innerHTML);
+  }
+
 }
 
 domekit.Controller.prototype.generatePoints = function() {
@@ -68,6 +77,7 @@ domekit.Controller.prototype.generateConnections = function() {
     neighbors = this.findNeighbors(i);
     for(j=0;j<neighbors.length;j++) connections.push([i,neighbors[j]]);
   }
+  // remove duplicates
   for(i=0;i<connections.length;i++){
     neighbors = connections[i];
     for(j=i;j<connections.length;j++){
@@ -157,7 +167,7 @@ domekit.Controller.prototype.drawConnection = function(point1, point2, color) {
   this.context.restore();
 }
 
-domekit.Controller.prototype.renderCanvas = function() {
+domekit.Controller.prototype.drawFrame = function() {
   var projectedPoints = this.projectedPoints;
   var connections = this.connections;
   for(var i = 0; i < connections.length; i++) {
@@ -167,17 +177,6 @@ domekit.Controller.prototype.renderCanvas = function() {
     this.drawPoint(projectedPoints[i], this.pointSize, "rgb(150,0,200)");
   }
 }
-
-domekit.Controller.prototype.initCanvas = function() {
-  var canvas = this.getElement();
-
-  if(canvas.getContext){
-    this.context = canvas.getContext('2d');
-  } else {
-    throw new Error(canvas.innerHTML);
-  }
-  return !!this.context;
-},
 
 domekit.Controller.prototype.clearCanvas = function() {
   var canvas = this.getElement();
@@ -211,14 +210,16 @@ domekit.Controller.prototype.findNeighbors = function(index) {
 }
 
 // 2V (j=1), 4V (j=2), 8V (j=3)
-domekit.Controller.prototype.twoV = function() {
-  for(var j=0; j<2; j++){  
+domekit.Controller.prototype.addTwoVPoints = function() {
+  // j=1 here, it's 2v
+  for(var j=0; j<2; j++){
     var midx, midy, midz;
     var connections = this.connections;
+    // create mid points
     for(var i = 0; i < connections.length; i++){
       midx = (this.points[connections[i][1]].x-this.points[connections[i][0]].x)/2 + this.points[connections[i][0]].x;
       midy = (this.points[connections[i][1]].y-this.points[connections[i][0]].y)/2 + this.points[connections[i][0]].y;
-      midz = (this.points[connections[i][1]].z-this.points[connections[i][0]].z)/2 + this.points[connections[i][0]].z;    
+      midz = (this.points[connections[i][1]].z-this.points[connections[i][0]].z)/2 + this.points[connections[i][0]].z;
       this.points.push(new domekit.Point3D(midx, midy, midz));
     }
     this.generateConnections();
@@ -240,39 +241,35 @@ domekit.Controller.prototype.twoV = function() {
 }
 
 domekit.Controller.prototype.run = function() {
-  if(this.initCanvas()) {
-    this.generatePoints();
-    this.generateConnections();
-    this.rotate('x', Math.PI/2);
-    this.rotate('y', Math.PI/1.6);
-    this.rotate('z', Math.PI/6);
-    this.projectPoints();
-    this.renderCanvas();
+  this.generatePoints();
+  this.generateConnections();
+  this.rotate('x', Math.PI/2);
+  this.rotate('y', Math.PI/1.6);
+  this.rotate('z', Math.PI/6);
+  this.projectPoints();
+  this.drawFrame();
 
-    this.twoV();
-      
-    var neighbors = [];
+  this.addTwoVPoints();
     
-    var whichNeighbor = 6;  //which point's neighbors are you searching?
-    var i;
-    neighbors = this.findNeighbors(whichNeighbor);
+  var neighbors = [];
+  
+  var whichNeighbor = 6;  //which point's neighbors are you searching?
+  var i;
+  neighbors = this.findNeighbors(whichNeighbor);
 
-    var runloop = goog.bind(function() {
-      this.clearCanvas();
-      // this.rotate('x', Math.PI/60);
-      // this.rotate('y', Math.PI/60);
-      // this.rotate('z', Math.PI/60);
-      this.projectPoints();
-      this.renderCanvas();
+  var runloop = goog.bind(function() {
+    this.clearCanvas();
+    // this.rotate('x', Math.PI/60);
+    // this.rotate('y', Math.PI/60);
+    // this.rotate('z', Math.PI/60);
+    this.projectPoints();
+    this.drawFrame();
 
-      this.drawPoint(this.projectedPoints[whichNeighbor], 12, "rgb(30,180,30)");
-      for(i = 0; i < neighbors.length; i++){
-        this.drawPoint(this.projectedPoints[neighbors[i]], 8, "rgb(150,0,200)");
-      }
-    }, this);
-    setInterval(runloop, 1000/45);
-  } else {
-    console.log("Couldn't initCanvas")
-  }
+    this.drawPoint(this.projectedPoints[whichNeighbor], 12, "rgb(30,180,30)");
+    for(i = 0; i < neighbors.length; i++){
+      this.drawPoint(this.projectedPoints[neighbors[i]], 8, "rgb(150,0,200)");
+    }
+  }, this);
+  setInterval(runloop, 1000/45);
 }
 
