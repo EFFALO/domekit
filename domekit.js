@@ -54,7 +54,7 @@ domekit.Controller.prototype.enterDocument = function() {
   this.generateConnections();
   // This has to happen after you've generated initial
   // points and connections
-  this.addTwoVPoints();
+  this.subdivideTriangles(2);
 
   var runloop = goog.bind(function() {
     this.projectPoints();
@@ -221,29 +221,36 @@ domekit.Controller.prototype.findNeighbors = function(index) {
   return neighbors;
 }
 
-// 2V (j=1), 4V (j=2), 8V (j=3)
-domekit.Controller.prototype.addTwoVPoints = function() {
-  // j=1 here, it's 2v
-  for(var j=0; j<2; j++){
+// v: divisions on one side of the largest triangle. valid inputs: 2, 4, 8
+domekit.Controller.prototype.subdivideTriangles = function(v) {
+  var triangleDivisionLoops;
+  if (v === 2) triangleDivisionLoops = 1;
+  if (v === 4) triangleDivisionLoops = 2;
+  if (v === 8) triangleDivisionLoops = 3;
+
+  for(var j = 0; j <= triangleDivisionLoops; j++) {
     var midx, midy, midz;
     var connections = this.connections;
     // create mid points
     for(var i = 0; i < connections.length; i++){
-      var newPoint = this.calculateMidpoint(this.points[connections[i][0]], this.points[connections[i][1]])
+      var newPoint = this.calculateMidpoint(this.points[connections[i][0]], this.points[connections[i][1]]);
       this.points.push(newPoint);
     }
     this.generateConnections();
   }
+
   var distance;
   var maxdistance = 0;
   var difference;
-  for(i = 0; i < this.points.length; i++){
+
+  for(i = 0; i < this.points.length; i++) {
     distance = Math.sqrt(this.points[i].x * this.points[i].x + this.points[i].y * this.points[i].y + this.points[i].z * this.points[i].z);
     if (distance > maxdistance) maxdistance = distance;
   }
-  for(i = 0; i < this.points.length; i++){
+
+  for(i = 0; i < this.points.length; i++) {
     distance = Math.sqrt(this.points[i].x * this.points[i].x + this.points[i].y * this.points[i].y + this.points[i].z * this.points[i].z);
-    difference = maxdistance/distance;
+    difference = maxdistance / distance;
     this.points[i].x *= difference;
     this.points[i].y *= difference;
     this.points[i].z *= difference;
