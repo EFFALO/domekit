@@ -52,6 +52,8 @@ domekit.Controller.prototype.enterDocument = function() {
 
   this.generatePoints();
   this.generateConnections();
+  // This has to happen after you've generated initial
+  // points and connections
   this.addTwoVPoints();
 
   var runloop = goog.bind(function() {
@@ -227,10 +229,8 @@ domekit.Controller.prototype.addTwoVPoints = function() {
     var connections = this.connections;
     // create mid points
     for(var i = 0; i < connections.length; i++){
-      midx = (this.points[connections[i][1]].x-this.points[connections[i][0]].x)/2 + this.points[connections[i][0]].x;
-      midy = (this.points[connections[i][1]].y-this.points[connections[i][0]].y)/2 + this.points[connections[i][0]].y;
-      midz = (this.points[connections[i][1]].z-this.points[connections[i][0]].z)/2 + this.points[connections[i][0]].z;
-      this.points.push(new domekit.Point3D(midx, midy, midz));
+      var newPoint = this.calculateMidpoint(this.points[connections[i][0]], this.points[connections[i][1]])
+      this.points.push(newPoint);
     }
     this.generateConnections();
   }
@@ -248,4 +248,11 @@ domekit.Controller.prototype.addTwoVPoints = function() {
     this.points[i].y *= difference;
     this.points[i].z *= difference;
   }
+}
+
+domekit.Controller.prototype.calculateMidpoint = function(point1, point2) {
+  midpointX = (point2.x - point1.x) / 2 + point1.x;
+  midpointY = (point2.y - point1.y) / 2 + point1.y;
+  midpointZ = (point2.z - point1.z) / 2 + point1.z;
+  return (new domekit.Point3D(midpointX, midpointY, midpointZ));
 }
