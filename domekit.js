@@ -50,6 +50,16 @@ domekit.Controller.prototype.enterDocument = function() {
     throw new Error(canvas.innerHTML);
   }
 
+  this.generatePoints();
+  this.generateConnections();
+  this.addTwoVPoints();
+
+  var runloop = goog.bind(function() {
+    this.projectPoints();
+    this.clearCanvas();
+    this.drawFrame();
+  }, this);
+  setInterval(runloop, 1000/45);
 }
 
 domekit.Controller.prototype.generatePoints = function() {
@@ -239,37 +249,3 @@ domekit.Controller.prototype.addTwoVPoints = function() {
     this.points[i].z *= difference;
   }
 }
-
-domekit.Controller.prototype.run = function() {
-  this.generatePoints();
-  this.generateConnections();
-  this.rotate('x', Math.PI/2);
-  this.rotate('y', Math.PI/1.6);
-  this.rotate('z', Math.PI/6);
-  this.projectPoints();
-  this.drawFrame();
-
-  this.addTwoVPoints();
-    
-  var neighbors = [];
-  
-  var whichNeighbor = 6;  //which point's neighbors are you searching?
-  var i;
-  neighbors = this.findNeighbors(whichNeighbor);
-
-  var runloop = goog.bind(function() {
-    this.clearCanvas();
-    // this.rotate('x', Math.PI/60);
-    // this.rotate('y', Math.PI/60);
-    // this.rotate('z', Math.PI/60);
-    this.projectPoints();
-    this.drawFrame();
-
-    this.drawPoint(this.projectedPoints[whichNeighbor], 12, "rgb(30,180,30)");
-    for(i = 0; i < neighbors.length; i++){
-      this.drawPoint(this.projectedPoints[neighbors[i]], 8, "rgb(150,0,200)");
-    }
-  }, this);
-  setInterval(runloop, 1000/45);
-}
-
