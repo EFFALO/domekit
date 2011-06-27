@@ -262,3 +262,8 @@ domekit.Controller.prototype.calculateMidpoint = function(point1, point2) {
   midpointZ = (point2.z - point1.z) / 2 + point1.z;
   return (new domekit.Point3D(midpointX, midpointY, midpointZ));
 }
+
+goog.exportSymbol('domekit.Controller', domekit.Controller)
+goog.exportSymbol('domekit.Controller.prototype.render', domekit.Controller.prototype.render)
+goog.exportSymbol('domekit.Controller.prototype.rotate', domekit.Controller.prototype.rotate)
+

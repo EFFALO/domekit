@@ -8,3 +8,5 @@ Icon?
 .Spotlight-V100
 .Trashes
 
+compiler_*
+closure*.jar

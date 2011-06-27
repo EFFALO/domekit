@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style type="text/css" media="screen">
+      body{font:13px/1.231 arial,helvetica,clean,sans-serif;*font-size:small;*font:x-small;}
+      select,input,button,textarea,button{font:99% arial,helvetica,clean,sans-serif;}
+    </style>
+  </head>
+  <body>
+
+    <h1>Domekit</h1>
+    
+    <%= render 'svn', :svn_name => 'Closure Library', :svn_path => 'google-closure-library',
+        :svn_url => 'http://closure-library.googlecode.com/svn/trunk/' %>
+
+    <ul>
+      <li>
+        <a href='docs/index'>Closure Script Documentation</a>
+      </li>
+      <li>
+        <a href='google-closure-library/all_tests'>Closure Library Tests</a>
+      </li>
+      <li>
+        <a href='google-closure-library/closure/goog/demos/index'>Closure Library Demos</a>
+      </li>
+      <li>
+        <a href='domekit'>Domekit - Raw</a>
+      </li>
+      <li>
+        <a href='domekit?build'>Domekit - Build</a>
+      </li>
+      <li>
+        <a href='domekit?debug'>Domekit - Debug</a>
+      </li>
+    </ul>
+    
+  </body>
+</html>
