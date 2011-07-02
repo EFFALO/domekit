@@ -8,17 +8,19 @@ domekit.html is our sample application, open that thang in a browser
 domekit.js is our code
 domekit.cc/generator/index.html is the domekit.cc dome generator
 
-We are using google closure library for dependencies and utilities.
-It comes distributed with our repo. You can get google's through subversion if you like:
-svn checkout http://closure-library.googlecode.com/svn/trunk/ closure-library
+You will need Closure Script to build this project. There is a Ruby
+and a Java version of the Closure Script tool.  Your choice.
 
-We'll soon be distributing closure-script, when we start compiling.
+Ruby:
 
-If you have ruby and the rack gem installed on your machine, you can just:
-rackup
-then surf to http://localhost:9292/domekit.html
+    gem install closure
+    rackup
+    (browse to:) http://localhost:8080/
 
-If you have ruby but need rack, grab it with:
-gem install rack
+Java:
+
+    (download:) https://github.com/dturnbull/closure-script/downloads
+    java -jar closure.jar
+    (browse to:) http://localhost:8080/
 
 Thanks!!!

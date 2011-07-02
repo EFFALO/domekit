@@ -1,0 +1,78 @@
+<html>
+  <head>
+    <title>
+      DOMEKIT
+    </title>
+    <script src='compiler.js?<%= query_string %>'></script>
+  <style>
+    .goog-slider-horizontal {
+      background-color: blue;
+      position: relative;
+      overflow: hidden;
+      width: 10em;
+      height: 1em;
+    }
+
+    .goog-slider-thumb {
+      position: absolute;
+      background-color: black;
+      overflow: hidden;
+    }
+
+    .goog-slider-horizontal .goog-slider-thumb {
+      top: 0;
+      width: 20px;
+      height: 100px;
+    }
+    #s-h {
+      margin-bottom: 2em;
+    }
+  </style>
+
+  </head>
+  <body>
+    <div id='canvas-title'>
+      DOMEKIT DRAWING SURFACE ENVISIONED
+    </div>
+    <div id='canvas-goes-here'>
+    </div>
+    <div id="canvas-bookend">
+    </div>
+    <div id="slider-goes-here">
+    </div>
+    <div id="slider-value">
+    </div>
+    <script>
+      (function() {
+          var forwardMessage = document.
+            getElementById('canvas-title').
+            innerText;
+          document.getElementById('canvas-bookend').
+          innerHTML = forwardMessage.split('').
+            sort().
+            join('');
+          var domekitController = new domekit.Controller();
+          var goesHere = document.getElementById('canvas-goes-here');
+          // begin drawing dome canvas component
+          domekitController.render(goesHere);
+
+          // add slider
+          var sliderGoesHere = document.getElementById('slider-goes-here');
+          var slider = new goog.ui.Slider();
+          slider.render(sliderGoesHere);
+          var sliderVal = slider.getValue();
+          // slider is in degrees
+          var sliderMax = 360;
+          slider.setMaximum(sliderMax);
+          slider.addEventListener(goog.ui.Component.EventType.CHANGE, function() {
+            var newVal = slider.getValue();
+            var rotation = newVal - sliderVal;
+            sliderVal = newVal;
+            // rotation in degrees converted to radians,
+            // requirement of rotation function
+            domekitController.rotate('y', rotation * (2*Math.PI)/sliderMax);
+          });
+      })()
+    </script>
+  </body>
+</html>
