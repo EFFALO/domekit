@@ -5,12 +5,14 @@ goog.require('goog.ui.Component');
 goog.require('goog.dom');
 goog.require('goog.ui.Slider');
 
+/** @constructor */
 domekit.Point3D = function(x,y,z) {
-  this.x = x || 0.0;
-  this.y = y || 0.0;
-  this.z = z || 0.0;
+  this["x"] = x || 0.0;
+  this["y"] = y || 0.0;
+  this["z"] = z || 0.0;
 }
 
+/** @constructor */
 domekit.Controller = function(width, height, scale) {
   goog.base(this);
   this.context = null
@@ -142,8 +144,8 @@ domekit.Controller.prototype.rotate = function(rotationAxis, rotationAngleInRadi
 }
 
 domekit.Controller.prototype.projectPoints = function() {
-  var xOffset = this.offsets.x;
-  var yOffset = this.offsets.y;
+  var xOffset = this.offsets['x'];
+  var yOffset = this.offsets['y'];
 
   var points = this.points;
   var projectedPoints = this.projectedPoints;
@@ -152,9 +154,9 @@ domekit.Controller.prototype.projectPoints = function() {
   for(var i = 0; i < points.length; i++) {
     point = projectedPoints[i] = new domekit.Point3D();
 
-    point.x = this.project(points[i].x, points[i].z, 2, .005, xOffset, this.scale);
-    point.y = this.project(points[i].y, points[i].z, 2, .005, yOffset, this.scale);
-    point.z = points[i].z;
+    point['x'] = this.project(points[i]['x'], points[i]['z'], 2, .005, xOffset, this.scale);
+    point['y'] = this.project(points[i]['y'], points[i]['z'], 2, .005, yOffset, this.scale);
+    point['z'] = points[i]['z'];
   }
 }
       
@@ -162,7 +164,7 @@ domekit.Controller.prototype.drawPoint = function(point, size, color) {
   this.context.save();
   this.context.beginPath();
   this.context.fillStyle = color;
-  this.context.arc(point.x, point.y, size, 0.0, 2*Math.PI, true);
+  this.context.arc(point['x'], point['y'], size, 0.0, 2*Math.PI, true);
   this.context.fill();
   this.context.closePath();
   this.context.restore();
@@ -172,8 +174,8 @@ domekit.Controller.prototype.drawConnection = function(point1, point2, color) {
   this.context.save();
   this.context.beginPath();
   this.context.strokeStyle = color;
-  this.context.moveTo(point1.x, point1.y);
-  this.context.lineTo(point2.x, point2.y);
+  this.context.moveTo(point1['x'], point1['y']);
+  this.context.lineTo(point2['x'], point2['y']);
   this.context.stroke();
   this.context.closePath();
   this.context.restore();
@@ -206,14 +208,14 @@ domekit.Controller.prototype.findNeighbors = function(index) {
 
   for(var i = 0; i < this.points.length; i++) {
     if(i != index) {
-      current = Math.sqrt( ((points[i].x-points[index].x)*(points[i].x-points[index].x)) + ((points[i].y-points[index].y)*(points[i].y-points[index].y)) + ((points[i].z-points[index].z)*(points[i].z-points[index].z)) );
+      current = Math.sqrt( ((points[i]['x']-points[index]['x'])*(points[i]['x']-points[index]['x'])) + ((points[i]['y']-points[index]['y'])*(points[i]['y']-points[index]['y'])) + ((points[i]['z']-points[index]['z'])*(points[i]['z']-points[index]['z'])) );
       current+=.00000002;
       if (current < closest) closest = current;
     }
   }
   for(i = 0; i < this.points.length; i++){
     if (i != index){
-      current = Math.sqrt( ((points[i].x-points[index].x)*(points[i].x-points[index].x)) + ((points[i].y-points[index].y)*(points[i].y-points[index].y)) + ((points[i].z-points[index].z)*(points[i].z-points[index].z)) );
+      current = Math.sqrt( ((points[i]['x']-points[index]['x'])*(points[i]['x']-points[index]['x'])) + ((points[i]['y']-points[index]['y'])*(points[i]['y']-points[index]['y'])) + ((points[i]['z']-points[index]['z'])*(points[i]['z']-points[index]['z'])) );
       current+=.00000002;
       if(Math.floor(current*10000.0) == Math.floor(closest*10000.0)) neighbors.push(i);
     }
@@ -243,23 +245,23 @@ domekit.Controller.prototype.subdivideTriangles = function(v) {
   var difference;
 
   for(i = 0; i < this.points.length; i++) {
-    distance = Math.sqrt(this.points[i].x * this.points[i].x + this.points[i].y * this.points[i].y + this.points[i].z * this.points[i].z);
+    distance = Math.sqrt(this.points[i]['x'] * this.points[i]['x'] + this.points[i]['y'] * this.points[i]['y'] + this.points[i]['z'] * this.points[i]['z']);
     if (distance > maxdistance) maxdistance = distance;
   }
 
   for(i = 0; i < this.points.length; i++) {
-    distance = Math.sqrt(this.points[i].x * this.points[i].x + this.points[i].y * this.points[i].y + this.points[i].z * this.points[i].z);
+    distance = Math.sqrt(this.points[i]['x'] * this.points[i]['x'] + this.points[i]['y'] * this.points[i]['y'] + this.points[i]['z'] * this.points[i]['z']);
     difference = maxdistance / distance;
-    this.points[i].x *= difference;
-    this.points[i].y *= difference;
-    this.points[i].z *= difference;
+    this.points[i]['x'] *= difference;
+    this.points[i]['y'] *= difference;
+    this.points[i]['z'] *= difference;
   }
 }
 
 domekit.Controller.prototype.calculateMidpoint = function(point1, point2) {
-  midpointX = (point2.x - point1.x) / 2 + point1.x;
-  midpointY = (point2.y - point1.y) / 2 + point1.y;
-  midpointZ = (point2.z - point1.z) / 2 + point1.z;
+  midpointX = (point2['x'] - point1['x']) / 2 + point1['x'];
+  midpointY = (point2['y'] - point1['y']) / 2 + point1['y'];
+  midpointZ = (point2['z'] - point1['z']) / 2 + point1['z'];
   return (new domekit.Point3D(midpointX, midpointY, midpointZ));
 }
 
