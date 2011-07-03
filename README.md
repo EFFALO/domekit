@@ -11,11 +11,12 @@ Domekit is a library and application for generating deodesic solids using JavaSc
 You will need Closure Script to build this project. There is a Ruby
 and a Java version of the Closure Script tool. Your choice.
 
-Ruby:
+**Ruby:**
+
     gem install closure
     rackup
 
-Java:
+**Java:**
 
 Download closure.jar into the domekit project directory from <https://github.com/dturnbull/closure-script/downloads>
 
@@ -25,11 +26,11 @@ Once you're up and running, browse to <http://localhost:8080/>
 
 # References
 
-Reference geodesic dome generation algorithms: http://www.antiprism.com/other/dome/index.html
+Reference geodesic dome generation algorithms: <http://www.antiprism.com/other/dome/index.html>
 
 # Collaborators
 
-* Michael Felix (@mfelix)
-* Andrew Kurtz (@ahk)
-* Robby Kraft (@robbykraft)
-* Ezra Spier (@ahhrrr)
+* Michael Felix [@mfelix](https://github.com/mfelix)
+* Andrew Kurtz [@ahk](https://github.com/ahk)
+* Robby Kraft [@robbykraft](https://github.com/robbykraft)
+* Ezra Spier [@ahhrrr](https://github.com/ahhrrr)
