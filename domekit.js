@@ -223,6 +223,38 @@ domekit.Controller.prototype.findNeighbors = function(index) {
   return neighbors;
 }
 
+domekit.Controller.prototype.findFaces = function() {
+  var faces = [];
+  var start = 0;
+  var second = 0;
+  var third = 0;
+  var triangle = 0;
+  for(var i = 0; i < this.connections.length; i++){
+    second = this.connections[i][1];
+    for(var j = 0; j < this.connections.length; j++){
+      if(this.connections[j][0] == second || this.connections[j][1] == second){
+        if (this.connections[j][0] == second){
+          third = this.connections[j][1];
+        }
+        else{
+          third = this.connections[j][0];
+        }
+        triangle = 0;
+        for (var k = 0; k < this.connections.length; k++){
+          if(this.connections[k][0] == third && this.connections[k][1] == this.connections[i][0]){
+            triangle = 1;
+          }
+          else if(this.connections[k][1] == third && this.connections[k][0] == this.connections[i][0]){
+            triangle = 1;
+          }
+        }
+        if (triangle == 1) faces.push([this.connections[i][0], second, third]);
+      }
+    }
+  }
+  return faces;
+}
+
 // v: divisions on one side of the largest triangle. valid inputs: 2, 4, 8
 domekit.Controller.prototype.subdivideTriangles = function(v) {
   var triangleDivisionLoops;
