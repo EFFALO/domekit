@@ -267,6 +267,24 @@ domekit.Controller.prototype.findFaces = function() {
     }
   }
 
+  // remove duplicates
+  // oh, javascript ...
+  var foundFace = {};
+  var dupsIndexes = [];
+  goog.array.forEach(faces, function(face, i) {
+    goog.array.sort(face)
+  })
+  goog.array.forEach(faces, function(face, i) {
+    if(foundFace[face]) {
+      dupsIndexes.push(i)
+    } else {
+      foundFace[face] = true;
+    }
+  })
+  goog.array.forEach(dupsIndexes, function(dupIndex) {
+    goog.array.removeAt(faces, dupIndex)
+  })
+
   return faces;
 }
 
