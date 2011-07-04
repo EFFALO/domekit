@@ -16,13 +16,18 @@ domekit.Point3D = function(x,y,z) {
 domekit.Controller = function(width, height, scale) {
   goog.base(this);
   this.context = null
-  this.clipDome = false;
+  this.clipDome = true;
   this.scale = scale || 0.9;
   this.pointSize = 4.0;
   this.points = [];
+  // index on points for visibility
+  // [i] == true if points[i] is visible
   this.visiblePoints = [];
   this.projectedPoints = [];
   this.connections = [];
+  // index on connections for visibility
+  // [i] == true if connections[i] contains only visible points
+  this.visibleConnections = [];
   this.width = width || 500;
   this.height = height || 500;
   this.maximumRadius = Math.min(this.width, this.height) / 2;
@@ -149,17 +154,22 @@ domekit.Controller.prototype.rotate = function(rotationAxis, rotationAngleInRadi
 domekit.Controller.prototype.projectPoints = function() {
   var xOffset = this.offsets['x'];
   var yOffset = this.offsets['y'];
-
-  var points = this.visiblePoints;
-  var projectedPoints = this.projectedPoints;
-  var point;
+  var newPoint;
+  var points = this.points;
+  this.projectedPoints = [];
 
   for(var i = 0; i < points.length; i++) {
-    point = projectedPoints[i] = new domekit.Point3D();
+    if (this.visiblePoints[i]) {
+      // visible points are projected
+      newPoint = this.projectedPoints[i] = new domekit.Point3D();
 
-    point['x'] = this.project(points[i]['x'], points[i]['z'], 2, .005, xOffset, this.scale);
-    point['y'] = this.project(points[i]['y'], points[i]['z'], 2, .005, yOffset, this.scale);
-    point['z'] = points[i]['z'];
+      newPoint['x'] = this.project(points[i]['x'], points[i]['z'], 2, .005, xOffset, this.scale);
+      newPoint['y'] = this.project(points[i]['y'], points[i]['z'], 2, .005, yOffset, this.scale);
+      newPoint['z'] = points[i]['z'];
+    } else {
+      // invisible points are null in the projection
+      this.projectedPoints[i] = null;
+    }
   }
 }
       
@@ -187,11 +197,18 @@ domekit.Controller.prototype.drawConnection = function(point1, point2, color) {
 domekit.Controller.prototype.drawFrame = function() {
   var projectedPoints = this.projectedPoints;
   var connections = this.connections;
+
   for(var i = 0; i < connections.length; i++) {
-    this.drawConnection(projectedPoints[connections[i][0]], projectedPoints[connections[i][1]], "rgb(10,200,30)");
+    // check connection visibility
+    if (this.visibleConnections[i]) {
+      this.drawConnection(projectedPoints[connections[i][0]], projectedPoints[connections[i][1]], "rgb(10,200,30)");
+    }
   }
   for(var i = 0; i < projectedPoints.length; i++) {
-    this.drawPoint(projectedPoints[i], this.pointSize, "rgb(150,0,200)");
+    // projection null when point invisible
+    if (projectedPoints[i]) {
+      this.drawPoint(projectedPoints[i], this.pointSize, "rgb(150,0,200)");
+    }
   }
 }
 
@@ -333,15 +350,32 @@ domekit.Controller.prototype.calculateMidpoint = function(point1, point2) {
   return (new domekit.Point3D(midpointX, midpointY, midpointZ));
 }
 
+domekit.Controller.prototype.connectionIdForPointId = function(pointId) {
+  var connId = goog.array.findIndex(this.connections, function(conn) {
+    return (conn[0] == pointId || conn[1] == pointId)
+  })
+  // findIndex returns -1 on miss
+  return (connId > -1) ? connId : null;
+}
+
 domekit.Controller.prototype.clipToVisiblePoints = function() {
+  // clip visibility below these values
   var zClip = 0;
   var yClip = -0.5;
+
+  // everything visible by default
+  this.visiblePoints = goog.array.repeat(true, this.points.length);
+  this.visibleConnections = goog.array.repeat(true, this.connections.length);
+
   if (this.clipDome) {
-    this.visiblePoints = goog.array.filter(this.points, function(point, i) {
-      return (point['y'] >= yClip) && (point['z'] >= zClip)
-    });
-  } else {
-    this.visiblePoints = this.points;
+    // black list visibility
+    goog.array.forEach(this.points, function(point, i) {
+      if ( (point['y'] < yClip) && (point['z'] < zClip) ) {
+        this.visiblePoints[i] = false;
+        var containingConn = this.connectionIdForPointId(i);
+        this.visibleConnections[containingConn] = false;
+      }
+    }, this);
   }
 }
 
