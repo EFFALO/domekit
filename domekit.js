@@ -362,7 +362,7 @@ domekit.Controller.prototype.connectionIdsForPointId = function(pointId) {
 domekit.Controller.prototype.clipToVisiblePoints = function() {
   // clip visibility below these values
   var zClip = 0;
-  var yClip = -0.5;
+  var yClip = 0.6;
 
   // everything visible by default
   this.visiblePoints = goog.array.repeat(true, this.points.length);
@@ -371,7 +371,7 @@ domekit.Controller.prototype.clipToVisiblePoints = function() {
   if (this.clipDome) {
     // black list visibility
     goog.array.forEach(this.points, function(point, i) {
-      if ( (point['y'] < yClip) && (point['z'] < zClip) ) {
+      if ( (point['y'] > yClip) || (point['z'] < zClip) ) {
         this.visiblePoints[i] = false;
         var containingConns = this.connectionIdsForPointId(i);
         goog.array.forEach(containingConns, function(connId,i) {
