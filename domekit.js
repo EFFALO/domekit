@@ -225,33 +225,66 @@ domekit.Controller.prototype.findNeighbors = function(index) {
 
 domekit.Controller.prototype.findFaces = function() {
   var faces = [];
-  var start = 0;
-  var second = 0;
-  var third = 0;
-  var triangle = 0;
-  for(var i = 0; i < this.connections.length; i++){
+  // points of a potential face
+  var first;
+  var second;
+  var third;
+  // flag: face triangle found!
+  var foundTriangle;
+  // used in search for last edge of triangle
+  var foundFirst;
+  var foundThird;
+
+  for (var i = 0; i < this.connections.length; i++) {
+    // grab both points from starting edge
+    first = this.connections[i][0];
     second = this.connections[i][1];
-    for(var j = 0; j < this.connections.length; j++){
-      if(this.connections[j][0] == second || this.connections[j][1] == second){
-        if (this.connections[j][0] == second){
-          third = this.connections[j][1];
+
+    for (var j = 0; j < this.connections.length; j++) {
+      // find a potential third point
+      if (this.connections[j][0] == second) {
+        third = this.connections[j][1];
+      } else if (this.connections[j][1] == second) {
+        third = this.connections[j][0];
+      } else {
+        third = null;
+      }
+
+      // don't keep looking if our third potential 
+      // is really just our first point
+      if (first === third) third = null;
+
+      if (third) {
+        foundTriangle = false;
+        // do the first and third points also connect?
+        for (var k = 0; k < this.connections.length; k++) {
+          var foundFirst = (this.connections[k].indexOf(first) > -1)
+          var foundThird = (this.connections[k].indexOf(third) > -1)
+          if (foundFirst && foundThird) foundTriangle = true;
         }
-        else{
-          third = this.connections[j][0];
-        }
-        triangle = 0;
-        for (var k = 0; k < this.connections.length; k++){
-          if(this.connections[k][0] == third && this.connections[k][1] == this.connections[i][0]){
-            triangle = 1;
-          }
-          else if(this.connections[k][1] == third && this.connections[k][0] == this.connections[i][0]){
-            triangle = 1;
-          }
-        }
-        if (triangle == 1) faces.push([this.connections[i][0], second, third]);
+        if (foundTriangle) faces.push([first, second, third]);
       }
     }
   }
+
+  // remove duplicates
+  // oh, javascript ...
+  var foundFace = {};
+  var dupsIndexes = [];
+  goog.array.forEach(faces, function(face, i) {
+    goog.array.sort(face)
+  })
+  goog.array.forEach(faces, function(face, i) {
+    if(foundFace[face]) {
+      dupsIndexes.push(i)
+    } else {
+      foundFace[face] = true;
+    }
+  })
+  goog.array.forEach(dupsIndexes, function(dupIndex) {
+    goog.array.removeAt(faces, dupIndex)
+  })
+
   return faces;
 }
 
