@@ -16,9 +16,11 @@ domekit.Point3D = function(x,y,z) {
 domekit.Controller = function(width, height, scale) {
   goog.base(this);
   this.context = null
+  this.clipDome = false;
   this.scale = scale || 0.9;
   this.pointSize = 4.0;
   this.points = [];
+  this.visiblePoints = [];
   this.projectedPoints = [];
   this.connections = [];
   this.width = width || 500;
@@ -59,6 +61,7 @@ domekit.Controller.prototype.enterDocument = function() {
   this.subdivideTriangles(2);
 
   var runloop = goog.bind(function() {
+    this.clipToVisiblePoints();
     this.projectPoints();
     this.clearCanvas();
     this.drawFrame();
@@ -147,7 +150,7 @@ domekit.Controller.prototype.projectPoints = function() {
   var xOffset = this.offsets['x'];
   var yOffset = this.offsets['y'];
 
-  var points = this.points;
+  var points = this.visiblePoints;
   var projectedPoints = this.projectedPoints;
   var point;
 
@@ -328,6 +331,18 @@ domekit.Controller.prototype.calculateMidpoint = function(point1, point2) {
   midpointY = (point2['y'] - point1['y']) / 2 + point1['y'];
   midpointZ = (point2['z'] - point1['z']) / 2 + point1['z'];
   return (new domekit.Point3D(midpointX, midpointY, midpointZ));
+}
+
+domekit.Controller.prototype.clipToVisiblePoints = function() {
+  var zClip = 0;
+  var yClip = -0.5;
+  if (this.clipDome) {
+    this.visiblePoints = goog.array.filter(this.points, function(point, i) {
+      return (point['y'] >= yClip) && (point['z'] >= zClip)
+    });
+  } else {
+    this.visiblePoints = this.points;
+  }
 }
 
 goog.exportSymbol('domekit.Controller', domekit.Controller)
