@@ -350,12 +350,13 @@ domekit.Controller.prototype.calculateMidpoint = function(point1, point2) {
   return (new domekit.Point3D(midpointX, midpointY, midpointZ));
 }
 
-domekit.Controller.prototype.connectionIdForPointId = function(pointId) {
-  var connId = goog.array.findIndex(this.connections, function(conn) {
-    return (conn[0] == pointId || conn[1] == pointId)
+domekit.Controller.prototype.connectionIdsForPointId = function(pointId) {
+  var connIds = [];
+  goog.array.forEach(this.connections, function(conn, connId) {
+    if (conn[0] == pointId || conn[1] == pointId) connIds.push(connId)
   })
   // findIndex returns -1 on miss
-  return (connId > -1) ? connId : null;
+  return connIds;
 }
 
 domekit.Controller.prototype.clipToVisiblePoints = function() {
@@ -372,8 +373,10 @@ domekit.Controller.prototype.clipToVisiblePoints = function() {
     goog.array.forEach(this.points, function(point, i) {
       if ( (point['y'] < yClip) && (point['z'] < zClip) ) {
         this.visiblePoints[i] = false;
-        var containingConn = this.connectionIdForPointId(i);
-        this.visibleConnections[containingConn] = false;
+        var containingConns = this.connectionIdsForPointId(i);
+        goog.array.forEach(containingConns, function(connId,i) {
+          this.visibleConnections[connId] = false;
+        },this)
       }
     }, this);
   }
