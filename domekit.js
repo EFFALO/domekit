@@ -61,6 +61,7 @@ domekit.Controller.prototype.enterDocument = function() {
 
   this.generatePoints();
   this.generateConnections();
+  this.rotate('z',5/9);
   // This has to happen after you've generated initial
   // points and connections
   this.subdivideTriangles(2);
@@ -119,6 +120,7 @@ domekit.Controller.prototype.generateConnections = function() {
 domekit.Controller.prototype.project = function(xy, z, zCameraOffset, zDepth, xyOffset, scale) {
   return xy / (z * zDepth + zCameraOffset) * (scale * this.maximumRadius) + xyOffset;
 }
+
 
 domekit.Controller.prototype.rotate = function(rotationAxis, rotationAngleInRadians) {
   var points = this.points;
@@ -311,12 +313,20 @@ domekit.Controller.prototype.findFaces = function() {
 // v: divisions on one side of the largest triangle. valid inputs: 2, 4, 8
 domekit.Controller.prototype.subdivideTriangles = function(v) {
   var triangleDivisionLoops;
+  var i, j;
+  var faces;
   if (v === 2) triangleDivisionLoops = 1;
   if (v === 4) triangleDivisionLoops = 2;
   if (v === 8) triangleDivisionLoops = 3;
+  faces = this.findFaces;
+  //console.log(faces.length);
+  //for(i = 0; i < faces.length; i++){
+  //  this.points[this.connections[faces[i][0]][0]]['x'];
+  //  this.points[this.connections[faces[i][0]][1]]['x'];
+  //}
 
-  for(var j = 0; j <= triangleDivisionLoops; j++) {
-    for(var i = 0; i < this.connections.length; i++) {
+  for(j = 0; j <= triangleDivisionLoops; j++) {
+    for(i = 0; i < this.connections.length; i++) {
       var point1 = this.points[ this.connections[i][0] ];
       var point2 = this.points[ this.connections[i][1] ];
       var newPoint = this.calculateMidpoint(point1, point2);
@@ -361,8 +371,8 @@ domekit.Controller.prototype.connectionIdsForPointId = function(pointId) {
 
 domekit.Controller.prototype.clipToVisiblePoints = function() {
   // clip visibility below these values
-  var zClip = 0;
-  var yClip = 0.6;
+  var zClip = -Math.PI/10;
+  var yClip = 0.1;
 
   // everything visible by default
   this.visiblePoints = goog.array.repeat(true, this.points.length);
@@ -379,6 +389,12 @@ domekit.Controller.prototype.clipToVisiblePoints = function() {
         },this)
       }
     }, this);
+    //Backwards: testing connections for visibility then making points invisible
+    /*for(var i=0;i<this.connections.length;i++){
+      if(this.points[this.connections[i][0]]['z']+this.points[this.connections[i][1]]['z'] < zClip) {
+        this.visibleConnections[i] = false;
+      }
+    }*/    
   }
 }
 
