@@ -1,5 +1,6 @@
 goog.provide('domekit.Demo');
 goog.require('goog.ui.Slider');
+goog.require('goog.events');
 
 /** @constructor */
 domekit.Demo = function () {
@@ -23,6 +24,16 @@ domekit.Demo = function () {
     // rotation in degrees converted to radians,
     // requirement of rotation function
     domekitController.rotate('y', rotation * (2*Math.PI)/sliderMax);
+  });
+
+  var domeButton = goog.dom.getElement('choose-a-dome');
+  goog.events.listen(domeButton, goog.events.EventType.CLICK, function() { 
+    domekitController.clipDome = true;
+  });
+
+  var sphereButton = goog.dom.getElement('choose-a-sphere');
+  goog.events.listen(sphereButton, goog.events.EventType.CLICK, function() { 
+    domekitController.clipDome = false;
   });
 }
 
