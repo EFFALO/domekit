@@ -17,6 +17,7 @@ domekit.Controller = function(width, height, scale) {
   goog.base(this);
   this.context = null
   this.clipDome = true;
+  this.clipZ = true;
   this.scale = scale || 0.9;
   this.pointSize = 4.0;
   this.points = [];
@@ -290,7 +291,6 @@ domekit.Controller.prototype.findFaces = function() {
   }
 
   // remove duplicates
-  // oh, javascript ...
   var foundFace = {};
   var dupsIndexes = [];
   goog.array.forEach(faces, function(face, i) {
@@ -319,11 +319,6 @@ domekit.Controller.prototype.subdivideTriangles = function(v) {
   if (v === 4) triangleDivisionLoops = 2;
   if (v === 8) triangleDivisionLoops = 3;
   faces = this.findFaces;
-  //console.log(faces.length);
-  //for(i = 0; i < faces.length; i++){
-  //  this.points[this.connections[faces[i][0]][0]]['x'];
-  //  this.points[this.connections[faces[i][0]][1]]['x'];
-  //}
 
   for(j = 0; j <= triangleDivisionLoops; j++) {
     for(i = 0; i < this.connections.length; i++) {
@@ -365,7 +360,6 @@ domekit.Controller.prototype.connectionIdsForPointId = function(pointId) {
   goog.array.forEach(this.connections, function(conn, connId) {
     if (conn[0] == pointId || conn[1] == pointId) connIds.push(connId)
   })
-  // findIndex returns -1 on miss
   return connIds;
 }
 
@@ -378,24 +372,18 @@ domekit.Controller.prototype.clipToVisiblePoints = function() {
   this.visiblePoints = goog.array.repeat(true, this.points.length);
   this.visibleConnections = goog.array.repeat(true, this.connections.length);
 
-  if (this.clipDome) {
-    // black list visibility
-    goog.array.forEach(this.points, function(point, i) {
-      if ( (point['y'] > yClip) || (point['z'] < zClip) ) {
-        this.visiblePoints[i] = false;
-        var containingConns = this.connectionIdsForPointId(i);
-        goog.array.forEach(containingConns, function(connId,i) {
-          this.visibleConnections[connId] = false;
-        },this)
-      }
-    }, this);
-    //Backwards: testing connections for visibility then making points invisible
-    /*for(var i=0;i<this.connections.length;i++){
-      if(this.points[this.connections[i][0]]['z']+this.points[this.connections[i][1]]['z'] < zClip) {
-        this.visibleConnections[i] = false;
-      }
-    }*/    
-  }
+  goog.array.forEach(this.points, function(point, i) {
+    // only clipY if we're drawing a dome
+    var shouldClipY = this.clipDome && point['y'] > yClip
+    var shouldClipZ = this.clipZ && point['z'] < zClip
+    if ( shouldClipY || shouldClipZ ) {
+      this.visiblePoints[i] = false;
+      var containingConns = this.connectionIdsForPointId(i);
+      goog.array.forEach(containingConns, function(connId,i) {
+        this.visibleConnections[connId] = false;
+      },this)
+    }
+  }, this);
 }
 
 goog.exportSymbol('domekit.Controller', domekit.Controller)

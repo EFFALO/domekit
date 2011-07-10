@@ -1,5 +1,6 @@
 goog.provide('domekit.Demo');
 goog.require('goog.ui.Slider');
+
 goog.require('goog.events');
 
 /** @constructor */
