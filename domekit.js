@@ -29,12 +29,15 @@ domekit.Controller = function(width, height, scale) {
   // index on connections for visibility
   // [i] == true if connections[i] contains only visible points
   this.visibleConnections = [];
-  this.width = width || 500;
-  this.height = height || 500;
-  this.maximumRadius = Math.min(this.width, this.height) / 2;
+  this.canvasWidth = width || 500;
+  this.canvasHeight = height || 500;
+
+  this.projectionWidth = this.canvasWidth;
+  this.projectionHeight = this.canvasHeight;
+  this.maximumRadius = Math.min(this.projectionWidth, this.projectionHeight) / 2;
   this.offsets = {
-    x : this.width / 2,
-    y : this.height / 2
+    x : this.projectionWidth / 2,
+    y : this.projectionHeight / 2
   };
 }
 goog.inherits(domekit.Controller, goog.ui.Component);
@@ -43,8 +46,8 @@ domekit.Controller.prototype.createDom = function() {
   goog.base(this, 'createDom');
   var canvas = goog.dom.createDom('canvas', {
     id     : 'domekit-visual-efforts',
-    width  : this.width,
-    height : this.height
+    width  : this.canvasWidth,
+    height : this.canvasHeight
   });
   this.setElementInternal(canvas);
 }
@@ -216,10 +219,7 @@ domekit.Controller.prototype.drawFrame = function() {
 }
 
 domekit.Controller.prototype.clearCanvas = function() {
-  var canvas = this.getElement();
-  var width = canvas.width;
-  var height = canvas.height;
-  this.context.clearRect(0, 0, width, height);
+  this.context.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
 }
 
 
