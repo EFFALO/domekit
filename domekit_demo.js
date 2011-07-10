@@ -29,12 +29,12 @@ domekit.Demo = function () {
 
   var domeButton = goog.dom.getElement('choose-a-dome');
   goog.events.listen(domeButton, goog.events.EventType.CLICK, function() { 
-    domekitController.clipDome = true;
+    domekitController.setDomeMode();
   });
 
   var sphereButton = goog.dom.getElement('choose-a-sphere');
   goog.events.listen(sphereButton, goog.events.EventType.CLICK, function() { 
-    domekitController.clipDome = false;
+    domekitController.setSphereMode();
   });
 }
 

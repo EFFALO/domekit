@@ -386,6 +386,16 @@ domekit.Controller.prototype.clipToVisiblePoints = function() {
   }, this);
 }
 
+domekit.Controller.prototype.setDomeMode = function() {
+  this.clipDome = true;
+  // scale
+}
+
+domekit.Controller.prototype.setSphereMode = function() {
+  this.clipDome = false;
+  // scale
+}
+
 goog.exportSymbol('domekit.Controller', domekit.Controller)
 goog.exportSymbol('domekit.Controller.prototype.render', domekit.Controller.prototype.render)
 goog.exportSymbol('domekit.Controller.prototype.rotate', domekit.Controller.prototype.rotate)
