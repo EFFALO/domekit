@@ -7,9 +7,9 @@ goog.require('goog.ui.Slider');
 
 /** @constructor */
 domekit.Point3D = function(x,y,z) {
-  this["x"] = x || 0.0;
-  this["y"] = y || 0.0;
-  this["z"] = z || 0.0;
+  this.x = x || 0.0;
+  this.y = y || 0.0;
+  this.z = z || 0.0;
 }
 
 /** @constructor */
@@ -65,7 +65,7 @@ domekit.Controller.prototype.enterDocument = function() {
 
   this.generatePoints();
   this.generateConnections();
-  this.rotate('z',5/9);
+  this.rotateZ(5/9);
   // This has to happen after you've generated initial
   // points and connections
   this.subdivideTriangles(2);
@@ -125,41 +125,55 @@ domekit.Controller.prototype.project = function(xy, z, zCameraOffset, zDepth, xy
   return xy / (z * zDepth + zCameraOffset) * (scale * this.maximumRadius) + xyOffset;
 }
 
-
-domekit.Controller.prototype.rotate = function(rotationAxis, rotationAngleInRadians) {
+domekit.Controller.prototype.rotateZ = function(rotationAngleInRadians) {
   var points = this.points;
   var point;
   var distance;
   var angle;
 
-  //how to name these better?
-  var axis1;
-  var axis2;
-
-  if (rotationAxis === 'x') {
-    axis1 = 'y';
-    axis2 = 'z';
-  } else if (rotationAxis === 'y') {
-    axis1 = 'x';
-    axis2 = 'z';
-  } else if (rotationAxis === 'z') {
-    axis1 = 'x';
-    axis2 = 'y';
-  }
-
   for(var i = 0; i < points.length; i++) {
     point = points[i];
-    distance = Math.sqrt(point[axis1] * point[axis1] + point[axis2] * point[axis2]);
-    angle = Math.atan2(point[axis1], point[axis2]) + rotationAngleInRadians;
-    point[axis1] = distance * Math.sin(angle);
-    point[axis2] = distance * Math.cos(angle);
+    distance = Math.sqrt(point.x * point.x + point.y * point.y);
+    angle = Math.atan2(point.x, point.y) + rotationAngleInRadians;
+    point.x = distance * Math.sin(angle);
+    point.y = distance * Math.cos(angle);
   }
 
 }
 
+domekit.Controller.prototype.rotateX = function(rotationAngleInRadians) {
+  var points = this.points;
+  var point;
+  var distance;
+  var angle;
+
+  for(var i = 0; i < points.length; i++) {
+    point = points[i];
+    distance = Math.sqrt(point.y * point.y + point.z * point.z);
+    angle = Math.atan2(point.y, point.z) + rotationAngleInRadians;
+    point.y = distance * Math.sin(angle);
+    point.z = distance * Math.cos(angle);
+  }
+}
+
+domekit.Controller.prototype.rotateY = function(rotationAngleInRadians) {
+  var points = this.points;
+  var point;
+  var distance;
+  var angle;
+
+  for(var i = 0; i < points.length; i++) {
+    point = points[i];
+    distance = Math.sqrt(point.x * point.x + point.z * point.z);
+    angle = Math.atan2(point.x, point.z) + rotationAngleInRadians;
+    point.x = distance * Math.sin(angle);
+    point.z = distance * Math.cos(angle);
+  }
+}
+
 domekit.Controller.prototype.projectPoints = function() {
-  var xOffset = this.offsets['x'];
-  var yOffset = this.offsets['y'];
+  var xOffset = this.offsets.x;
+  var yOffset = this.offsets.y;
   var newPoint;
   var points = this.points;
   this.projectedPoints = [];
@@ -169,9 +183,9 @@ domekit.Controller.prototype.projectPoints = function() {
       // visible points are projected
       newPoint = this.projectedPoints[i] = new domekit.Point3D();
 
-      newPoint['x'] = this.project(points[i]['x'], points[i]['z'], 2, .005, xOffset, this.scale);
-      newPoint['y'] = this.project(points[i]['y'], points[i]['z'], 2, .005, yOffset, this.scale);
-      newPoint['z'] = points[i]['z'];
+      newPoint.x = this.project(points[i].x, points[i].z, 2, .005, xOffset, this.scale);
+      newPoint.y = this.project(points[i].y, points[i].z, 2, .005, yOffset, this.scale);
+      newPoint.z = points[i].z;
     } else {
       // invisible points are null in the projection
       this.projectedPoints[i] = null;
@@ -183,7 +197,7 @@ domekit.Controller.prototype.drawPoint = function(point, size, color) {
   this.context.save();
   this.context.beginPath();
   this.context.fillStyle = color;
-  this.context.arc(point['x'], point['y'], size, 0.0, 2*Math.PI, true);
+  this.context.arc(point.x, point.y, size, 0.0, 2*Math.PI, true);
   this.context.fill();
   this.context.closePath();
   this.context.restore();
@@ -193,8 +207,8 @@ domekit.Controller.prototype.drawConnection = function(point1, point2, color) {
   this.context.save();
   this.context.beginPath();
   this.context.strokeStyle = color;
-  this.context.moveTo(point1['x'], point1['y']);
-  this.context.lineTo(point2['x'], point2['y']);
+  this.context.moveTo(point1.x, point1.y);
+  this.context.lineTo(point2.x, point2.y);
   this.context.stroke();
   this.context.closePath();
   this.context.restore();
@@ -231,14 +245,14 @@ domekit.Controller.prototype.findNeighbors = function(index) {
 
   for(var i = 0; i < this.points.length; i++) {
     if(i != index) {
-      current = Math.sqrt( ((points[i]['x']-points[index]['x'])*(points[i]['x']-points[index]['x'])) + ((points[i]['y']-points[index]['y'])*(points[i]['y']-points[index]['y'])) + ((points[i]['z']-points[index]['z'])*(points[i]['z']-points[index]['z'])) );
+      current = Math.sqrt( ((points[i].x-points[index].x)*(points[i].x-points[index].x)) + ((points[i].y-points[index].y)*(points[i].y-points[index].y)) + ((points[i].z-points[index].z)*(points[i].z-points[index].z)) );
       current+=.00000002;
       if (current < closest) closest = current;
     }
   }
   for(i = 0; i < this.points.length; i++){
     if (i != index){
-      current = Math.sqrt( ((points[i]['x']-points[index]['x'])*(points[i]['x']-points[index]['x'])) + ((points[i]['y']-points[index]['y'])*(points[i]['y']-points[index]['y'])) + ((points[i]['z']-points[index]['z'])*(points[i]['z']-points[index]['z'])) );
+      current = Math.sqrt( ((points[i].x-points[index].x)*(points[i].x-points[index].x)) + ((points[i].y-points[index].y)*(points[i].y-points[index].y)) + ((points[i].z-points[index].z)*(points[i].z-points[index].z)) );
       current+=.00000002;
       if(Math.floor(current*10000.0) == Math.floor(closest*10000.0)) neighbors.push(i);
     }
@@ -335,23 +349,23 @@ domekit.Controller.prototype.subdivideTriangles = function(v) {
   var difference;
 
   for(i = 0; i < this.points.length; i++) {
-    distance = Math.sqrt(this.points[i]['x'] * this.points[i]['x'] + this.points[i]['y'] * this.points[i]['y'] + this.points[i]['z'] * this.points[i]['z']);
+    distance = Math.sqrt(this.points[i].x * this.points[i].x + this.points[i].y * this.points[i].y + this.points[i].z * this.points[i].z);
     if (distance > maxdistance) maxdistance = distance;
   }
 
   for(i = 0; i < this.points.length; i++) {
-    distance = Math.sqrt(this.points[i]['x'] * this.points[i]['x'] + this.points[i]['y'] * this.points[i]['y'] + this.points[i]['z'] * this.points[i]['z']);
+    distance = Math.sqrt(this.points[i].x * this.points[i].x + this.points[i].y * this.points[i].y + this.points[i].z * this.points[i].z);
     difference = maxdistance / distance;
-    this.points[i]['x'] *= difference;
-    this.points[i]['y'] *= difference;
-    this.points[i]['z'] *= difference;
+    this.points[i].x *= difference;
+    this.points[i].y *= difference;
+    this.points[i].z *= difference;
   }
 }
 
 domekit.Controller.prototype.calculateMidpoint = function(point1, point2) {
-  midpointX = (point2['x'] - point1['x']) / 2 + point1['x'];
-  midpointY = (point2['y'] - point1['y']) / 2 + point1['y'];
-  midpointZ = (point2['z'] - point1['z']) / 2 + point1['z'];
+  midpointX = (point2.x - point1.x) / 2 + point1.x;
+  midpointY = (point2.y - point1.y) / 2 + point1.y;
+  midpointZ = (point2.z - point1.z) / 2 + point1.z;
   return (new domekit.Point3D(midpointX, midpointY, midpointZ));
 }
 
@@ -374,8 +388,8 @@ domekit.Controller.prototype.clipToVisiblePoints = function() {
 
   goog.array.forEach(this.points, function(point, i) {
     // only clipY if we're drawing a dome
-    var shouldClipY = this.clipDome && point['y'] > yClip
-    var shouldClipZ = this.clipZ && point['z'] < zClip
+    var shouldClipY = this.clipDome && point.y > yClip
+    var shouldClipZ = this.clipZ && point.z < zClip
     if ( shouldClipY || shouldClipZ ) {
       this.visiblePoints[i] = false;
       var containingConns = this.connectionIdsForPointId(i);

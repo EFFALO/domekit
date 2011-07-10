@@ -24,7 +24,7 @@ domekit.Demo = function () {
     sliderVal = newVal;
     // rotation in degrees converted to radians,
     // requirement of rotation function
-    domekitController.rotate('y', rotation * (2*Math.PI)/sliderMax);
+    domekitController.rotateY(rotation * (2*Math.PI)/sliderMax);
   });
 
   var domeButton = goog.dom.getElement('choose-a-dome');
