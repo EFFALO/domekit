@@ -15,29 +15,29 @@ domekit.Point3D = function(x,y,z) {
 /** @constructor */
 domekit.Controller = function(width, height, scale) {
   goog.base(this);
-  this.context = null
-  this.clipDome = true;
-  this.clipZ = true;
-  this.scale = scale || 0.9;
-  this.pointSize = 4.0;
-  this.points = [];
+  this.context_ = null
+  this.clipDome_ = true;
+  this.clipZ_ = true;
+  this.scale_ = scale || 0.9;
+  this.pointSize_ = 4.0;
+  this.points_ = [];
   // index on points for visibility
   // [i] == true if points[i] is visible
-  this.visiblePoints = [];
-  this.projectedPoints = [];
-  this.connections = [];
+  this.visiblePoints_ = [];
+  this.projectedPoints_ = [];
+  this.connections_ = [];
   // index on connections for visibility
   // [i] == true if connections[i] contains only visible points
-  this.visibleConnections = [];
-  this.canvasWidth = width || 500;
-  this.canvasHeight = height || 500;
+  this.visibleConnections_ = [];
+  this.canvasWidth_ = width || 500;
+  this.canvasHeight_ = height || 500;
 
-  this.projectionWidth = this.canvasWidth;
-  this.projectionHeight = this.canvasHeight;
-  this.maximumRadius = Math.min(this.projectionWidth, this.projectionHeight) / 2;
+  this.projectionWidth_ = this.canvasWidth_;
+  this.projectionHeight_ = this.canvasHeight_;
+  this.maximumRadius_ = Math.min(this.projectionWidth_, this.projectionHeight_) / 2;
   this.offsets = {
-    x : this.projectionWidth / 2,
-    y : this.projectionHeight / 2
+    x : this.projectionWidth_ / 2,
+    y : this.projectionHeight_ / 2
   };
 }
 goog.inherits(domekit.Controller, goog.ui.Component);
@@ -46,8 +46,8 @@ domekit.Controller.prototype.createDom = function() {
   goog.base(this, 'createDom');
   var canvas = goog.dom.createDom('canvas', {
     id     : 'domekit-visual-efforts',
-    width  : this.canvasWidth,
-    height : this.canvasHeight
+    width  : this.canvasWidth_,
+    height : this.canvasHeight_
   });
   this.setElementInternal(canvas);
 }
@@ -58,7 +58,7 @@ domekit.Controller.prototype.enterDocument = function() {
   var canvas = this.getElement();
 
   if(canvas.getContext){
-    this.context = canvas.getContext('2d');
+    this.context_ = canvas.getContext('2d');
   } else {
     throw new Error(canvas.innerHTML);
   }
@@ -82,25 +82,25 @@ domekit.Controller.prototype.enterDocument = function() {
 domekit.Controller.prototype.generatePoints = function() {
   var phi = (1 + Math.sqrt(5)) / 2;
 
-  this.points.push(new domekit.Point3D(0, 1, phi));
-  this.points.push(new domekit.Point3D(0, -1, phi));
-  this.points.push(new domekit.Point3D(0, -1, -phi));
-  this.points.push(new domekit.Point3D(0, 1, -phi));
-  this.points.push(new domekit.Point3D(phi, 0, 1));
-  this.points.push(new domekit.Point3D(-phi, 0, 1));
-  this.points.push(new domekit.Point3D(-phi, 0, -1));
-  this.points.push(new domekit.Point3D(phi, 0, -1));
-  this.points.push(new domekit.Point3D(1, phi, 0));
-  this.points.push(new domekit.Point3D(-1, phi, 0));
-  this.points.push(new domekit.Point3D(-1, -phi, 0));
-  this.points.push(new domekit.Point3D(1, -phi, 0));
+  this.points_.push(new domekit.Point3D(0, 1, phi));
+  this.points_.push(new domekit.Point3D(0, -1, phi));
+  this.points_.push(new domekit.Point3D(0, -1, -phi));
+  this.points_.push(new domekit.Point3D(0, 1, -phi));
+  this.points_.push(new domekit.Point3D(phi, 0, 1));
+  this.points_.push(new domekit.Point3D(-phi, 0, 1));
+  this.points_.push(new domekit.Point3D(-phi, 0, -1));
+  this.points_.push(new domekit.Point3D(phi, 0, -1));
+  this.points_.push(new domekit.Point3D(1, phi, 0));
+  this.points_.push(new domekit.Point3D(-1, phi, 0));
+  this.points_.push(new domekit.Point3D(-1, -phi, 0));
+  this.points_.push(new domekit.Point3D(1, -phi, 0));
 }
 
 domekit.Controller.prototype.generateConnections = function() {
   var connections = [];
   var neighbors = [];
   var i,j;
-  for(i=0;i<this.points.length;i++){
+  for(i=0;i<this.points_.length;i++){
     neighbors = this.findNeighbors(i);
     for(j=0;j<neighbors.length;j++) connections.push([i,neighbors[j]]);
   }
@@ -111,7 +111,7 @@ domekit.Controller.prototype.generateConnections = function() {
       if(neighbors[0] == connections[j][1] && neighbors[1] == connections[j][0]) connections.splice(j,1);
     }
   }
-  this.connections = connections;
+  this.connections_ = connections;
 }
 
 
@@ -122,11 +122,13 @@ domekit.Controller.prototype.generateConnections = function() {
 // xyOffset: offset to translate projected value to canvas origin
 // scale: canvas size scale relative to maximum
 domekit.Controller.prototype.project = function(xy, z, zCameraOffset, zDepth, xyOffset, scale) {
-  return xy / (z * zDepth + zCameraOffset) * (scale * this.maximumRadius) + xyOffset;
+  return xy / (z * zDepth + zCameraOffset) * (scale * this.maximumRadius_) + xyOffset;
 }
 
+// TODO: The only differences between the three rotate functions are the axes used in the calculations. 
+// Consider how to make these functions DRY.
 domekit.Controller.prototype.rotateZ = function(rotationAngleInRadians) {
-  var points = this.points;
+  var points = this.points_;
   var point;
   var distance;
   var angle;
@@ -142,7 +144,7 @@ domekit.Controller.prototype.rotateZ = function(rotationAngleInRadians) {
 }
 
 domekit.Controller.prototype.rotateX = function(rotationAngleInRadians) {
-  var points = this.points;
+  var points = this.points_;
   var point;
   var distance;
   var angle;
@@ -157,7 +159,7 @@ domekit.Controller.prototype.rotateX = function(rotationAngleInRadians) {
 }
 
 domekit.Controller.prototype.rotateY = function(rotationAngleInRadians) {
-  var points = this.points;
+  var points = this.points_;
   var point;
   var distance;
   var angle;
@@ -175,65 +177,65 @@ domekit.Controller.prototype.projectPoints = function() {
   var xOffset = this.offsets.x;
   var yOffset = this.offsets.y;
   var newPoint;
-  var points = this.points;
-  this.projectedPoints = [];
+  var points = this.points_;
+  this.projectedPoints_ = [];
 
   for(var i = 0; i < points.length; i++) {
-    if (this.visiblePoints[i]) {
+    if (this.visiblePoints_[i]) {
       // visible points are projected
-      newPoint = this.projectedPoints[i] = new domekit.Point3D();
+      newPoint = this.projectedPoints_[i] = new domekit.Point3D();
 
-      newPoint.x = this.project(points[i].x, points[i].z, 2, .005, xOffset, this.scale);
-      newPoint.y = this.project(points[i].y, points[i].z, 2, .005, yOffset, this.scale);
+      newPoint.x = this.project(points[i].x, points[i].z, 2, .005, xOffset, this.scale_);
+      newPoint.y = this.project(points[i].y, points[i].z, 2, .005, yOffset, this.scale_);
       newPoint.z = points[i].z;
     } else {
       // invisible points are null in the projection
-      this.projectedPoints[i] = null;
+      this.projectedPoints_[i] = null;
     }
   }
 }
       
 domekit.Controller.prototype.drawPoint = function(point, size, color) {
-  this.context.save();
-  this.context.beginPath();
-  this.context.fillStyle = color;
-  this.context.arc(point.x, point.y, size, 0.0, 2*Math.PI, true);
-  this.context.fill();
-  this.context.closePath();
-  this.context.restore();
+  this.context_.save();
+  this.context_.beginPath();
+  this.context_.fillStyle = color;
+  this.context_.arc(point.x, point.y, size, 0.0, 2*Math.PI, true);
+  this.context_.fill();
+  this.context_.closePath();
+  this.context_.restore();
 }
 
 domekit.Controller.prototype.drawConnection = function(point1, point2, color) {
-  this.context.save();
-  this.context.beginPath();
-  this.context.strokeStyle = color;
-  this.context.moveTo(point1.x, point1.y);
-  this.context.lineTo(point2.x, point2.y);
-  this.context.stroke();
-  this.context.closePath();
-  this.context.restore();
+  this.context_.save();
+  this.context_.beginPath();
+  this.context_.strokeStyle = color;
+  this.context_.moveTo(point1.x, point1.y);
+  this.context_.lineTo(point2.x, point2.y);
+  this.context_.stroke();
+  this.context_.closePath();
+  this.context_.restore();
 }
 
 domekit.Controller.prototype.drawFrame = function() {
-  var projectedPoints = this.projectedPoints;
-  var connections = this.connections;
+  var projectedPoints = this.projectedPoints_;
+  var connections = this.connections_;
 
   for(var i = 0; i < connections.length; i++) {
     // check connection visibility
-    if (this.visibleConnections[i]) {
+    if (this.visibleConnections_[i]) {
       this.drawConnection(projectedPoints[connections[i][0]], projectedPoints[connections[i][1]], "rgb(10,200,30)");
     }
   }
   for(var i = 0; i < projectedPoints.length; i++) {
     // projection null when point invisible
     if (projectedPoints[i]) {
-      this.drawPoint(projectedPoints[i], this.pointSize, "rgb(150,0,200)");
+      this.drawPoint(projectedPoints[i], this.pointSize_, "rgb(150,0,200)");
     }
   }
 }
 
 domekit.Controller.prototype.clearCanvas = function() {
-  this.context.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+  this.context_.clearRect(0, 0, this.canvasWidth_, this.canvasHeight_);
 }
 
 
@@ -241,16 +243,16 @@ domekit.Controller.prototype.findNeighbors = function(index) {
   var neighbors = [];
   var current;
   var closest = 100000.0;  //Far out, man
-  var points = this.points;
+  var points = this.points_;
 
-  for(var i = 0; i < this.points.length; i++) {
+  for(var i = 0; i < this.points_.length; i++) {
     if(i != index) {
       current = Math.sqrt( ((points[i].x-points[index].x)*(points[i].x-points[index].x)) + ((points[i].y-points[index].y)*(points[i].y-points[index].y)) + ((points[i].z-points[index].z)*(points[i].z-points[index].z)) );
       current+=.00000002;
       if (current < closest) closest = current;
     }
   }
-  for(i = 0; i < this.points.length; i++){
+  for(i = 0; i < this.points_.length; i++){
     if (i != index){
       current = Math.sqrt( ((points[i].x-points[index].x)*(points[i].x-points[index].x)) + ((points[i].y-points[index].y)*(points[i].y-points[index].y)) + ((points[i].z-points[index].z)*(points[i].z-points[index].z)) );
       current+=.00000002;
@@ -272,17 +274,17 @@ domekit.Controller.prototype.findFaces = function() {
   var foundFirst;
   var foundThird;
 
-  for (var i = 0; i < this.connections.length; i++) {
+  for (var i = 0; i < this.connections_.length; i++) {
     // grab both points from starting edge
-    first = this.connections[i][0];
-    second = this.connections[i][1];
+    first = this.connections_[i][0];
+    second = this.connections_[i][1];
 
-    for (var j = 0; j < this.connections.length; j++) {
+    for (var j = 0; j < this.connections_.length; j++) {
       // find a potential third point
-      if (this.connections[j][0] == second) {
-        third = this.connections[j][1];
-      } else if (this.connections[j][1] == second) {
-        third = this.connections[j][0];
+      if (this.connections_[j][0] == second) {
+        third = this.connections_[j][1];
+      } else if (this.connections_[j][1] == second) {
+        third = this.connections_[j][0];
       } else {
         third = null;
       }
@@ -294,9 +296,9 @@ domekit.Controller.prototype.findFaces = function() {
       if (third) {
         foundTriangle = false;
         // do the first and third points also connect?
-        for (var k = 0; k < this.connections.length; k++) {
-          var foundFirst = (this.connections[k].indexOf(first) > -1)
-          var foundThird = (this.connections[k].indexOf(third) > -1)
+        for (var k = 0; k < this.connections_.length; k++) {
+          var foundFirst = (this.connections_[k].indexOf(first) > -1)
+          var foundThird = (this.connections_[k].indexOf(third) > -1)
           if (foundFirst && foundThird) foundTriangle = true;
         }
         if (foundTriangle) faces.push([first, second, third]);
@@ -335,11 +337,11 @@ domekit.Controller.prototype.subdivideTriangles = function(v) {
   faces = this.findFaces;
 
   for(j = 0; j <= triangleDivisionLoops; j++) {
-    for(i = 0; i < this.connections.length; i++) {
-      var point1 = this.points[ this.connections[i][0] ];
-      var point2 = this.points[ this.connections[i][1] ];
+    for(i = 0; i < this.connections_.length; i++) {
+      var point1 = this.points_[ this.connections_[i][0] ];
+      var point2 = this.points_[ this.connections_[i][1] ];
       var newPoint = this.calculateMidpoint(point1, point2);
-      this.points.push(newPoint);
+      this.points_.push(newPoint);
     }
     this.generateConnections();
   }
@@ -348,17 +350,17 @@ domekit.Controller.prototype.subdivideTriangles = function(v) {
   var maxdistance = 0;
   var difference;
 
-  for(i = 0; i < this.points.length; i++) {
-    distance = Math.sqrt(this.points[i].x * this.points[i].x + this.points[i].y * this.points[i].y + this.points[i].z * this.points[i].z);
+  for(i = 0; i < this.points_.length; i++) {
+    distance = Math.sqrt(this.points_[i].x * this.points_[i].x + this.points_[i].y * this.points_[i].y + this.points_[i].z * this.points_[i].z);
     if (distance > maxdistance) maxdistance = distance;
   }
 
-  for(i = 0; i < this.points.length; i++) {
-    distance = Math.sqrt(this.points[i].x * this.points[i].x + this.points[i].y * this.points[i].y + this.points[i].z * this.points[i].z);
+  for(i = 0; i < this.points_.length; i++) {
+    distance = Math.sqrt(this.points_[i].x * this.points_[i].x + this.points_[i].y * this.points_[i].y + this.points_[i].z * this.points_[i].z);
     difference = maxdistance / distance;
-    this.points[i].x *= difference;
-    this.points[i].y *= difference;
-    this.points[i].z *= difference;
+    this.points_[i].x *= difference;
+    this.points_[i].y *= difference;
+    this.points_[i].z *= difference;
   }
 }
 
@@ -371,7 +373,7 @@ domekit.Controller.prototype.calculateMidpoint = function(point1, point2) {
 
 domekit.Controller.prototype.connectionIdsForPointId = function(pointId) {
   var connIds = [];
-  goog.array.forEach(this.connections, function(conn, connId) {
+  goog.array.forEach(this.connections_, function(conn, connId) {
     if (conn[0] == pointId || conn[1] == pointId) connIds.push(connId)
   })
   return connIds;
@@ -383,30 +385,30 @@ domekit.Controller.prototype.clipToVisiblePoints = function() {
   var yClip = 0.1;
 
   // everything visible by default
-  this.visiblePoints = goog.array.repeat(true, this.points.length);
-  this.visibleConnections = goog.array.repeat(true, this.connections.length);
+  this.visiblePoints_ = goog.array.repeat(true, this.points_.length);
+  this.visibleConnections_ = goog.array.repeat(true, this.connections_.length);
 
-  goog.array.forEach(this.points, function(point, i) {
+  goog.array.forEach(this.points_, function(point, i) {
     // only clipY if we're drawing a dome
-    var shouldClipY = this.clipDome && point.y > yClip
-    var shouldClipZ = this.clipZ && point.z < zClip
+    var shouldClipY = this.clipDome_ && point.y > yClip
+    var shouldClipZ = this.clipZ_ && point.z < zClip
     if ( shouldClipY || shouldClipZ ) {
-      this.visiblePoints[i] = false;
+      this.visiblePoints_[i] = false;
       var containingConns = this.connectionIdsForPointId(i);
       goog.array.forEach(containingConns, function(connId,i) {
-        this.visibleConnections[connId] = false;
+        this.visibleConnections_[connId] = false;
       },this)
     }
   }, this);
 }
 
 domekit.Controller.prototype.setDomeMode = function() {
-  this.clipDome = true;
+  this.clipDome_ = true;
   // scale
 }
 
 domekit.Controller.prototype.setSphereMode = function() {
-  this.clipDome = false;
+  this.clipDome_ = false;
   // scale
 }
 
