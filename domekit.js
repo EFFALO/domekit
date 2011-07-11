@@ -330,11 +330,10 @@ domekit.Controller.prototype.findFaces = function() {
 domekit.Controller.prototype.subdivideTriangles = function(v) {
   var triangleDivisionLoops;
   var i, j;
-  var faces;
+
   if (v === 2) triangleDivisionLoops = 1;
   if (v === 4) triangleDivisionLoops = 2;
   if (v === 8) triangleDivisionLoops = 3;
-  faces = this.findFaces;
 
   for(j = 0; j <= triangleDivisionLoops; j++) {
     for(i = 0; i < this.connections_.length; i++) {
@@ -365,9 +364,9 @@ domekit.Controller.prototype.subdivideTriangles = function(v) {
 }
 
 domekit.Controller.prototype.calculateMidpoint = function(point1, point2) {
-  midpointX = (point2.x - point1.x) / 2 + point1.x;
-  midpointY = (point2.y - point1.y) / 2 + point1.y;
-  midpointZ = (point2.z - point1.z) / 2 + point1.z;
+  var midpointX = (point2.x - point1.x) / 2 + point1.x;
+  var midpointY = (point2.y - point1.y) / 2 + point1.y;
+  var midpointZ = (point2.z - point1.z) / 2 + point1.z;
   return (new domekit.Point3D(midpointX, midpointY, midpointZ));
 }
 
@@ -383,18 +382,19 @@ domekit.Controller.prototype.clipToVisiblePoints = function() {
   // clip visibility below these values
   var zClip = -Math.PI/10;
   var yClip = 0.1;
+  var shouldClipZ, shouldClipY;
+  var containingConns;
 
   // everything visible by default
   this.visiblePoints_ = goog.array.repeat(true, this.points_.length);
   this.visibleConnections_ = goog.array.repeat(true, this.connections_.length);
 
   goog.array.forEach(this.points_, function(point, i) {
-    // only clipY if we're drawing a dome
-    var shouldClipY = this.clipDome_ && point.y > yClip
-    var shouldClipZ = this.clipZ_ && point.z < zClip
+    shouldClipY = this.clipDome_ && point.y > yClip
+    shouldClipZ = this.clipZ_ && point.z < zClip
     if ( shouldClipY || shouldClipZ ) {
       this.visiblePoints_[i] = false;
-      var containingConns = this.connectionIdsForPointId(i);
+      containingConns = this.connectionIdsForPointId(i);
       goog.array.forEach(containingConns, function(connId,i) {
         this.visibleConnections_[connId] = false;
       },this)
