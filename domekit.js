@@ -26,6 +26,7 @@ domekit.Controller = function(width, height, scale) {
   this.visiblePoints_ = [];
   this.projectedPoints_ = [];
   this.connections_ = [];
+  this.faces_ = [];
   // index on connections for visibility
   // [i] == true if connections[i] contains only visible points
   this.visibleConnections_ = [];
@@ -69,7 +70,8 @@ domekit.Controller.prototype.enterDocument = function() {
   // This has to happen after you've generated initial
   // points and connections
   this.subdivideTriangles(2);
-
+  //this.divideTriangles(3);
+  
   var runloop = goog.bind(function() {
     this.clipToVisiblePoints();
     this.projectPoints();
@@ -305,7 +307,11 @@ domekit.Controller.prototype.findFaces = function() {
       }
     }
   }
-
+  console.log("TOTAL CONXS: ",this.connections_.length);
+  console.log("TOTAL FACES: ",faces.length);
+  for(i = 0; i < faces.length; i++){
+    console.log("face: ", faces[i][0], " ", faces[i][1], " ", faces[i][2]);
+  }
   // remove duplicates
   var foundFace = {};
   var dupsIndexes = [];
@@ -322,8 +328,57 @@ domekit.Controller.prototype.findFaces = function() {
   goog.array.forEach(dupsIndexes, function(dupIndex) {
     goog.array.removeAt(faces, dupIndex)
   })
+  console.log("TOTAL FACES: ",faces.length);
+  for(i = 0; i < faces.length; i++){
+    console.log("face: ", faces[i][0], " ", faces[i][1], " ", faces[i][2]);
+  }
 
   return faces;
+}
+
+
+domekit.Controller.prototype.divideTriangles = function(v) {
+  this.faces_ = this.findFaces();
+  var pointA;
+  var pointB;
+  var pointC;
+  var cax, cay, caz, bax, bay, baz;
+  var i, j, k;
+  var newPoint = new domekit.Point3D();
+
+  for(i = 0; i < this.faces_.length; i++)
+  {
+    console.log(this.faces_[i][0]);
+    //isolate the three points of each face
+    pointA = this.connections_[ this.faces_[i][0] ][0];
+    pointB = this.connections_[ this.faces_[i][0] ][1];
+    pointC = this.connections_[ this.faces_[i][1] ][0];
+    //may need heuristic comparison here
+    if(pointC == pointA || pointC == pointB){
+      pointC = this.connections_[ this.faces_[i][1] ][1]; }
+    if(pointC == pointA || pointC == pointB){ console.log("rewrite this bit");}
+    
+    //little foot
+    cax = (this.points_[pointC].x - this.points_[pointA].x)/v;
+    cay = (this.points_[pointC].y - this.points_[pointA].y)/v;
+    caz = (this.points_[pointC].z - this.points_[pointA].z)/v;
+    bax = (this.points_[pointB].x - this.points_[pointA].x)/v;
+    bay = (this.points_[pointB].y - this.points_[pointA].y)/v;
+    baz = (this.points_[pointB].z - this.points_[pointA].z)/v;
+    
+    for (j = 0; j <= v; j++){
+      for (k = j; k <= v; k++){
+        //skip the three points we already have
+        if ( !( (j == 0 && k == 0) || (j == 0 && k == v) || (j == v && k == v) )){
+          //fill the interior with points
+          newPoint.x = this.points_[pointA].x + i*bax + k*cax;
+          newPoint.y = this.points_[pointA].y + i*bay + k*cay;
+          newPoint.z = this.points_[pointA].z + i*baz + k*caz;
+          this.points_.push(newPoint);
+        }
+      }
+    }
+  }
 }
 
 // v: divisions on one side of the largest triangle. valid inputs: 2, 4, 8
