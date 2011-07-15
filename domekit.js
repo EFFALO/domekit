@@ -33,13 +33,7 @@ domekit.Controller = function(width, height, scale) {
   this.canvasWidth_ = width || 500;
   this.canvasHeight_ = height || 500;
 
-  this.projectionWidth_ = this.canvasWidth_;
-  this.projectionHeight_ = this.canvasHeight_;
-  this.maximumRadius_ = Math.min(this.projectionWidth_, this.projectionHeight_) / 2;
-  this.offsets = {
-    x : this.projectionWidth_ / 2,
-    y : this.projectionHeight_ / 2
-  };
+  this.calculateProjectionDimensions();
 }
 goog.inherits(domekit.Controller, goog.ui.Component);
 
@@ -459,12 +453,33 @@ domekit.Controller.prototype.clipToVisiblePoints = function() {
 
 domekit.Controller.prototype.setDomeMode = function() {
   this.clipDome_ = true;
-  // scale
+  this.calculateProjectionDimensions();
 }
 
 domekit.Controller.prototype.setSphereMode = function() {
   this.clipDome_ = false;
-  // scale
+  this.calculateProjectionDimensions();
+}
+
+domekit.Controller.prototype.calculateProjectionDimensions = function() {
+  this.projectionWidth_ = this.canvasWidth_;
+  this.projectionHeight_ = this.canvasHeight_;
+
+  if (this.clipDome_) {
+    this.maximumRadius_ = Math.min(this.canvasWidth_, this.canvasHeight_);
+    this.offsets = {
+      x : this.projectionWidth_ / 2,
+      y : this.projectionHeight_
+    };
+  } else {
+    this.maximumRadius_ = Math.min(this.canvasWidth_, this.canvasHeight_) / 2;
+    this.offsets = {
+      x : this.projectionWidth_ / 2,
+      y : this.projectionHeight_ / 2
+    };
+  }
+
+
 }
 
 goog.exportSymbol('domekit.Controller', domekit.Controller)
