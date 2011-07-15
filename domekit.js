@@ -269,64 +269,56 @@ domekit.Controller.prototype.findFaces = function() {
   // used in search for last edge of triangle
   var foundFirst;
   var foundThird;
-
   for (var i = 0; i < this.connections_.length; i++) {
     // grab both points from starting edge
     first = this.connections_[i][0];
     second = this.connections_[i][1];
-
     for (var j = 0; j < this.connections_.length; j++) {
       // find a potential third point
-      if (this.connections_[j][0] == second) {
-        third = this.connections_[j][1];
-      } else if (this.connections_[j][1] == second) {
-        third = this.connections_[j][0];
-      } else {
-        third = null;
-      }
-
-      // don't keep looking if our third potential 
-      // is really just our first point
-      if (first === third) third = null;
-
-      if (third) {
-        foundTriangle = false;
-        // do the first and third points also connect?
-        for (var k = 0; k < this.connections_.length; k++) {
-          var foundFirst = (this.connections_[k].indexOf(first) > -1)
-          var foundThird = (this.connections_[k].indexOf(third) > -1)
-          if (foundFirst && foundThird) foundTriangle = true;
+      if(j != i){
+        if (this.connections_[j][0] == second) {
+          third = this.connections_[j][1];
+        } else if (this.connections_[j][1] == second) {
+          third = this.connections_[j][0];
+        } else {
+          third = null;
         }
-        if (foundTriangle) faces.push([first, second, third]);
+        if (third) {
+          foundTriangle = false;
+          // do the first and third points also connect?
+          for (var k = 0; k < this.connections_.length; k++) {
+            var foundFirst = (this.connections_[k].indexOf(first) > -1)
+            var foundThird = (this.connections_[k].indexOf(third) > -1)
+            if (foundFirst && foundThird) foundTriangle = true;
+          }
+          if (foundTriangle) faces.push([first, second, third]);
+        }
       }
     }
-  }
-  console.log("TOTAL CONXS: ",this.connections_.length);
-  console.log("TOTAL FACES: ",faces.length);
-  for(i = 0; i < faces.length; i++){
-    console.log("face: ", faces[i][0], " ", faces[i][1], " ", faces[i][2]);
   }
   // remove duplicates
-  var foundFace = {};
   var dupsIndexes = [];
-  goog.array.forEach(faces, function(face, i) {
-    goog.array.sort(face)
-  })
-  goog.array.forEach(faces, function(face, i) {
-    if(foundFace[face]) {
-      dupsIndexes.push(i)
-    } else {
-      foundFace[face] = true;
-    }
-  })
-  goog.array.forEach(dupsIndexes, function(dupIndex) {
-    goog.array.removeAt(faces, dupIndex)
-  })
-  console.log("TOTAL FACES: ",faces.length);
   for(i = 0; i < faces.length; i++){
-    console.log("face: ", faces[i][0], " ", faces[i][1], " ", faces[i][2]);
+    first = faces[i][0];
+    second = faces[i][1];
+    third = faces[i][2];
+    for(j = 0; j < faces.length; j++){
+      if(j != i){
+        if((first == faces[j][0] && second == faces[j][1] && third == faces[j][2]) ||
+           (second == faces[j][0] && first == faces[j][1] && third == faces[j][2]) ||
+           (first == faces[j][0] && third == faces[j][1] && second == faces[j][2]) ||
+           (second == faces[j][0] && third == faces[j][1] && first == faces[j][2]) ||
+           (third == faces[j][0] && first == faces[j][1] && second == faces[j][2]) ||
+           (third == faces[j][0] && second == faces[j][1] && first == faces[j][2]) ){
+            faces.splice(j, 1);
+            j--;
+        }
+      }
+    }
   }
-
+  //console.log("TOTAL FACES: ",faces.length);
+  //for(i = 0; i < faces.length; i++){
+  //  console.log("face: ", faces[i][0], " ", faces[i][1], " ", faces[i][2]);}
   return faces;
 }
 
