@@ -65,7 +65,8 @@ domekit.Controller.prototype.enterDocument = function() {
   // points and connections
   this.subdivideTriangles(2);
   //this.divideTriangles(3);
-  
+  //this.generateConnections();
+  this.spherize();
   var runloop = goog.bind(function() {
     this.clipToVisiblePoints();
     this.projectPoints();
@@ -316,9 +317,9 @@ domekit.Controller.prototype.findFaces = function() {
       }
     }
   }
-  //console.log("TOTAL FACES: ",faces.length);
-  //for(i = 0; i < faces.length; i++){
-  //  console.log("face: ", faces[i][0], " ", faces[i][1], " ", faces[i][2]);}
+  console.log("TOTAL FACES: ",faces.length);
+  for(i = 0; i < faces.length; i++){
+    console.log("face: ", faces[i][0], " ", faces[i][1], " ", faces[i][2]);}
   return faces;
 }
 
@@ -330,20 +331,15 @@ domekit.Controller.prototype.divideTriangles = function(v) {
   var pointC;
   var cax, cay, caz, bax, bay, baz;
   var i, j, k;
-  var newPoint = new domekit.Point3D();
 
   for(i = 0; i < this.faces_.length; i++)
   {
-    console.log(this.faces_[i][0]);
     //isolate the three points of each face
-    pointA = this.connections_[ this.faces_[i][0] ][0];
-    pointB = this.connections_[ this.faces_[i][0] ][1];
-    pointC = this.connections_[ this.faces_[i][1] ][0];
-    //may need heuristic comparison here
-    if(pointC == pointA || pointC == pointB){
-      pointC = this.connections_[ this.faces_[i][1] ][1]; }
-    if(pointC == pointA || pointC == pointB){ console.log("rewrite this bit");}
-    
+    pointA = this.faces_[i][0];
+    pointB = this.faces_[i][1];
+    pointC = this.faces_[i][2];
+    //console.log(this.points_[pointA].x, this.points_[pointA].y, this.points_[pointA].z);
+   
     //little foot
     cax = (this.points_[pointC].x - this.points_[pointA].x)/v;
     cay = (this.points_[pointC].y - this.points_[pointA].y)/v;
@@ -352,15 +348,15 @@ domekit.Controller.prototype.divideTriangles = function(v) {
     bay = (this.points_[pointB].y - this.points_[pointA].y)/v;
     baz = (this.points_[pointB].z - this.points_[pointA].z)/v;
     
+    //console.log(cax, " " , cay, " ", caz, " ", bax, " ", bay, " ", baz);
     for (j = 0; j <= v; j++){
-      for (k = j; k <= v; k++){
+      for (k = 0; k <= v-j; k++){
         //skip the three points we already have
         if ( !( (j == 0 && k == 0) || (j == 0 && k == v) || (j == v && k == v) )){
           //fill the interior with points
-          newPoint.x = this.points_[pointA].x + i*bax + k*cax;
-          newPoint.y = this.points_[pointA].y + i*bay + k*cay;
-          newPoint.z = this.points_[pointA].z + i*baz + k*caz;
-          this.points_.push(newPoint);
+          this.points_.push(new domekit.Point3D(this.points_[pointA].x + j*bax + k*cax, 
+                                                this.points_[pointA].y + j*bay + k*cay, 
+                                                this.points_[pointA].z + j*baz + k*caz));
         }
       }
     }
@@ -385,12 +381,14 @@ domekit.Controller.prototype.subdivideTriangles = function(v) {
     }
     this.generateConnections();
   }
+}
 
+domekit.Controller.prototype.spherize = function() {
   var distance;
   var maxdistance = 0;
   var difference;
 
-  for(i = 0; i < this.points_.length; i++) {
+  for(var i = 0; i < this.points_.length; i++) {
     distance = Math.sqrt(this.points_[i].x * this.points_[i].x + this.points_[i].y * this.points_[i].y + this.points_[i].z * this.points_[i].z);
     if (distance > maxdistance) maxdistance = distance;
   }
