@@ -78,40 +78,10 @@ domekit.Controller.prototype.enterDocument = function() {
   setInterval(runloop, 1000/45);
 }
 
-domekit.Controller.prototype.generatePoints = function() {
-  var phi = (1 + Math.sqrt(5)) / 2;
 
-  this.points_.push(new domekit.Point3D(0, 1, phi));
-  this.points_.push(new domekit.Point3D(0, -1, phi));
-  this.points_.push(new domekit.Point3D(0, -1, -phi));
-  this.points_.push(new domekit.Point3D(0, 1, -phi));
-  this.points_.push(new domekit.Point3D(phi, 0, 1));
-  this.points_.push(new domekit.Point3D(-phi, 0, 1));
-  this.points_.push(new domekit.Point3D(-phi, 0, -1));
-  this.points_.push(new domekit.Point3D(phi, 0, -1));
-  this.points_.push(new domekit.Point3D(1, phi, 0));
-  this.points_.push(new domekit.Point3D(-1, phi, 0));
-  this.points_.push(new domekit.Point3D(-1, -phi, 0));
-  this.points_.push(new domekit.Point3D(1, -phi, 0));
-}
-
-domekit.Controller.prototype.generateConnections = function() {
-  var connections = [];
-  var neighbors = [];
-  var i,j;
-  for(i=0;i<this.points_.length;i++){
-    neighbors = this.findNeighbors(i);
-    for(j=0;j<neighbors.length;j++) connections.push([i,neighbors[j]]);
-  }
-  // remove duplicates
-  for(i=0;i<connections.length;i++){
-    neighbors = connections[i];
-    for(j=i;j<connections.length;j++){
-      if(neighbors[0] == connections[j][1] && neighbors[1] == connections[j][0]) connections.splice(j,1);
-    }
-  }
-  this.connections_ = connections;
-}
+///////////////////////////////////////////
+//DRAWING, PROJECTING, CLIPPING, ROTATING//
+///////////////////////////////////////////
 
 
 // xy: x or y value of point being projected
@@ -124,66 +94,16 @@ domekit.Controller.prototype.project = function(xy, z, zCameraOffset, zDepth, xy
   return xy / (z * zDepth + zCameraOffset) * (scale * this.maximumRadius_) + xyOffset;
 }
 
-// TODO: The only differences between the three rotate functions are the axes used in the calculations. 
-// Consider how to make these functions DRY.
-domekit.Controller.prototype.rotateZ = function(rotationAngleInRadians) {
-  var points = this.points_;
-  var point;
-  var distance;
-  var angle;
-
-  for(var i = 0; i < points.length; i++) {
-    point = points[i];
-    distance = Math.sqrt(point.x * point.x + point.y * point.y);
-    angle = Math.atan2(point.x, point.y) + rotationAngleInRadians;
-    point.x = distance * Math.sin(angle);
-    point.y = distance * Math.cos(angle);
-  }
-
-}
-
-domekit.Controller.prototype.rotateX = function(rotationAngleInRadians) {
-  var points = this.points_;
-  var point;
-  var distance;
-  var angle;
-
-  for(var i = 0; i < points.length; i++) {
-    point = points[i];
-    distance = Math.sqrt(point.y * point.y + point.z * point.z);
-    angle = Math.atan2(point.y, point.z) + rotationAngleInRadians;
-    point.y = distance * Math.sin(angle);
-    point.z = distance * Math.cos(angle);
-  }
-}
-
-domekit.Controller.prototype.rotateY = function(rotationAngleInRadians) {
-  var points = this.points_;
-  var point;
-  var distance;
-  var angle;
-
-  for(var i = 0; i < points.length; i++) {
-    point = points[i];
-    distance = Math.sqrt(point.x * point.x + point.z * point.z);
-    angle = Math.atan2(point.x, point.z) + rotationAngleInRadians;
-    point.x = distance * Math.sin(angle);
-    point.z = distance * Math.cos(angle);
-  }
-}
-
 domekit.Controller.prototype.projectPoints = function() {
   var xOffset = this.offsets.x;
   var yOffset = this.offsets.y;
   var newPoint;
   var points = this.points_;
   this.projectedPoints_ = [];
-
   for(var i = 0; i < points.length; i++) {
     if (this.visiblePoints_[i]) {
       // visible points are projected
       newPoint = this.projectedPoints_[i] = new domekit.Point3D();
-
       newPoint.x = this.project(points[i].x, points[i].z, 2, .005, xOffset, this.scale_);
       newPoint.y = this.project(points[i].y, points[i].z, 2, .005, yOffset, this.scale_);
       newPoint.z = points[i].z;
@@ -218,7 +138,6 @@ domekit.Controller.prototype.drawConnection = function(point1, point2, color) {
 domekit.Controller.prototype.drawFrame = function() {
   var projectedPoints = this.projectedPoints_;
   var connections = this.connections_;
-
   for(var i = 0; i < connections.length; i++) {
     // check connection visibility
     if (this.visibleConnections_[i]) {
@@ -237,28 +156,141 @@ domekit.Controller.prototype.clearCanvas = function() {
   this.context_.clearRect(0, 0, this.canvasWidth_, this.canvasHeight_);
 }
 
-
-domekit.Controller.prototype.findNeighbors = function(index) {
-  var neighbors = [];
-  var current;
-  var closest = 100000.0;  //Far out, man
+// TODO: The only differences between the three rotate functions are the axes used in the calculations. 
+// Consider how to make these functions DRY.
+domekit.Controller.prototype.rotateZ = function(rotationAngleInRadians) {
   var points = this.points_;
+  var point;
+  var distance;
+  var angle;
+  for(var i = 0; i < points.length; i++) {
+    point = points[i];
+    distance = Math.sqrt(point.x * point.x + point.y * point.y);
+    angle = Math.atan2(point.x, point.y) + rotationAngleInRadians;
+    point.x = distance * Math.sin(angle);
+    point.y = distance * Math.cos(angle);
+  }
+}
 
-  for(var i = 0; i < this.points_.length; i++) {
-    if(i != index) {
-      current = Math.sqrt( ((points[i].x-points[index].x)*(points[i].x-points[index].x)) + ((points[i].y-points[index].y)*(points[i].y-points[index].y)) + ((points[i].z-points[index].z)*(points[i].z-points[index].z)) );
-      current+=.00000002;
-      if (current < closest) closest = current;
+domekit.Controller.prototype.clipToVisiblePoints = function() {
+  // clip visibility below these values
+  var zClip = -Math.PI/10;
+  var yClip = 0.1;
+  var shouldClipZ, shouldClipY;
+  var containingConns;
+
+  // everything visible by default
+  this.visiblePoints_ = goog.array.repeat(true, this.points_.length);
+  this.visibleConnections_ = goog.array.repeat(true, this.connections_.length);
+
+  goog.array.forEach(this.points_, function(point, i) {
+    shouldClipY = this.clipDome_ && point.y > yClip
+    shouldClipZ = this.clipZ_ && point.z < zClip
+    if ( shouldClipY || shouldClipZ ) {
+      this.visiblePoints_[i] = false;
+      containingConns = this.connectionIdsForPointId(i);
+      goog.array.forEach(containingConns, function(connId,i) {
+        this.visibleConnections_[connId] = false;
+      },this)
+    }
+  }, this);
+}
+
+domekit.Controller.prototype.setDomeMode = function() {
+  this.clipDome_ = true;
+  this.calculateProjectionDimensions();
+}
+
+domekit.Controller.prototype.setSphereMode = function() {
+  this.clipDome_ = false;
+  this.calculateProjectionDimensions();
+}
+
+domekit.Controller.prototype.calculateProjectionDimensions = function() {
+  this.projectionWidth_ = this.canvasWidth_;
+  this.projectionHeight_ = this.canvasHeight_;
+
+  if (this.clipDome_) {
+    this.maximumRadius_ = Math.min(this.canvasWidth_, this.canvasHeight_);
+    this.offsets = {
+      x : this.projectionWidth_ / 2,
+      y : this.projectionHeight_
+    };
+  } else {
+    this.maximumRadius_ = Math.min(this.canvasWidth_, this.canvasHeight_) / 2;
+    this.offsets = {
+      x : this.projectionWidth_ / 2,
+      y : this.projectionHeight_ / 2
+    };
+  }
+}
+
+domekit.Controller.prototype.rotateX = function(rotationAngleInRadians) {
+  var points = this.points_;
+  var point;
+  var distance;
+  var angle;
+  for(var i = 0; i < points.length; i++) {
+    point = points[i];
+    distance = Math.sqrt(point.y * point.y + point.z * point.z);
+    angle = Math.atan2(point.y, point.z) + rotationAngleInRadians;
+    point.y = distance * Math.sin(angle);
+    point.z = distance * Math.cos(angle);
+  }
+}
+
+domekit.Controller.prototype.rotateY = function(rotationAngleInRadians) {
+  var points = this.points_;
+  var point;
+  var distance;
+  var angle;
+  for(var i = 0; i < points.length; i++) {
+    point = points[i];
+    distance = Math.sqrt(point.x * point.x + point.z * point.z);
+    angle = Math.atan2(point.x, point.z) + rotationAngleInRadians;
+    point.x = distance * Math.sin(angle);
+    point.z = distance * Math.cos(angle);
+  }
+}
+
+
+/////////////////////////////
+//GEOMETRY AND CALCULATIONS//
+/////////////////////////////
+
+
+domekit.Controller.prototype.generatePoints = function() {
+  var phi = (1 + Math.sqrt(5)) / 2;
+  this.points_.push(new domekit.Point3D(0, 1, phi));
+  this.points_.push(new domekit.Point3D(0, -1, phi));
+  this.points_.push(new domekit.Point3D(0, -1, -phi));
+  this.points_.push(new domekit.Point3D(0, 1, -phi));
+  this.points_.push(new domekit.Point3D(phi, 0, 1));
+  this.points_.push(new domekit.Point3D(-phi, 0, 1));
+  this.points_.push(new domekit.Point3D(-phi, 0, -1));
+  this.points_.push(new domekit.Point3D(phi, 0, -1));
+  this.points_.push(new domekit.Point3D(1, phi, 0));
+  this.points_.push(new domekit.Point3D(-1, phi, 0));
+  this.points_.push(new domekit.Point3D(-1, -phi, 0));
+  this.points_.push(new domekit.Point3D(1, -phi, 0));
+}
+
+domekit.Controller.prototype.generateConnections = function() {
+  var connections = [];
+  var neighbors = [];
+  var i,j;
+  for(i=0;i<this.points_.length;i++){
+    neighbors = this.findNeighbors(i);
+    for(j=0;j<neighbors.length;j++) connections.push([i,neighbors[j]]);
+  }
+  // remove duplicates
+  for(i=0;i<connections.length;i++){
+    neighbors = connections[i];
+    for(j=i;j<connections.length;j++){
+      if(neighbors[0] == connections[j][1] && neighbors[1] == connections[j][0]) connections.splice(j,1);
     }
   }
-  for(i = 0; i < this.points_.length; i++){
-    if (i != index){
-      current = Math.sqrt( ((points[i].x-points[index].x)*(points[i].x-points[index].x)) + ((points[i].y-points[index].y)*(points[i].y-points[index].y)) + ((points[i].z-points[index].z)*(points[i].z-points[index].z)) );
-      current+=.00000002;
-      if(Math.floor(current*10000.0) == Math.floor(closest*10000.0)) neighbors.push(i);
-    }
-  }
-  return neighbors;
+  this.connections_ = connections;
 }
 
 domekit.Controller.prototype.generateFaces = function() {
@@ -320,6 +352,29 @@ domekit.Controller.prototype.generateFaces = function() {
     }
   }
   return faces;
+}
+
+domekit.Controller.prototype.findNeighbors = function(index) {
+  var neighbors = [];
+  var current;
+  var closest = 100000.0;  //Far out, man
+  var points = this.points_;
+
+  for(var i = 0; i < this.points_.length; i++) {
+    if(i != index) {
+      current = Math.sqrt( ((points[i].x-points[index].x)*(points[i].x-points[index].x)) + ((points[i].y-points[index].y)*(points[i].y-points[index].y)) + ((points[i].z-points[index].z)*(points[i].z-points[index].z)) );
+      current+=.00000002;
+      if (current < closest) closest = current;
+    }
+  }
+  for(i = 0; i < this.points_.length; i++){
+    if (i != index){
+      current = Math.sqrt( ((points[i].x-points[index].x)*(points[i].x-points[index].x)) + ((points[i].y-points[index].y)*(points[i].y-points[index].y)) + ((points[i].z-points[index].z)*(points[i].z-points[index].z)) );
+      current+=.00000002;
+      if(Math.floor(current*10000.0) == Math.floor(closest*10000.0)) neighbors.push(i);
+    }
+  }
+  return neighbors;
 }
 
 domekit.Controller.prototype.removeDuplicatePoints = function() {
@@ -456,60 +511,6 @@ domekit.Controller.prototype.connectionIdsForPointId = function(pointId) {
   return connIds;
 }
 
-domekit.Controller.prototype.clipToVisiblePoints = function() {
-  // clip visibility below these values
-  var zClip = -Math.PI/10;
-  var yClip = 0.1;
-  var shouldClipZ, shouldClipY;
-  var containingConns;
-
-  // everything visible by default
-  this.visiblePoints_ = goog.array.repeat(true, this.points_.length);
-  this.visibleConnections_ = goog.array.repeat(true, this.connections_.length);
-
-  goog.array.forEach(this.points_, function(point, i) {
-    shouldClipY = this.clipDome_ && point.y > yClip
-    shouldClipZ = this.clipZ_ && point.z < zClip
-    if ( shouldClipY || shouldClipZ ) {
-      this.visiblePoints_[i] = false;
-      containingConns = this.connectionIdsForPointId(i);
-      goog.array.forEach(containingConns, function(connId,i) {
-        this.visibleConnections_[connId] = false;
-      },this)
-    }
-  }, this);
-}
-
-domekit.Controller.prototype.setDomeMode = function() {
-  this.clipDome_ = true;
-  this.calculateProjectionDimensions();
-}
-
-domekit.Controller.prototype.setSphereMode = function() {
-  this.clipDome_ = false;
-  this.calculateProjectionDimensions();
-}
-
-domekit.Controller.prototype.calculateProjectionDimensions = function() {
-  this.projectionWidth_ = this.canvasWidth_;
-  this.projectionHeight_ = this.canvasHeight_;
-
-  if (this.clipDome_) {
-    this.maximumRadius_ = Math.min(this.canvasWidth_, this.canvasHeight_);
-    this.offsets = {
-      x : this.projectionWidth_ / 2,
-      y : this.projectionHeight_
-    };
-  } else {
-    this.maximumRadius_ = Math.min(this.canvasWidth_, this.canvasHeight_) / 2;
-    this.offsets = {
-      x : this.projectionWidth_ / 2,
-      y : this.projectionHeight_ / 2
-    };
-  }
-
-
-}
 
 goog.exportSymbol('domekit.Controller', domekit.Controller)
 goog.exportSymbol('domekit.Controller.prototype.render', domekit.Controller.prototype.render)
