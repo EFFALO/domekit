@@ -63,10 +63,12 @@ domekit.Controller.prototype.enterDocument = function() {
   this.rotateZ(5/9);
   // This has to happen after you've generated initial
   // points and connections
-  this.subdivideTriangles(2);
-  //this.divideTriangles(3);
-  //this.generateConnections();
+  //this.subdivideTriangles(2);
+  this.divideTriangles(5);
+  this.removeDuplicatePoints();
+  this.generateConnections();
   this.spherize();
+
   var runloop = goog.bind(function() {
     this.clipToVisiblePoints();
     this.projectPoints();
@@ -259,7 +261,7 @@ domekit.Controller.prototype.findNeighbors = function(index) {
   return neighbors;
 }
 
-domekit.Controller.prototype.findFaces = function() {
+domekit.Controller.prototype.generateFaces = function() {
   var faces = [];
   // points of a potential face
   var first;
@@ -317,15 +319,54 @@ domekit.Controller.prototype.findFaces = function() {
       }
     }
   }
-  console.log("TOTAL FACES: ",faces.length);
-  for(i = 0; i < faces.length; i++){
-    console.log("face: ", faces[i][0], " ", faces[i][1], " ", faces[i][2]);}
   return faces;
 }
 
+domekit.Controller.prototype.removeDuplicatePoints = function() {
+  //Decimal places of detection
+  var window = 100000;
+  var byebye = [];
+  for(var i = 0; i < this.points_.length-1; i++){
+    for(var j = i+1; j < this.points_.length; j++){
+      //Find duplicates within boundaries of WINDOW
+      if( ( Math.floor(this.points_[i].x * window) ) == ( Math.floor(this.points_[j].x * window) ) &&
+          ( Math.floor(this.points_[i].y * window) ) == ( Math.floor(this.points_[j].y * window) ) &&
+          ( Math.floor(this.points_[i].z * window) ) == ( Math.floor(this.points_[j].z * window) ) ){
+          byebye.push(j);
+      }
+    }
+  }
+  //Remove the duplicates of the duplicates
+  for(i = 0; i < byebye.length-1; i++){
+    for(j = i+1; j < byebye.length; j++){
+      if(byebye[j] == byebye[i]){
+        byebye.splice(j,1);
+        j--;
+      }
+    }
+  }
+  //Sort duplicates
+  var smallest;
+  var holder;
+  for(i = 0; i < byebye.length-1; i++){
+    smallest = i;
+    for(j = i; j < byebye.length; j++){
+      if(byebye[j] < byebye[smallest]){smallest = j;}
+    }
+    if(smallest != i){
+      holder = byebye[i];
+      byebye[i] = byebye[smallest];
+      byebye[smallest] = holder;
+    }
+  }
+  //Remove duplicates
+  for(i = byebye.length-1; i >= 0; i--){
+    this.points_.splice(byebye[i],1);
+  }
+}
 
 domekit.Controller.prototype.divideTriangles = function(v) {
-  this.faces_ = this.findFaces();
+  this.faces_ = this.generateFaces();
   var pointA;
   var pointB;
   var pointC;
@@ -338,9 +379,8 @@ domekit.Controller.prototype.divideTriangles = function(v) {
     pointA = this.faces_[i][0];
     pointB = this.faces_[i][1];
     pointC = this.faces_[i][2];
-    //console.log(this.points_[pointA].x, this.points_[pointA].y, this.points_[pointA].z);
    
-    //little foot
+    //make new side lengths
     cax = (this.points_[pointC].x - this.points_[pointA].x)/v;
     cay = (this.points_[pointC].y - this.points_[pointA].y)/v;
     caz = (this.points_[pointC].z - this.points_[pointA].z)/v;
@@ -348,7 +388,6 @@ domekit.Controller.prototype.divideTriangles = function(v) {
     bay = (this.points_[pointB].y - this.points_[pointA].y)/v;
     baz = (this.points_[pointB].z - this.points_[pointA].z)/v;
     
-    //console.log(cax, " " , cay, " ", caz, " ", bax, " ", bay, " ", baz);
     for (j = 0; j <= v; j++){
       for (k = 0; k <= v-j; k++){
         //skip the three points we already have
@@ -360,6 +399,25 @@ domekit.Controller.prototype.divideTriangles = function(v) {
         }
       }
     }
+  }
+}
+
+domekit.Controller.prototype.spherize = function() {
+  var distance;
+  var maxdistance = 0;
+  var difference;
+
+  for(var i = 0; i < this.points_.length; i++) {
+    distance = Math.sqrt(this.points_[i].x * this.points_[i].x + this.points_[i].y * this.points_[i].y + this.points_[i].z * this.points_[i].z);
+    if (distance > maxdistance) maxdistance = distance;
+  }
+
+  for(i = 0; i < this.points_.length; i++) {
+    distance = Math.sqrt(this.points_[i].x * this.points_[i].x + this.points_[i].y * this.points_[i].y + this.points_[i].z * this.points_[i].z);
+    difference = maxdistance / distance;
+    this.points_[i].x *= difference;
+    this.points_[i].y *= difference;
+    this.points_[i].z *= difference;
   }
 }
 
@@ -380,25 +438,6 @@ domekit.Controller.prototype.subdivideTriangles = function(v) {
       this.points_.push(newPoint);
     }
     this.generateConnections();
-  }
-}
-
-domekit.Controller.prototype.spherize = function() {
-  var distance;
-  var maxdistance = 0;
-  var difference;
-
-  for(var i = 0; i < this.points_.length; i++) {
-    distance = Math.sqrt(this.points_[i].x * this.points_[i].x + this.points_[i].y * this.points_[i].y + this.points_[i].z * this.points_[i].z);
-    if (distance > maxdistance) maxdistance = distance;
-  }
-
-  for(i = 0; i < this.points_.length; i++) {
-    distance = Math.sqrt(this.points_[i].x * this.points_[i].x + this.points_[i].y * this.points_[i].y + this.points_[i].z * this.points_[i].z);
-    difference = maxdistance / distance;
-    this.points_[i].x *= difference;
-    this.points_[i].y *= difference;
-    this.points_[i].z *= difference;
   }
 }
 
