@@ -76,9 +76,6 @@ domekit.Controller.prototype.generateModelPointsAndConnections = function() {
   this.generatePoints();
   this.generateConnections();
   this.rotateZ(5/9);
-  // This has to happen after you've generated initial
-  // points and connections
-  //this.subdivideTriangles(2);
   this.divideTriangles(this.triangleFrequency_);
   this.removeDuplicatePoints();
   this.generateConnections();
@@ -492,26 +489,6 @@ domekit.Controller.prototype.spherize = function() {
     this.points_[i].x *= difference;
     this.points_[i].y *= difference;
     this.points_[i].z *= difference;
-  }
-}
-
-// v: divisions on one side of the largest triangle. valid inputs: 2, 4, 8
-domekit.Controller.prototype.subdivideTriangles = function(v) {
-  var triangleDivisionLoops;
-  var i, j;
-
-  if (v === 2) triangleDivisionLoops = 1;
-  if (v === 4) triangleDivisionLoops = 2;
-  if (v === 8) triangleDivisionLoops = 3;
-
-  for(j = 0; j <= triangleDivisionLoops; j++) {
-    for(i = 0; i < this.connections_.length; i++) {
-      var point1 = this.points_[ this.connections_[i][0] ];
-      var point2 = this.points_[ this.connections_[i][1] ];
-      var newPoint = this.calculateMidpoint(point1, point2);
-      this.points_.push(newPoint);
-    }
-    this.generateConnections();
   }
 }
 
