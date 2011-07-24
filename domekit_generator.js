@@ -15,6 +15,9 @@ domekit.FrequencyControl = function(controller) {
   this.controller_ = controller;
   this.frequencyInput_ = new goog.ui.LabelInput();
   this.frequencySlider_ = new goog.ui.Slider();
+  this.maxFrequency_ = 8;
+  this.minFrequency_ = 1;
+  this.defaultFrequency_ = 5;
 }
 goog.inherits(domekit.FrequencyControl, goog.ui.Component);
 
@@ -31,10 +34,10 @@ domekit.FrequencyControl.prototype.createDom = function() {
 domekit.FrequencyControl.prototype.enterDocument = function() {
   goog.base(this, 'enterDocument');
 
-  this.frequencyInput_.setValue('5v');
-  this.frequencySlider_.setMaximum(8);
-  this.frequencySlider_.setMinimum(1);
-  this.frequencySlider_.setValue(5);
+  this.frequencyInput_.setValue(this.defaultFrequency_ + 'v');
+  this.frequencySlider_.setMaximum(this.maxFrequency_);
+  this.frequencySlider_.setMinimum(this.minFrequency_);
+  this.frequencySlider_.setValue(this.defaultFrequency_);
 
   this.frequencySlider_.addEventListener(goog.ui.Component.EventType.CHANGE,
     goog.bind(function() {
