@@ -656,7 +656,23 @@ a:hover {
 	position: relative;
 }
 
+.slider .goog-slider-horizontal {
+	float: left;
+	width: 130px;
+	height: 24px;
+	background: url(../images/slider-repeat.png) repeat-x;
+	position: relative;
+}
+
 .slider .handle {
+	position: absolute;
+	background: url(../images/slider-handle.png) no-repeat;
+	width: 16px;
+	height: 32px;
+	left: 10px;
+}
+
+.slider .goog-slider-thumb {
 	position: absolute;
 	background: url(../images/slider-handle.png) no-repeat;
 	width: 16px;

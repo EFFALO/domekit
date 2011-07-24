@@ -21,6 +21,8 @@ domekit.Controller = function(width, height, scale) {
   this.scale_ = scale || 0.9;
   this.pointSize_ = 4.0;
   this.points_ = [];
+  // V number
+  this.triangleFrequency_ = 5;
   // index on points for visibility
   // [i] == true if points[i] is visible
   this.visiblePoints_ = [];
@@ -58,16 +60,7 @@ domekit.Controller.prototype.enterDocument = function() {
     throw new Error(canvas.innerHTML);
   }
 
-  this.generatePoints();
-  this.generateConnections();
-  this.rotateZ(5/9);
-  // This has to happen after you've generated initial
-  // points and connections
-  //this.subdivideTriangles(2);
-  this.divideTriangles(5);
-  this.removeDuplicatePoints();
-  this.generateConnections();
-  this.spherize();
+  this.generateModelPointsAndConnections();
 
   var runloop = goog.bind(function() {
     this.clipToVisiblePoints();
@@ -76,6 +69,26 @@ domekit.Controller.prototype.enterDocument = function() {
     this.drawFrame();
   }, this);
   setInterval(runloop, 1000/45);
+}
+
+
+domekit.Controller.prototype.generateModelPointsAndConnections = function() {
+  this.generatePoints();
+  this.generateConnections();
+  this.rotateZ(5/9);
+  // This has to happen after you've generated initial
+  // points and connections
+  //this.subdivideTriangles(2);
+  this.divideTriangles(this.triangleFrequency_);
+  this.removeDuplicatePoints();
+  this.generateConnections();
+  this.spherize();
+}
+
+domekit.Controller.prototype.resetModelPointsAndConnections = function() {
+  this.points_ = [];
+  this.connections_ = [];
+  this.faces_ = [];
 }
 
 
@@ -204,6 +217,12 @@ domekit.Controller.prototype.setDomeMode = function() {
 domekit.Controller.prototype.setSphereMode = function() {
   this.clipDome_ = false;
   this.calculateProjectionDimensions();
+}
+
+domekit.Controller.prototype.setTriangleFrequency = function(frequency) {
+  this.resetModelPointsAndConnections();
+  this.triangleFrequency_ = frequency;
+  this.generateModelPointsAndConnections();
 }
 
 domekit.Controller.prototype.calculateProjectionDimensions = function() {
