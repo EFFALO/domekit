@@ -1,5 +1,5 @@
 goog.provide('domekit.Generator');
-goog.provide('domekit.SliderAndTextControl');
+goog.provide('domekit.FrequencyControl');
 
 goog.require('goog.ui.Component');
 goog.require('goog.ui.Slider');
@@ -9,16 +9,16 @@ goog.require('goog.events');
 /** @constructor 
  controller : the thing to control (hint - it's a geodesic)
 */
-domekit.SliderAndTextControl = function(controller) {
+domekit.FrequencyControl = function(controller) {
   goog.base(this);
 
   this.controller_ = controller;
   this.frequencyInput_ = new goog.ui.LabelInput();
   this.frequencySlider_ = new goog.ui.Slider();
 }
-goog.inherits(domekit.SliderAndTextControl, goog.ui.Component);
+goog.inherits(domekit.FrequencyControl, goog.ui.Component);
 
-domekit.SliderAndTextControl.prototype.createDom = function() {
+domekit.FrequencyControl.prototype.createDom = function() {
   goog.base(this, 'createDom');
 
   var inputGoesHere = document.getElementById('frequency-input');
@@ -28,7 +28,7 @@ domekit.SliderAndTextControl.prototype.createDom = function() {
   this.frequencySlider_.render(sliderGoesHere);
 }
 
-domekit.SliderAndTextControl.prototype.enterDocument = function() {
+domekit.FrequencyControl.prototype.enterDocument = function() {
   goog.base(this, 'enterDocument');
 
   this.frequencyInput_.setValue('5v');
@@ -49,7 +49,6 @@ domekit.SliderAndTextControl.prototype.enterDocument = function() {
 domekit.Generator = function() {
   var domekitController = new domekit.Controller(600, 350);
   var goesHere = document.getElementById('scaledview');
-  // begin drawing dome canvas component
   domekitController.render(goesHere);
 
   var domeButton = goog.dom.getElement('makedome');
@@ -66,7 +65,7 @@ domekit.Generator = function() {
     goog.dom.classes.add(sphereButton, 'selected');
   });
 
-  var frequencyControl = new domekit.SliderAndTextControl(domekitController);
+  var frequencyControl = new domekit.FrequencyControl(domekitController);
   frequencyControl.render();
 }
 
