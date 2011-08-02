@@ -166,22 +166,6 @@ domekit.Controller.prototype.clearCanvas = function() {
   this.context_.clearRect(0, 0, this.canvasWidth_, this.canvasHeight_);
 }
 
-// TODO: The only differences between the three rotate functions are the axes used in the calculations. 
-// Consider how to make these functions DRY.
-domekit.Controller.prototype.rotateZ = function(rotationAngleInRadians) {
-  var points = this.points_;
-  var point;
-  var distance;
-  var angle;
-  for(var i = 0; i < points.length; i++) {
-    point = points[i];
-    distance = Math.sqrt(point.x * point.x + point.y * point.y);
-    angle = Math.atan2(point.x, point.y) + rotationAngleInRadians;
-    point.x = distance * Math.sin(angle);
-    point.y = distance * Math.cos(angle);
-  }
-}
-
 domekit.Controller.prototype.clipToVisiblePoints = function() {
   // clip visibility below these values
   var zClip = -Math.PI/10;
@@ -241,6 +225,9 @@ domekit.Controller.prototype.calculateProjectionDimensions = function() {
   }
 }
 
+
+// TODO: The only differences between the three rotate functions are the axes used in the calculations. 
+// Consider how to make these functions DRY.
 domekit.Controller.prototype.rotateX = function(rotationAngleInRadians) {
   var points = this.points_;
   var point;
@@ -266,6 +253,20 @@ domekit.Controller.prototype.rotateY = function(rotationAngleInRadians) {
     angle = Math.atan2(point.x, point.z) + rotationAngleInRadians;
     point.x = distance * Math.sin(angle);
     point.z = distance * Math.cos(angle);
+  }
+}
+
+domekit.Controller.prototype.rotateZ = function(rotationAngleInRadians) {
+  var points = this.points_;
+  var point;
+  var distance;
+  var angle;
+  for(var i = 0; i < points.length; i++) {
+    point = points[i];
+    distance = Math.sqrt(point.x * point.x + point.y * point.y);
+    angle = Math.atan2(point.x, point.y) + rotationAngleInRadians;
+    point.x = distance * Math.sin(angle);
+    point.y = distance * Math.cos(angle);
   }
 }
 
