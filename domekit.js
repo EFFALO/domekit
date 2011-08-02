@@ -397,13 +397,14 @@ domekit.Controller.prototype.findNeighbors = function(index) {
 domekit.Controller.prototype.removeDuplicatePoints = function() {
   //Decimal places of detection
   var window = 100000;
+  var nudger = .0000002;
   var byebye = [];
   for(var i = 0; i < this.points_.length-1; i++){
     for(var j = i+1; j < this.points_.length; j++){
       //Find duplicates within boundaries of WINDOW
-      if( ( Math.floor(this.points_[i].x * window) ) == ( Math.floor(this.points_[j].x * window) ) &&
-          ( Math.floor(this.points_[i].y * window) ) == ( Math.floor(this.points_[j].y * window) ) &&
-          ( Math.floor(this.points_[i].z * window) ) == ( Math.floor(this.points_[j].z * window) ) ){
+      if( ( Math.floor( (nudger+this.points_[i].x) * window) ) == ( Math.floor( (nudger+this.points_[j].x) * window) ) &&
+          ( Math.floor( (nudger+this.points_[i].y) * window) ) == ( Math.floor( (nudger+this.points_[j].y) * window) ) &&
+          ( Math.floor( (nudger+this.points_[i].z) * window) ) == ( Math.floor( (nudger+this.points_[j].z) * window) ) ){
           byebye.push(j);
       }
     }
