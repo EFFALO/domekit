@@ -17,7 +17,8 @@ domekit.Controller = function(width, height, scale) {
   goog.base(this);
   this.context_ = null
   this.clipDome_ = true;
-  this.clipZ_ = true;
+  this.enableClipZ_ = true;
+  this.clipY_ = 0.1;
   this.scale_ = scale || 0.9;
   this.pointSize_ = 4.0;
   this.points_ = [];
@@ -169,7 +170,6 @@ domekit.Controller.prototype.clearCanvas = function() {
 domekit.Controller.prototype.clipToVisiblePoints = function() {
   // clip visibility below these values
   var zClip = -Math.PI/10;
-  var yClip = 0.1;
   var shouldClipZ, shouldClipY;
   var containingConns;
 
@@ -178,8 +178,8 @@ domekit.Controller.prototype.clipToVisiblePoints = function() {
   this.visibleConnections_ = goog.array.repeat(true, this.connections_.length);
 
   goog.array.forEach(this.points_, function(point, i) {
-    shouldClipY = this.clipDome_ && point.y > yClip
-    shouldClipZ = this.clipZ_ && point.z < zClip
+    shouldClipY = this.clipDome_ && point.y > this.clipY_
+    shouldClipZ = this.enableClipZ_ && point.z < zClip
     if ( shouldClipY || shouldClipZ ) {
       this.visiblePoints_[i] = false;
       containingConns = this.connectionIdsForPointId(i);
