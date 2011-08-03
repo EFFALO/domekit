@@ -18,8 +18,8 @@ domekit.Controller = function(width, height, scale) {
   this.context_ = null
   this.clipDome_ = true;
   this.enableClipZ_ = true;
-  this.clipY_ = 0.1;
-  this.scale_ = scale || 0.9;
+  this.clipY_ = 0.5;
+  this.scale_ = scale || 1.0;
   this.pointSize_ = 4.0;
   this.points_ = [];
   // V number
@@ -203,19 +203,35 @@ domekit.Controller.prototype.setSphereMode = function() {
 domekit.Controller.prototype.setTriangleFrequency = function(frequency) {
   this.resetModelPointsAndConnections();
   this.triangleFrequency_ = frequency;
+  this.setYClip();
   this.generateModelPointsAndConnections();
+  this.calculateProjectionDimensions();
+}
+
+domekit.Controller.prototype.setYClip = function() {
+  if(this.triangleFrequency_ == 1) this.clipY_ = 1.5;
+  else if(this.triangleFrequency_ == 2) this.clipY_ = .1;
+  else if(this.triangleFrequency_ == 3) this.clipY_ = .5;
+  else if(this.triangleFrequency_ == 4) this.clipY_ = .1;
+  else if(this.triangleFrequency_ == 5) this.clipY_ = .5;
+  else if(this.triangleFrequency_ == 6) this.clipY_ = .1;
+  else if(this.triangleFrequency_ == 7) this.clipY_ = .3;
+  else this.clipY_ = .2;
 }
 
 domekit.Controller.prototype.calculateProjectionDimensions = function() {
+  var domeVOffset;
   this.projectionWidth_ = this.canvasWidth_;
   this.projectionHeight_ = this.canvasHeight_;
-
+  domeVOffset = Math.cos( Math.ceil(this.triangleFrequency_ * 3.0 / 2.0 ) / ( this.triangleFrequency_ * 3.0 ) * Math.PI ) / 2.0 + .5;
   if (this.clipDome_) {
-    this.maximumRadius_ = Math.min(this.canvasWidth_, this.canvasHeight_);
+    this.maximumRadius_ = Math.min(this.canvasWidth_, this.canvasHeight_) /2;
     this.offsets = {
       x : this.projectionWidth_ / 2,
-      y : this.projectionHeight_
+      y : this.projectionHeight_ / 2 + domeVOffset * this.projectionHeight_
     };
+    //Why is this here?
+    if(this.triangleFrequency_ == 1) this.offsets.y+=13;
   } else {
     this.maximumRadius_ = Math.min(this.canvasWidth_, this.canvasHeight_) / 2;
     this.offsets = {
