@@ -1,5 +1,6 @@
 goog.provide('domekit.Generator');
 goog.provide('domekit.FrequencyControl');
+goog.provide('domekit.RadiusControl');
 
 goog.require('goog.ui.Component');
 goog.require('goog.ui.Slider');
@@ -15,14 +16,9 @@ domekit.FrequencyControl = function(controller) {
   this.controller_ = controller;
   this.frequencyInput_ = new goog.ui.LabelInput();
   this.frequencySlider_ = new goog.ui.Slider();
-  this.radiusInput_ = new goog.ui.LabelInput();
-  this.radiusSlider_ = new goog.ui.Slider();
   this.maxFrequency_ = 8;
   this.minFrequency_ = 1;
   this.defaultFrequency_ = 5;
-  this.minRadius_ = 1;
-  this.maxRadius_ = 10;
-  this.defaultRadius_ = 3;
   this.frequency_ = this.defaultFrequency_;
 }
 goog.inherits(domekit.FrequencyControl, goog.ui.Component);
@@ -30,20 +26,11 @@ goog.inherits(domekit.FrequencyControl, goog.ui.Component);
 domekit.FrequencyControl.prototype.createDom = function() {
   goog.base(this, 'createDom');
 
-  // frequency control
   this.frequencyInput_.render(
     document.getElementById('frequency-input')
   );
   this.frequencySlider_.render(
     document.getElementById('frequency-slider')
-  );
-
-  // radius control
-  this.radiusInput_.render(
-    document.getElementById('radius-input')
-  );
-  this.radiusSlider_.render(
-    document.getElementById('radius-slider')
   );
 }
 
@@ -82,6 +69,42 @@ domekit.FrequencyControl.prototype.enterDocument = function() {
       }
     }, this)
   );
+}
+
+domekit.FrequencyControl.prototype.updateFrequency = function(val) {
+  this.frequencyInput_.setValue(val + 'v')
+  this.frequencySlider_.setValue(val)
+  this.controller_.setTriangleFrequency(val);
+};
+
+/** @constructor 
+ controller : the thing to control (hint - it's a geodesic)
+*/
+domekit.RadiusControl = function(controller) {
+  goog.base(this);
+
+  this.controller_ = controller;
+  this.radiusInput_ = new goog.ui.LabelInput();
+  this.radiusSlider_ = new goog.ui.Slider();
+  this.minRadius_ = 1;
+  this.maxRadius_ = 10;
+  this.defaultRadius_ = 3;
+}
+goog.inherits(domekit.RadiusControl, goog.ui.Component);
+
+domekit.RadiusControl.prototype.createDom = function() {
+  goog.base(this, 'createDom');
+
+  this.radiusInput_.render(
+    document.getElementById('radius-input')
+  );
+  this.radiusSlider_.render(
+    document.getElementById('radius-slider')
+  );
+}
+
+domekit.RadiusControl.prototype.enterDocument = function() {
+  goog.base(this, 'enterDocument');
 
   this.radiusInput_.setValue(this.defaultRadius_ + 'm');
   this.radiusSlider_.setMaximum(this.maxRadius_);
@@ -117,14 +140,8 @@ domekit.FrequencyControl.prototype.enterDocument = function() {
   );
 }
 
-domekit.FrequencyControl.prototype.updateFrequency = function(val) {
-  this.frequencyInput_.setValue(val + 'v')
-  this.frequencySlider_.setValue(val)
-  this.controller_.setTriangleFrequency(val);
-};
-
-domekit.FrequencyControl.prototype.updateRadius = function(val) {
-  this.radiusInput_.setValue(val + 'v')
+domekit.RadiusControl.prototype.updateRadius = function(val) {
+  this.radiusInput_.setValue(val + 'm')
   this.radiusSlider_.setValue(val)
   this.controller_.setRadiusInMeters(val);
 };
@@ -151,6 +168,9 @@ domekit.Generator = function() {
 
   var frequencyControl = new domekit.FrequencyControl(domekitController);
   frequencyControl.render();
+
+  var radiusControl = new domekit.RadiusControl(domekitController);
+  radiusControl.render();
 }
 
 goog.exportSymbol('domekit.Generator', domekit.Generator)
