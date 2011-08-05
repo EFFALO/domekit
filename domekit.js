@@ -208,6 +208,10 @@ domekit.Controller.prototype.setTriangleFrequency = function(frequency) {
   this.calculateProjectionDimensions();
 }
 
+domekit.Controller.prototype.setRadiusInMeters = function(meters) {
+  console.log('setRadiusInMeters: ', meters);
+}
+
 domekit.Controller.prototype.setYClip = function() {
   if(this.triangleFrequency_ == 1) this.clipY_ = 1.5;
   else if(this.triangleFrequency_ == 2) this.clipY_ = .1;
