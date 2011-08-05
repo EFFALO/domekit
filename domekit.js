@@ -35,6 +35,15 @@ domekit.Controller = function(width, height, scale) {
   this.visibleConnections_ = [];
   this.canvasWidth_ = width || 500;
   this.canvasHeight_ = height || 500;
+  this.radiusInMeters_ = 1;
+  this.defaultScaleIconDimensions_ = {
+    w : 50,
+    h : 75
+  }
+  this.scaleIconDimensions_ = {
+    w : this.defaultScaleIconDimensions_.w,
+    h : this.defaultScaleIconDimensions_.h
+  }
 
   this.calculateProjectionDimensions();
 }
@@ -63,11 +72,19 @@ domekit.Controller.prototype.enterDocument = function() {
 
   this.generateModelPointsAndConnections();
 
+  var coords = {
+    x : 0,
+    y : 0
+  };
+  var imgObj = new Image();
+  imgObj.src = 'http://localhost:8080/human.png'
+
   var runloop = goog.bind(function() {
     this.clipToVisiblePoints();
     this.projectPoints();
     this.clearCanvas();
     this.drawFrame();
+    this.drawScaleIcon(imgObj, coords);
   }, this);
   setInterval(runloop, 1000/45);
 }
@@ -146,6 +163,10 @@ domekit.Controller.prototype.drawConnection = function(point1, point2, color) {
   this.context_.restore();
 }
 
+domekit.Controller.prototype.drawScaleIcon = function(imgObj, coords) {
+  this.context_.drawImage(imgObj, coords.x, coords.y, this.scaleIconDimensions_.w, this.scaleIconDimensions_.h);
+}
+
 domekit.Controller.prototype.drawFrame = function() {
   var projectedPoints = this.projectedPoints_;
   var connections = this.connections_;
@@ -209,7 +230,8 @@ domekit.Controller.prototype.setTriangleFrequency = function(frequency) {
 }
 
 domekit.Controller.prototype.setRadiusInMeters = function(meters) {
-  console.log('setRadiusInMeters: ', meters);
+  this.scaleIconDimensions_.h = this.defaultScaleIconDimensions_.h * meters;
+  this.scaleIconDimensions_.w = this.defaultScaleIconDimensions_.w * meters;
 }
 
 domekit.Controller.prototype.setYClip = function() {
