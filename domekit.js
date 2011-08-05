@@ -19,6 +19,7 @@ domekit.Controller = function(width, height, scale) {
   this.clipDome_ = true;
   this.enableClipZ_ = true;
   this.clipY_ = 0.5;
+  this.clipZ = -Math.PI/10;
   this.scale_ = scale || 1.0;
   this.pointSize_ = 4.0;
   this.points_ = [];
@@ -62,6 +63,7 @@ domekit.Controller.prototype.enterDocument = function() {
   }
 
   this.generateModelPointsAndConnections();
+  this.setTriangleFrequency(5);
 
   var runloop = goog.bind(function() {
     this.clipToVisiblePoints();
@@ -169,7 +171,6 @@ domekit.Controller.prototype.clearCanvas = function() {
 
 domekit.Controller.prototype.clipToVisiblePoints = function() {
   // clip visibility below these values
-  var zClip = -Math.PI/10;
   var shouldClipZ, shouldClipY;
   var containingConns;
 
@@ -179,7 +180,7 @@ domekit.Controller.prototype.clipToVisiblePoints = function() {
 
   goog.array.forEach(this.points_, function(point, i) {
     shouldClipY = this.clipDome_ && point.y > this.clipY_
-    shouldClipZ = this.enableClipZ_ && point.z < zClip
+    shouldClipZ = this.enableClipZ_ && point.z < this.clipZ_
     if ( shouldClipY || shouldClipZ ) {
       this.visiblePoints_[i] = false;
       containingConns = this.connectionIdsForPointId(i);
@@ -203,20 +204,22 @@ domekit.Controller.prototype.setSphereMode = function() {
 domekit.Controller.prototype.setTriangleFrequency = function(frequency) {
   this.resetModelPointsAndConnections();
   this.triangleFrequency_ = frequency;
-  this.setYClip();
+  this.setClip();
   this.generateModelPointsAndConnections();
   this.calculateProjectionDimensions();
+  this.rotateY(Math.PI/32);
+  this.rotateX(Math.PI/48);
 }
 
-domekit.Controller.prototype.setYClip = function() {
-  if(this.triangleFrequency_ == 1) this.clipY_ = 1.5;
-  else if(this.triangleFrequency_ == 2) this.clipY_ = .1;
-  else if(this.triangleFrequency_ == 3) this.clipY_ = .5;
-  else if(this.triangleFrequency_ == 4) this.clipY_ = .1;
-  else if(this.triangleFrequency_ == 5) this.clipY_ = .5;
-  else if(this.triangleFrequency_ == 6) this.clipY_ = .1;
-  else if(this.triangleFrequency_ == 7) this.clipY_ = .3;
-  else this.clipY_ = .2;
+domekit.Controller.prototype.setClip = function() {
+  if(this.triangleFrequency_ == 1) {this.clipY_ = 1.5; this.clipZ_ = -Math.PI/3;}
+  else if(this.triangleFrequency_ == 2) {this.clipY_ = .15; this.clipZ_ = -Math.PI/10;}
+  else if(this.triangleFrequency_ == 3) {this.clipY_ = .5; this.clipZ_ = -Math.PI/10;}
+  else if(this.triangleFrequency_ == 4) {this.clipY_ = .15; this.clipZ_ = -Math.PI/10;}
+  else if(this.triangleFrequency_ == 5) {this.clipY_ = .5; this.clipZ_ = -Math.PI/10;}
+  else if(this.triangleFrequency_ == 6) {this.clipY_ = .15; this.clipZ_ = -Math.PI/10;}
+  else if(this.triangleFrequency_ == 7) {this.clipY_ = .3; this.clipZ_ = -Math.PI/10;}
+  else {this.clipY_ = .2; this.clipZ_ = -Math.PI/10;}
 }
 
 domekit.Controller.prototype.calculateProjectionDimensions = function() {
@@ -228,7 +231,7 @@ domekit.Controller.prototype.calculateProjectionDimensions = function() {
     this.maximumRadius_ = Math.min(this.canvasWidth_, this.canvasHeight_) /2;
     this.offsets = {
       x : this.projectionWidth_ / 2,
-      y : this.projectionHeight_ / 2 + domeVOffset * this.projectionHeight_
+      y : this.projectionHeight_ / 2 + domeVOffset * this.projectionHeight_ - 40
     };
     //Why is this here?
     if(this.triangleFrequency_ == 1) this.offsets.y+=13;
