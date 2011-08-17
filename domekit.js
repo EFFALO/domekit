@@ -209,6 +209,7 @@ domekit.Controller.prototype.setTriangleFrequency = function(frequency) {
   this.calculateProjectionDimensions();
   this.rotateY(Math.PI/32);
   this.rotateX(Math.PI/48);
+  this.strutLengths();
 }
 
 domekit.Controller.prototype.setClip = function() {
@@ -388,6 +389,34 @@ domekit.Controller.prototype.generateFaces = function() {
     }
   }
   return faces;
+}
+
+domekit.Controller.prototype.strutLengths = function() {
+  var struts = [];
+  var neighbors = [];
+  var distance;
+  var nudger = .000000000002;
+  var i;
+  var j;
+  var k;
+  var found;
+  for(i = 0; i < this.connections_.length; i++){
+    distance = Math.sqrt( ((this.points_[this.connections_[i][0]].x-this.points_[this.connections_[i][1]].x)*(this.points_[this.connections_[i][0]].x-this.points_[this.connections_[i][1]].x)) +
+                          ((this.points_[this.connections_[i][0]].y-this.points_[this.connections_[i][1]].y)*(this.points_[this.connections_[i][0]].y-this.points_[this.connections_[i][1]].y)) +
+                          ((this.points_[this.connections_[i][0]].z-this.points_[this.connections_[i][1]].z)*(this.points_[this.connections_[i][0]].z-this.points_[this.connections_[i][1]].z)) );
+    distance+=nudger;
+    found = 0;
+    for(k = 0; k < struts.length; k++){
+      if(Math.floor(struts[k]*100000000.0) == Math.floor(distance*100000000.0)) found = 1;
+    }
+    if(found == 0) struts.push(distance);      
+  }   
+  //return struts;
+  //END OF FUNCTION  - PREVIEW RESULTS BELOW
+  console.log("STRUTS LENGTH: ", struts.length);
+  for(i = 0; i < struts.length; i++){
+    console.log(struts[i]);
+  }    
 }
 
 domekit.Controller.prototype.findNeighbors = function(index) {
