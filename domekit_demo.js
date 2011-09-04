@@ -30,6 +30,26 @@ domekit.Demo = function () {
     domekitController.rotateY(rotation * (2*Math.PI) / rotationSliderState.maxVal);
   });
 
+  // scale slider
+  var scaleSlider = new goog.ui.Slider();
+  scaleSlider.render(
+    document.getElementById('scale-slider-goes-here')
+  );
+  var scaleSliderState = {
+    value : scaleSlider.getValue(),
+    // TODO: what units?
+    maxVal : 100
+  }
+  scaleSlider.setMaximum(scaleSliderState.maxVal);
+  scaleSlider.addEventListener(goog.ui.Component.EventType.CHANGE, function() {
+    var newVal = scaleSlider.getValue();
+    var scale = newVal - scaleSliderState.value;
+    scaleSliderState.value = newVal;
+    // scale in degrees converted to radians,
+    // requirement of scale function
+    domekitController.changeScale(scale);
+  });
+
   // dome mode button
   var domeButton = goog.dom.getElement('choose-a-dome');
   goog.events.listen(domeButton, goog.events.EventType.CLICK, function() { 

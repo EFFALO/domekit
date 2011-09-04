@@ -236,6 +236,7 @@ domekit.Controller.prototype.setRadiusInMeters = function(meters) {
   this.scaleIconDimensions_.w = this.defaultScaleIconDimensions_.w * meters;
 }
 
+// TODO: fine tune this logic
 domekit.Controller.prototype.setYClip = function() {
   if(this.triangleFrequency_ == 1) this.clipY_ = 1.5;
   else if(this.triangleFrequency_ == 2) this.clipY_ = .1;
@@ -314,6 +315,9 @@ domekit.Controller.prototype.rotateZ = function(rotationAngleInRadians) {
   }
 }
 
+domekit.Controller.prototype.changeScale = function(scale) {
+  console.log('cS', scale)
+}
 
 /////////////////////////////
 //GEOMETRY AND CALCULATIONS//
