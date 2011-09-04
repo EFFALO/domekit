@@ -36,8 +36,9 @@ domekit.Controller = function(width, height, scale) {
   this.canvasWidth_ = width || 500;
   this.canvasHeight_ = height || 500;
   this.radiusInMeters_ = 1;
+  // human.png real dimensions: 134 x 355
   this.defaultScaleIconDimensions_ = {
-    w : 50,
+    w : 28,
     h : 75
   }
   this.scaleIconDimensions_ = {
@@ -72,19 +73,21 @@ domekit.Controller.prototype.enterDocument = function() {
 
   this.generateModelPointsAndConnections();
 
-  var coords = {
-    x : 0,
-    y : 0
-  };
   var imgObj = new Image();
-  imgObj.src = 'http://localhost:8080/human.png'
+  imgObj.src = '/human.png'
+  var imgOffsets = {};
+  imgObj.onload = goog.bind(function() {
+    // on the floor, in the middle of the geodesic
+    imgOffsets.x = (this.canvasWidth_ / 2) - this.scaleIconDimensions_.w;
+    imgOffsets.y = this.canvasHeight_ - this.scaleIconDimensions_.h;
+  }, this);
 
   var runloop = goog.bind(function() {
     this.clipToVisiblePoints();
     this.projectPoints();
     this.clearCanvas();
     this.drawFrame();
-    this.drawScaleIcon(imgObj, coords);
+    this.drawScaleIcon(imgObj, imgOffsets);
   }, this);
   setInterval(runloop, 1000/45);
 }
@@ -256,7 +259,7 @@ domekit.Controller.prototype.calculateProjectionDimensions = function() {
       x : this.projectionWidth_ / 2,
       y : this.projectionHeight_ / 2 + domeVOffset * this.projectionHeight_
     };
-    //Why is this here?
+    // FIXME: Why is this here?
     if(this.triangleFrequency_ == 1) this.offsets.y+=13;
   } else {
     this.maximumRadius_ = Math.min(this.canvasWidth_, this.canvasHeight_) / 2;
