@@ -10,28 +10,33 @@ domekit.Demo = function () {
   // begin drawing dome canvas component
   domekitController.render(goesHere);
 
-  // set up demo slider
-  var sliderGoesHere = document.getElementById('slider-goes-here');
-  var slider = new goog.ui.Slider();
-  slider.render(sliderGoesHere);
-  var sliderVal = slider.getValue();
-  // slider is in degrees
-  var sliderMax = 360;
-  slider.setMaximum(sliderMax);
-  slider.addEventListener(goog.ui.Component.EventType.CHANGE, function() {
-    var newVal = slider.getValue();
-    var rotation = newVal - sliderVal;
-    sliderVal = newVal;
+  // rotation slider
+  var rotationSlider = new goog.ui.Slider();
+  rotationSlider.render(
+    document.getElementById('rotation-slider-goes-here')
+  );
+  var rotationSliderState = {
+    value : rotationSlider.getValue(),
+    // slider is in degrees
+    maxVal : 360
+  }
+  rotationSlider.setMaximum(rotationSliderState.maxVal);
+  rotationSlider.addEventListener(goog.ui.Component.EventType.CHANGE, function() {
+    var newVal = rotationSlider.getValue();
+    var rotation = newVal - rotationSliderState.value;
+    rotationSliderState.value = newVal;
     // rotation in degrees converted to radians,
     // requirement of rotation function
-    domekitController.rotateY(rotation * (2*Math.PI)/sliderMax);
+    domekitController.rotateY(rotation * (2*Math.PI) / rotationSliderState.maxVal);
   });
 
+  // dome mode button
   var domeButton = goog.dom.getElement('choose-a-dome');
   goog.events.listen(domeButton, goog.events.EventType.CLICK, function() { 
     domekitController.setDomeMode();
   });
 
+  // sphere mode button
   var sphereButton = goog.dom.getElement('choose-a-sphere');
   goog.events.listen(sphereButton, goog.events.EventType.CLICK, function() { 
     domekitController.setSphereMode();

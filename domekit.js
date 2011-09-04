@@ -3,7 +3,6 @@ goog.provide('domekit.Controller');
 
 goog.require('goog.ui.Component');
 goog.require('goog.dom');
-goog.require('goog.ui.Slider');
 
 /** @constructor */
 domekit.Point3D = function(x,y,z) {
