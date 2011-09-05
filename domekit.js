@@ -62,8 +62,9 @@ domekit.Controller.prototype.createDom = function() {
   goog.dom.append(this.getElement(), this.canvas_);
 
   // scale icon
+  this.iconScale_ = 1
   this.scaleIcon_ = new domekit.ScaleIcon(
-    new goog.math.Size(28, 75)
+    new goog.math.Size(56, 150)
   )
   this.addChild(this.scaleIcon_, true)
 }
@@ -324,7 +325,8 @@ domekit.Controller.prototype.rotateZ = function(rotationAngleInRadians) {
 }
 
 domekit.Controller.prototype.changeScale = function(scale) {
-  console.log('cS', scale)
+  this.iconScale_ = this.iconScale_ + (scale / 100)
+  this.scaleIcon_.setSize(new goog.math.Size(56 / this.iconScale_, 150 / this.iconScale_))
 }
 
 /////////////////////////////
