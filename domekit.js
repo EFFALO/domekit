@@ -1,17 +1,26 @@
 goog.provide('domekit.Point3D');
 goog.provide('domekit.Controller');
 
+goog.require('domekit.ScaleIcon');
 goog.require('goog.ui.Component');
 goog.require('goog.dom');
 
-/** @constructor */
+/** 
+* @constructor 
+* @param {float} x
+* @param {float} y
+* @param {float} z */
 domekit.Point3D = function(x,y,z) {
   this.x = x || 0.0;
   this.y = y || 0.0;
   this.z = z || 0.0;
 }
 
-/** @constructor */
+/** 
+* @constructor 
+* @param {integer} width
+* @param {integer} height
+* @param {float}   scale*/
 domekit.Controller = function(width, height, scale) {
   goog.base(this);
   this.context_ = null
@@ -35,15 +44,6 @@ domekit.Controller = function(width, height, scale) {
   this.canvasWidth_ = width || 500;
   this.canvasHeight_ = height || 500;
   this.radiusInMeters_ = 1;
-  // human.png real dimensions: 134 x 355
-  this.defaultScaleIconDimensions_ = {
-    w : 28,
-    h : 75
-  }
-  this.scaleIconDimensions_ = {
-    w : this.defaultScaleIconDimensions_.w,
-    h : this.defaultScaleIconDimensions_.h
-  }
 
   this.calculateProjectionDimensions();
 }
@@ -51,42 +51,39 @@ goog.inherits(domekit.Controller, goog.ui.Component);
 
 domekit.Controller.prototype.createDom = function() {
   goog.base(this, 'createDom');
-  var canvas = goog.dom.createDom('canvas', {
+
+  // canvas
+  this.canvas_ = goog.dom.createDom('canvas', {
     id     : 'domekit-visual-efforts',
     width  : this.canvasWidth_,
     height : this.canvasHeight_
   });
-  this.setElementInternal(canvas);
+  goog.dom.append(this.getElement(), this.canvas_);
+
+  // scale icon
+  this.scaleIcon_ = new domekit.ScaleIcon(
+    new goog.math.Coordinate(300, 300),
+    new goog.math.Size(28, 75)
+  )
+  this.addChild(this.scaleIcon_, true)
 }
 
 domekit.Controller.prototype.enterDocument = function() {
   goog.base(this, 'enterDocument');
 
-  var canvas = this.getElement();
-
-  if(canvas.getContext){
-    this.context_ = canvas.getContext('2d');
+  if(this.canvas_.getContext){
+    this.context_ = this.canvas_.getContext('2d');
   } else {
-    throw new Error(canvas.innerHTML);
+    throw new Error(this.canvas_.innerHTML);
   }
 
   this.generateModelPointsAndConnections();
-
-  var imgObj = new Image();
-  imgObj.src = '/human.png'
-  var imgOffsets = {};
-  imgObj.onload = goog.bind(function() {
-    // on the floor, in the middle of the geodesic
-    imgOffsets.x = (this.canvasWidth_ / 2) - this.scaleIconDimensions_.w;
-    imgOffsets.y = this.canvasHeight_ - this.scaleIconDimensions_.h;
-  }, this);
 
   var runloop = goog.bind(function() {
     this.clipToVisiblePoints();
     this.projectPoints();
     this.clearCanvas();
     this.drawFrame();
-    this.drawScaleIcon(imgObj, imgOffsets);
   }, this);
   setInterval(runloop, 1000/45);
 }
@@ -165,10 +162,6 @@ domekit.Controller.prototype.drawConnection = function(point1, point2, color) {
   this.context_.restore();
 }
 
-domekit.Controller.prototype.drawScaleIcon = function(imgObj, coords) {
-  this.context_.drawImage(imgObj, coords.x, coords.y, this.scaleIconDimensions_.w, this.scaleIconDimensions_.h);
-}
-
 domekit.Controller.prototype.drawFrame = function() {
   var projectedPoints = this.projectedPoints_;
   var connections = this.connections_;
@@ -229,11 +222,6 @@ domekit.Controller.prototype.setTriangleFrequency = function(frequency) {
   this.setYClip();
   this.generateModelPointsAndConnections();
   this.calculateProjectionDimensions();
-}
-
-domekit.Controller.prototype.setRadiusInMeters = function(meters) {
-  this.scaleIconDimensions_.h = this.defaultScaleIconDimensions_.h * meters;
-  this.scaleIconDimensions_.w = this.defaultScaleIconDimensions_.w * meters;
 }
 
 // TODO: fine tune this logic
