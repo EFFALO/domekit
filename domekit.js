@@ -51,18 +51,18 @@ goog.inherits(domekit.Controller, goog.ui.Component);
 
 domekit.Controller.prototype.createDom = function() {
   goog.base(this, 'createDom');
+  goog.dom.classes.add(this.getElement(), 'domekit-viewport')
 
   // canvas
   this.canvas_ = goog.dom.createDom('canvas', {
-    id     : 'domekit-visual-efforts',
-    width  : this.canvasWidth_,
-    height : this.canvasHeight_
+    'class'  : 'domekit-canvas',
+    'width'  : this.canvasWidth_,
+    'height' : this.canvasHeight_
   });
   goog.dom.append(this.getElement(), this.canvas_);
 
   // scale icon
   this.scaleIcon_ = new domekit.ScaleIcon(
-    new goog.math.Coordinate(300, 300),
     new goog.math.Size(28, 75)
   )
   this.addChild(this.scaleIcon_, true)
@@ -76,6 +76,14 @@ domekit.Controller.prototype.enterDocument = function() {
   } else {
     throw new Error(this.canvas_.innerHTML);
   }
+
+  var currentPos = goog.style.getPageOffset(this.canvas_)
+  this.scaleIcon_.setFloor(new goog.math.Coordinate(
+    // in the middle
+    currentPos.x + this.canvasWidth_ / 2, 
+    // on the floor
+    currentPos.y + this.canvasHeight_
+  ))
 
   this.generateModelPointsAndConnections();
 
