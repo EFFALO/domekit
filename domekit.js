@@ -77,14 +77,7 @@ domekit.Controller.prototype.enterDocument = function() {
     throw new Error(this.canvas_.innerHTML);
   }
 
-  var currentPos = goog.style.getPageOffset(this.canvas_)
-  this.scaleIcon_.setFloor(new goog.math.Coordinate(
-    // in the middle
-    currentPos.x + this.canvasWidth_ / 2, 
-    // on the floor
-    currentPos.y + this.canvasHeight_
-  ))
-
+  this.scaleIcon_.setFloor(this.calculateFloor())
   this.generateModelPointsAndConnections();
 
   var runloop = goog.bind(function() {
@@ -216,11 +209,13 @@ domekit.Controller.prototype.clipToVisiblePoints = function() {
 
 domekit.Controller.prototype.setDomeMode = function() {
   this.clipDome_ = true;
+  this.scaleIcon_.setFloor(this.calculateFloor())
   this.calculateProjectionDimensions();
 }
 
 domekit.Controller.prototype.setSphereMode = function() {
   this.clipDome_ = false;
+  this.scaleIcon_.setCenter(this.calculateCenter())
   this.calculateProjectionDimensions();
 }
 
@@ -266,6 +261,23 @@ domekit.Controller.prototype.calculateProjectionDimensions = function() {
   }
 }
 
+domekit.Controller.prototype.calculateFloor = function() {
+  // in the middle on the floor
+  var currentPos = goog.style.getPageOffset(this.canvas_)
+  return (new goog.math.Coordinate(
+    currentPos.x + this.canvasWidth_ / 2, 
+    currentPos.y + this.canvasHeight_
+  ))
+}
+
+domekit.Controller.prototype.calculateCenter = function() {
+  // in the middle of the canvas
+  var currentPos = goog.style.getPageOffset(this.canvas_)
+  return (new goog.math.Coordinate(
+    currentPos.x + this.canvasWidth_ / 2, 
+    currentPos.y + this.canvasHeight_ / 2
+  ))
+}
 
 // TODO: The only differences between the three rotate functions are the axes used in the calculations. 
 // Consider how to make these functions DRY.
