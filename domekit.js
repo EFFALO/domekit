@@ -45,6 +45,13 @@ domekit.Controller = function(width, height, scale) {
   this.canvasHeight_ = height || 500;
   this.radiusInMeters_ = 1;
 
+  // scale icon
+  // TODO: move iconScale logic into domekit.ScaleIcon
+  this.iconScale_ = 1
+  this.scaleIcon_ = new domekit.ScaleIcon(
+    new goog.math.Size(56, 150)
+  )
+
   this.calculateProjectionDimensions();
 }
 goog.inherits(domekit.Controller, goog.ui.Component);
@@ -60,13 +67,6 @@ domekit.Controller.prototype.createDom = function() {
     'height' : this.canvasHeight_
   });
   goog.dom.append(this.getElement(), this.canvas_);
-
-  // scale icon
-  this.iconScale_ = 1
-  this.scaleIcon_ = new domekit.ScaleIcon(
-    new goog.math.Size(56, 150)
-  )
-  this.addChild(this.scaleIcon_, true)
 }
 
 domekit.Controller.prototype.enterDocument = function() {
@@ -86,6 +86,7 @@ domekit.Controller.prototype.enterDocument = function() {
     this.projectPoints();
     this.clearCanvas();
     this.drawFrame();
+    this.drawScaleIcon();
   }, this);
   setInterval(runloop, 1000/45);
 }
@@ -181,6 +182,16 @@ domekit.Controller.prototype.drawFrame = function() {
   }
 }
 
+domekit.Controller.prototype.drawScaleIcon = function() {
+  this.context_.drawImage(
+    this.scaleIcon_.img_,
+    this.scaleIcon_.offsets_.x,
+    this.scaleIcon_.offsets_.y,
+    this.scaleIcon_.size_.width,
+    this.scaleIcon_.size_.height
+  );
+}
+
 domekit.Controller.prototype.clearCanvas = function() {
   this.context_.clearRect(0, 0, this.canvasWidth_, this.canvasHeight_);
 }
@@ -264,19 +275,17 @@ domekit.Controller.prototype.calculateProjectionDimensions = function() {
 
 domekit.Controller.prototype.calculateFloor = function() {
   // in the middle on the floor
-  var currentPos = goog.style.getPageOffset(this.canvas_)
   return (new goog.math.Coordinate(
-    currentPos.x + this.canvasWidth_ / 2, 
-    currentPos.y + this.canvasHeight_
+    this.canvasWidth_ / 2,
+    this.canvasHeight_
   ))
 }
 
 domekit.Controller.prototype.calculateCenter = function() {
   // in the middle of the canvas
-  var currentPos = goog.style.getPageOffset(this.canvas_)
   return (new goog.math.Coordinate(
-    currentPos.x + this.canvasWidth_ / 2, 
-    currentPos.y + this.canvasHeight_ / 2
+    this.canvasWidth_ / 2,
+    this.canvasHeight_ / 2
   ))
 }
 
