@@ -634,14 +634,41 @@ a:hover {
 	border-color: #e7e4bb !important;
 	text-decoration: none;
 }
+
 /* — — — — — — — — — — — — — — — — — — — — — — — — — — — — — — — */
 
-.slider {
+.toggle_box {
+	float: left;
+	border: 1px solid #ddd;
+}
+
+.toggle_box a {
+	float:left;
+	background: #d5d5d5;
+	padding: 0 8px;
+	color: #111;
+}
+
+.toggle_box a:hover {
+	text-decoration: none;
+	background-color: #fffbcd;
+	color: #111;
+}
+
+.toggle_box a.selected {
+	background: #666 !important;
+	color: #fff !important;
+	font-weight: bold;
+}
+
+/* — — — — — — — — — — — — — — — — — — — — — — — — — — — — — — — */
+
+.slider, .toggle {
 	padding: 5px 0;
 	line-height: 32px;
 }
 
-.slider span {
+.slider span, .toggle span {
 	float: left;
 	width: 75px;
 	font-size: 14px;
