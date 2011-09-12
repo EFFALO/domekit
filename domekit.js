@@ -24,7 +24,7 @@ domekit.Controller = function(width, height, scale) {
   this.pointSize_ = 4.0;
   this.points_ = [];
   // V number
-  this.triangleFrequency_ = 5;
+  this.triangleFrequency_ = 2;
   // index on points for visibility
   // [i] == true if points[i] is visible
   this.visiblePoints_ = [];
@@ -63,7 +63,7 @@ domekit.Controller.prototype.enterDocument = function() {
   }
 
   this.generateModelPointsAndConnections();
-  this.setTriangleFrequency(5);
+  this.setTriangleFrequency(2);
 
   var runloop = goog.bind(function() {
     this.clipToVisiblePoints();

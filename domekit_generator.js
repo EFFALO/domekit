@@ -15,9 +15,9 @@ domekit.FrequencyControl = function(controller) {
   this.controller_ = controller;
   this.frequencyInput_ = new goog.ui.LabelInput();
   this.frequencySlider_ = new goog.ui.Slider();
-  this.maxFrequency_ = 8;
+  this.maxFrequency_ = 4;
   this.minFrequency_ = 1;
-  this.defaultFrequency_ = 5;
+  this.defaultFrequency_ = 2;
   this.frequency_ = this.defaultFrequency_;
 }
 goog.inherits(domekit.FrequencyControl, goog.ui.Component);
