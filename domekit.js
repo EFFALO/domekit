@@ -43,7 +43,6 @@ domekit.Controller = function(width, height, scale) {
   this.visibleConnections_ = [];
   this.canvasWidth_ = width || 500;
   this.canvasHeight_ = height || 500;
-  this.radiusInMeters_ = 1;
 
   // scale icon
   // TODO: move iconScale logic into domekit.ScaleIcon
@@ -134,8 +133,8 @@ domekit.Controller.prototype.projectPoints = function() {
     if (this.visiblePoints_[i]) {
       // visible points are projected
       newPoint = this.projectedPoints_[i] = new domekit.Point3D();
-      newPoint.x = this.project(points[i].x, points[i].z, 2, .005, xOffset, this.scale_);
-      newPoint.y = this.project(points[i].y, points[i].z, 2, .005, yOffset, this.scale_);
+      newPoint.x = this.project(points[i].x, points[i].z, 2.2, .005, xOffset, this.scale_);
+      newPoint.y = this.project(points[i].y, points[i].z, 2.2, .005, yOffset, this.scale_);
       newPoint.z = points[i].z;
     } else {
       // invisible points are null in the projection
@@ -334,7 +333,11 @@ domekit.Controller.prototype.rotateZ = function(rotationAngleInRadians) {
 }
 
 domekit.Controller.prototype.changeScale = function(scale) {
+  // magic numbers COMPUTER FRIENDS
+  // 713 feet IS MAX SIZE
+  // 2 feet is max radius
   this.iconScale_ = this.iconScale_ + (scale / 100)
+  this.scale_ = this.scale_ + (scale / 1000)
   this.scaleIcon_.setSize(new goog.math.Size(56 / this.iconScale_, 150 / this.iconScale_))
 }
 
