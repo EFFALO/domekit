@@ -24,6 +24,14 @@ Download closure.jar into the domekit project directory from <https://github.com
 
 Once you're up and running, browse to <http://localhost:8080/>
 
+# Deploying
+
+```bash
+rake #builds a copy of the generator to the build directory
+git commit -am "re-built generator"
+git push heroku
+```
+
 # References
 
 Reference geodesic dome generation algorithms: <http://www.antiprism.com/other/dome/index.html>

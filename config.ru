@@ -19,7 +19,13 @@ Closure.add_source :externs
 # This is not used under JRuby or when running the .jar server.
 # Closure.config.java = 'java'
 
-# The Closure middleware and a simple file server.
-use Closure::Middleware, 'index'
-
-run Rack::File.new '.'
+if ENV['HEROKU']
+  use Rack::Static, :urls => {"/" => 'index.html'}, :root => 'build'
+  run Rack::URLMap.new({
+    "/" => Rack::Directory.new('./build')
+  })
+else
+  # The Closure middleware and a simple file server.
+  use Closure::Middleware, 'index'
+  run Rack::File.new '.'
+end
