@@ -1,0 +1,156 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>domekit &mdash; generator</title>
+    <link rel="stylesheet" href="style/reset-min.css" type="text/css" />
+    <link rel="stylesheet" href="style/style.css" type="text/css" media="screen" />
+    <script src='generator.js?build'></script>
+    <script type="text/javascript">
+//      var _gaq = _gaq || [];
+//      _gaq.push(['_setAccount', 'UA-23347296-1']);
+//      _gaq.push(['_trackPageview']);
+//
+//      (function() {
+//        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+//        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+//        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+//      })();
+
+    </script>
+  </head>
+  <body>
+    <div class="container">
+
+      <!-- HEADER INCLUDE -->
+      <div class="header">
+        <div class="logo">
+          <a href="http://domekit.cc">&nbsp;</a>
+        </div><!-- /logo -->
+        <div class="nav">
+            <ul>
+              <li><a href="http://domekit.cc">hello</a></li>
+              <li><a href="/generator" class="selected">generator</a></li>
+              <li><a href="/connectors">connectors</a></li>
+              <li><a href="/kits">buy a kit</a></li>
+            </ul>
+        </div><!-- /nav -->
+        <div class="clear"></div>
+      </div> <!-- /header -->
+      <!-- /HEADER INCLUDE -->
+
+      <div id="generator">
+        <div id="visualization">
+          <div id="scaledview">
+          </div><!-- /scaledview -->
+          <div class="clear"></div>
+          <div id="topview">
+            <img src="images/top-placeholder.png" />
+          </div> <!-- /topview -->
+          <div id="specifications">
+            <div class="box0px10px">
+              <h1>GEOMETRY TITLE</h1>
+              <p>radius: <strong class="radius">1.00m</strong> height: <strong class="height">1.00m</strong></p>
+              <table id="strutdata">
+                <tr>
+                  <td><h2>STRUTS:</h2></td>
+                  <td></td>
+                  <td class="total"><span class="numstruts">110</span></td>
+                </tr>
+                <tr>
+                  <td class="type">A</td>
+                  <td class="value"><span class="length strut-A">80</span></td>
+                  <td class="total">x 35</td>
+                </tr>
+                <tr>
+                  <td class="type">B</td>
+                  <td class="value"><span class="length strut-A">55</span></td>
+                  <td class="total">x 30</td>
+                </tr>
+                <tr>
+                  <td class="type">C</td>
+                  <td class="value"><span class="length strut-A">30</span></td>
+                  <td class="total">x 30</td>
+                </tr>
+              </table>
+              <table id="nodedata">
+                <tr>
+                  <td><h2>NODES:</h2></td>
+                  <td></td>
+                  <td class="total"><span class="numstruts">61</span></td>
+                </tr>
+                <tr>
+                  <td class="type">6-way</td>
+                  <td></td>
+                  <td class="total">x 55</td>
+                </tr>
+                <tr>
+                  <td class="type">5-way</td>
+                  <td></td>
+                  <td class="total">x 6</td>
+                </tr>
+              </table>
+            </div><!-- /box10px -->
+          </div> <!-- /specifications -->
+        </div> <!-- /visualization -->
+        <div id="parameters">
+          <div class="box10px">
+            <a id="makedome" class="modebutton selected">
+              <div class="icon"></div>
+              <span>make a dome</span>
+            </a>
+            <a id="makesphere" class="modebutton">
+              <div class="icon" ></div>
+              <span>a sphere perhaps?</span>
+            </a>
+            <div class="clear"></div>
+            <br />
+            <div id="frequency" class="slider">
+              <span>frequency:</span>
+              <div id="frequency-slider"></div>
+              <div id="frequency-input"></div>
+              <div class="clear"></div>
+            </div> <!-- radius slider -->
+            <div id="radius" class="slider">
+              <span>radius:</span>
+              <div class="track">
+                <div class="handle"></div>
+              </div>
+              <input type="text" value="1.00m" />
+              <div class="clear"></div>
+            </div> <!-- radius slider -->
+						<div class="divider"></div> 
+						<div id="units" class="toggle"> 
+							<span>units:</span> 
+							<div class="toggle_box"> 
+								<a class="imperial selected" href="#">ft</a> 
+								<a class="metric" href="#">m</a> 
+							</div> 
+							<div class="clear"></div> 
+						</div> <!-- unit toggle -->
+            <br />
+            <a class="generate" href="dome-instructions.pdf">download assembly instructions</a>
+          </div> <!-- /box -->
+        </div> <!-- /parameters -->
+      </div> <!-- /generator -->
+
+      <!-- FOOTER INCLUDE -->
+      <div id="footer">
+        <div class="left">
+          <p><a href="http://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a> 2011 <a href="http://effalo.com">EFFALO</a><!-- &middot; <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/us/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/us/80x15.png" /></a> --></p>
+        </div> <!-- /left -->
+        <div class="right">
+          <p>say <a href="mailto:hello@effalo.com">hello@effalo.com</a> &middot; holler <a href="http://twitter.com/effalo">@effalo</a> + <a href="http://twitter.com/domekitcc">@domekitcc</a></p>
+        </div> <!-- /right -->
+        <div class="clear"></div>      
+      </div> <!-- /footer -->
+      <!-- /FOOTER INCLUDE -->
+
+    </div> <!-- /container -->
+    <script type='text/javascript'>
+      window.onload = function() {
+        var generator = new domekit.Generator();
+      };
+    </script>
+  </body>
+</html>
