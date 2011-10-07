@@ -1,4 +1,5 @@
 goog.provide('domekit.Point3D');
+goog.provide('domekit.EventType');
 goog.provide('domekit.Controller');
 
 goog.require('goog.ui.Component');
@@ -10,6 +11,14 @@ domekit.Point3D = function(x,y,z) {
   this.x = x || 0.0;
   this.y = y || 0.0;
   this.z = z || 0.0;
+}
+
+/**
+ * Constants for event names.
+ * @enum {string}
+ */
+domekit.EventType = {
+  FREQUENCY_CHANGE: 'fc'
 }
 
 /** @constructor */
@@ -89,6 +98,10 @@ domekit.Controller.prototype.resetModelPointsAndConnections = function() {
   this.points_ = [];
   this.connections_ = [];
   this.faces_ = [];
+}
+
+domekit.Controller.prototype.getFrequency = function () {
+  return this.triangleFrequency_;
 }
 
 
@@ -210,6 +223,8 @@ domekit.Controller.prototype.setTriangleFrequency = function(frequency) {
   this.rotateY(Math.PI/32);
   this.rotateX(Math.PI/48);
   this.strutLengths();
+
+  goog.events.dispatchEvent(this, domekit.EventType.FREQUENCY_CHANGE)
 }
 
 domekit.Controller.prototype.setClip = function() {

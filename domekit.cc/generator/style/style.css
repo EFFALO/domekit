@@ -513,6 +513,11 @@ a:hover {
 	text-align: center;
 }
 
+#topview img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
 #specifications {
 	float: left;
 	width: 288px;

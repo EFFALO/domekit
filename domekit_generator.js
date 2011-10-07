@@ -1,6 +1,7 @@
 goog.provide('domekit.Generator');
 goog.provide('domekit.FrequencyControl');
 
+goog.require('goog.dom');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.Slider');
 goog.require('goog.ui.LabelInput');
@@ -75,6 +76,37 @@ domekit.FrequencyControl.prototype.updateSubControls = function(val) {
   this.controller_.setTriangleFrequency(val);
 };
 
+/** @constructor
+  controller: the domekit controller whose top view we are drawing.
+*/
+domekit.TopView = function(controller) {
+  goog.base(this);
+
+  this.controller_ = controller;
+  this.image_ = new Image();
+}
+goog.inherits(domekit.TopView, goog.ui.Component);
+
+domekit.TopView.prototype.createDom = function() {
+  goog.base(this, 'createDom');
+
+  var topViewGoesHere = goog.dom.getElement('topview');
+
+  this.image_.src = 'images/topviews/2v.svg';
+  goog.dom.appendChild(topViewGoesHere, this.image_);
+}
+
+domekit.TopView.prototype.enterDocument = function() {
+  goog.base(this, 'enterDocument');
+
+  goog.events.listen(this.controller_, domekit.EventType.FREQUENCY_CHANGE, this.handleFrequencyChange, false, this);
+}
+
+domekit.TopView.prototype.handleFrequencyChange = function() {
+  this.image_.src = 'images/topviews/' + this.controller_.getFrequency() + 'v.svg'
+}
+
+
 /** @constructor */
 domekit.Generator = function() {
   var domekitController = new domekit.Controller(600, 350);
@@ -97,6 +129,9 @@ domekit.Generator = function() {
 
   var frequencyControl = new domekit.FrequencyControl(domekitController);
   frequencyControl.render();
+
+  var topView = new domekit.TopView(domekitController);
+  topView.render();
 }
 
 goog.exportSymbol('domekit.Generator', domekit.Generator)
