@@ -1,4 +1,4 @@
-#\ -p 8080 -E none
+#\ -E none
 # The above line is processed by `rackup` for gem users.
 # It is ignored if you start the server with `java -jar closure.jar`.
 # Changes to this file always require a server restart.

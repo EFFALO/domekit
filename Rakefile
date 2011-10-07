@@ -12,7 +12,7 @@ end
 
 task :copy_assets do
   puts "=> Copying static assets to build directory"
-  files = files = Dir.glob('domekit.cc/generator/*')
+  files = Dir.glob('domekit.cc/generator/*')
   mkdir BUILD_DIRECTORY
   cp_r files, "build"
 end
@@ -20,8 +20,8 @@ end
 task :copy_app do
   puts "=> Building app HTML and Javascript"
   begin
-    sh "curl localhost:8080/domekit.cc/generator/generator.js?build > #{BUILD_DIRECTORY}/generator.js"
-    sh "curl localhost:8080/domekit.cc/generator/index.html?build > #{BUILD_DIRECTORY}/index.html"
+    sh "curl localhost:#{PORT}/domekit.cc/generator/generator.js?build > #{BUILD_DIRECTORY}/generator.js"
+    sh "curl localhost:#{PORT}/domekit.cc/generator/index.html?build > #{BUILD_DIRECTORY}/index.html"
   rescue
     puts "Files failed to be copied. Do you have curl installed? Was the server running?"
   end
