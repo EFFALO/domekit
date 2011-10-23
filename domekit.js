@@ -18,7 +18,8 @@ domekit.Point3D = function(x,y,z) {
  * @enum {string}
  */
 domekit.EventType = {
-  FREQUENCY_CHANGE: 'fc'
+  FREQUENCY_CHANGE: 'fc',
+  GEOMETRY_CHANGE:  'gc'
 }
 
 /** @constructor */
@@ -212,11 +213,15 @@ domekit.Controller.prototype.clipToVisiblePoints = function() {
 domekit.Controller.prototype.setDomeMode = function() {
   this.clipDome_ = true;
   this.calculateProjectionDimensions();
+
+  goog.events.dispatchEvent(this, domekit.EventType.GEOMETRY_CHANGE)
 }
 
 domekit.Controller.prototype.setSphereMode = function() {
   this.clipDome_ = false;
   this.calculateProjectionDimensions();
+
+  goog.events.dispatchEvent(this, domekit.EventType.GEOMETRY_CHANGE)
 }
 
 domekit.Controller.prototype.setTriangleFrequency = function(frequency) {
@@ -230,6 +235,7 @@ domekit.Controller.prototype.setTriangleFrequency = function(frequency) {
   this.strutLengths();
 
   goog.events.dispatchEvent(this, domekit.EventType.FREQUENCY_CHANGE)
+  goog.events.dispatchEvent(this, domekit.EventType.GEOMETRY_CHANGE)
 }
 
 domekit.Controller.prototype.setClip = function() {
@@ -431,16 +437,8 @@ domekit.Controller.prototype.strutLengths = function() {
       if(Math.floor(struts[k]*100000000.0) == Math.floor(distance*100000000.0)) found = 1;
     }
     if(found == 0) struts.push(distance);
-  }   
-  return struts;
-  //END OF FUNCTION  - PREVIEW RESULTS BELOW
-  /*console.log("STRUTS LENGTH: ", struts.length);
-  for(i = 0; i < struts.length; i++){
-    console.log(struts[i]);
   }
-  for(i = 0; i < strutCount.length; i++){
-    console.log(strutCount[i]);
-  }*/
+  return struts;
 }
 
 domekit.Controller.prototype.strutQuantities = function(){
@@ -456,18 +454,18 @@ domekit.Controller.prototype.strutQuantities = function(){
   return quantities;
 }
 
-domekit.Controller.prototype.connectorQuantities = function(){
+domekit.Controller.prototype.nodeQuantities = function(){
   //first number: # of 5 way joints, second: # of 6 way joints
-  var connectors = [];
-  if(this.triangleFrequency_ == 1) connectors = [11,0];
-  else if(this.triangleFrequency_ == 2) connectors = [6,20];
-  else if(this.triangleFrequency_ == 3) connectors = [6,55];
-  else if(this.triangleFrequency_ == 4) connectors = [6,85];
-  else if(this.triangleFrequency_ == 5) connectors = [6,145];
-  else if(this.triangleFrequency_ == 6) connectors = [6,190];
-  else if(this.triangleFrequency_ == 7) connectors = [6,275];
-  else if(this.triangleFrequency_ == 8) connectors = [6,335];
-  return connectors;
+  var nodes = [];
+  if(this.triangleFrequency_ == 1) nodes = [11,0];
+  else if(this.triangleFrequency_ == 2) nodes = [6,20];
+  else if(this.triangleFrequency_ == 3) nodes = [6,55];
+  else if(this.triangleFrequency_ == 4) nodes = [6,85];
+  else if(this.triangleFrequency_ == 5) nodes = [6,145];
+  else if(this.triangleFrequency_ == 6) nodes = [6,190];
+  else if(this.triangleFrequency_ == 7) nodes = [6,275];
+  else if(this.triangleFrequency_ == 8) nodes = [6,335];
+  return nodes;
 }
 
 

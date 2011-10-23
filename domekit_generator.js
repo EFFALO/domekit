@@ -106,6 +106,85 @@ domekit.TopView.prototype.handleFrequencyChange = function() {
   this.image_.src = 'images/topviews/' + this.controller_.getFrequency() + 'v.svg'
 }
 
+/** @constructor
+  controller: the domekit controller whose geometry we are displaying
+*/
+domekit.GeometryTable = function(controller) {
+  goog.base(this);
+
+  this.controller_ = controller;
+}
+goog.inherits(domekit.GeometryTable, goog.ui.Component);
+
+domekit.GeometryTable.prototype.createDom = function() {
+  goog.base(this, 'createDom');
+
+  var tableGoesHere = goog.dom.getElement('specifications');
+  this.setElementInternal(tableGoesHere);
+}
+
+domekit.GeometryTable.prototype.enterDocument = function() {
+  goog.base(this, 'enterDocument');
+
+  goog.events.listen(this.controller_, domekit.EventType.GEOMETRY_CHANGE, this.handleGeometryChange, false, this);
+
+  // Render initial state
+  this.handleGeometryChange();
+}
+
+domekit.GeometryTable.prototype.handleGeometryChange = function() {
+  var gcd = goog.dom.createDom
+  var strutLengths = this.controller_.strutLengths();
+  var strutQuantities = this.controller_.strutQuantities();
+  var totalStrutQuantity = domekit.GeometryTable.arraySum(strutQuantities);
+
+  var strutDataContainerEl = goog.dom.getElement('strutdata');
+  goog.dom.removeChildren(strutDataContainerEl);
+
+  var strutDataEl = gcd('tbody', null, gcd('tr', null,
+                                         gcd('td', {colspan: 2},
+                                           gcd('h2', null, 'STRUTS:')),
+                                         gcd('td', 'total',
+                                            gcd('span', 'numstruts', '' + totalStrutQuantity))
+                                          ));
+
+  goog.array.forEach(strutLengths, function(length, i) {
+    var strutEl = gcd('tr', null, gcd('td', 'type', String.fromCharCode(i + 65)),
+                                  gcd('td', 'value', gcd('span', ['length', 'strut-A'], '' + length.toPrecision(6))),
+                                  gcd('td', 'total', 'x ' + strutQuantities[i]));
+    goog.dom.appendChild(strutDataEl, strutEl);
+  })
+  goog.dom.appendChild(strutDataContainerEl, strutDataEl);
+
+  var nodeQuantities = this.controller_.nodeQuantities();
+  var totalNodeQuantity = domekit.GeometryTable.arraySum(nodeQuantities);
+  var nodeDataContainerEl = goog.dom.getElement('nodedata');
+  goog.dom.removeChildren(nodeDataContainerEl);
+
+  var nodeDataEl = gcd('tbody', null, gcd('tr', null,
+                                        gcd('td', {colspan: 2},
+                                          gcd('h2', null, 'NODES:')),
+                                        gcd('td', 'total',
+                                           gcd('span', 'numstruts', '' + totalNodeQuantity))
+                                         ));
+
+  goog.dom.appendChild(nodeDataEl, gcd('tr', null,
+                                     gcd('td', {'class': 'type', 'colspan': '2'}, '6-way'),
+                                     gcd('td', 'total', 'x ' + nodeQuantities[0]))
+                                   );
+  goog.dom.appendChild(nodeDataEl, gcd('tr', null,
+                                     gcd('td', {'class': 'type', 'colspan': '2'}, '5-way'),
+                                     gcd('td', 'total', 'x ' + nodeQuantities[1]))
+                                   );
+
+  goog.dom.appendChild(nodeDataContainerEl, nodeDataEl);
+}
+
+domekit.GeometryTable.arraySum = function(array) {
+  return goog.array.reduce(array, function(previousValue, currentValue) {
+    return previousValue + currentValue;
+  }, 0);
+}
 
 /** @constructor */
 domekit.Generator = function() {
@@ -143,6 +222,10 @@ domekit.Generator = function() {
 
   var topView = new domekit.TopView(domekitController);
   topView.render();
+
+  var geometryTable = new domekit.GeometryTable(domekitController);
+  var tableContainerEl = goog.dom.getElement('visualization');
+  geometryTable.render(tableContainerEl);
 }
 
 goog.exportSymbol('domekit.Generator', domekit.Generator)
