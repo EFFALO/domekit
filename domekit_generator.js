@@ -142,7 +142,7 @@ domekit.GeometryTable.prototype.handleGeometryChange = function() {
   goog.dom.removeChildren(strutDataContainerEl);
 
   var strutDataEl = gcd('tbody', null, gcd('tr', null,
-                                         gcd('td', {colspan: 2},
+                                         gcd('td', {'colspan': 2},
                                            gcd('h2', null, 'STRUTS:')),
                                          gcd('td', 'total',
                                             gcd('span', 'numstruts', '' + totalStrutQuantity))
@@ -162,7 +162,7 @@ domekit.GeometryTable.prototype.handleGeometryChange = function() {
   goog.dom.removeChildren(nodeDataContainerEl);
 
   var nodeDataEl = gcd('tbody', null, gcd('tr', null,
-                                        gcd('td', {colspan: 2},
+                                        gcd('td', {'colspan': 2},
                                           gcd('h2', null, 'NODES:')),
                                         gcd('td', 'total',
                                            gcd('span', 'numstruts', '' + totalNodeQuantity))
