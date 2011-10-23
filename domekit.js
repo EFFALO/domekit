@@ -415,24 +415,66 @@ domekit.Controller.prototype.strutLengths = function() {
   var j;
   var k;
   var found;
-  for(i = 0; i < this.connections_.length; i++){
-    distance = Math.sqrt( ((this.points_[this.connections_[i][0]].x-this.points_[this.connections_[i][1]].x)*(this.points_[this.connections_[i][0]].x-this.points_[this.connections_[i][1]].x)) +
-                          ((this.points_[this.connections_[i][0]].y-this.points_[this.connections_[i][1]].y)*(this.points_[this.connections_[i][0]].y-this.points_[this.connections_[i][1]].y)) +
-                          ((this.points_[this.connections_[i][0]].z-this.points_[this.connections_[i][1]].z)*(this.points_[this.connections_[i][0]].z-this.points_[this.connections_[i][1]].z)) );
-    distance+=nudger;
-    found = 0;
-    for(k = 0; k < struts.length; k++){
-      if(Math.floor(struts[k]*100000000.0) == Math.floor(distance*100000000.0)) found = 1;
+  var connections = [];
+  connections = this.visibleConnections_;
+  console.log("CONNECTIONS: ",this.visibleConnections_.length);
+  /*var neighbors = [];
+  for(i=0;i<this.points_.length;i++){
+    neighbors = this.findNeighbors(i);
+    for(j=0;j<neighbors.length;j++) connections.push([i,neighbors[j]]);
+  }
+  connections = this.connections_;
+  // remove duplicates
+  for(i=0;i<connections.length;i++){
+    neighbors = connections[i];
+    for(j=i;j<connections.length;j++){
+      if(neighbors[0] == connections[j][1] && neighbors[1] == connections[j][0]) connections.splice(j,1);
     }
-    if(found == 0) struts.push(distance);      
+  }*/
+  for(i=0;i<connections.length; i++) console.log(connections[i][0], connections[i][1]);
+  for(i = 0; i < connections.length; i++){
+    distance = Math.sqrt( ((this.points_[connections[i][0]].x-this.points_[connections[i][1]].x)*(this.points_[connections[i][0]].x-this.points_[connections[i][1]].x)) +
+                          ((this.points_[connections[i][0]].y-this.points_[connections[i][1]].y)*(this.points_[connections[i][0]].y-this.points_[connections[i][1]].y)) +
+                          ((this.points_[connections[i][0]].z-this.points_[connections[i][1]].z)*(this.points_[connections[i][0]].z-this.points_[connections[i][1]].z)) );
+    distance+=nudger;
+    found = -1;
+    for(k = 0; k < struts.length; k++){
+      if(Math.floor(struts[k]*100000000.0) == Math.floor(distance*100000000.0)) found = k;
+    }
+    if(found == -1) {
+      struts.push(distance);  //push new strut
+      strutCount[struts.length-1] = 1;  //begin counting struts
+      console.log("creating strut ",struts.length-1);
+    }
+    else {
+      strutCount[found]++;
+      console.log("add 1 to ",found);
+    }
   }   
-  //return struts;
+  return struts;
   //END OF FUNCTION  - PREVIEW RESULTS BELOW
-  console.log("STRUTS LENGTH: ", struts.length);
+  /*console.log("STRUTS LENGTH: ", struts.length);
   for(i = 0; i < struts.length; i++){
     console.log(struts[i]);
-  }    
+  }
+  for(i = 0; i < strutCount.length; i++){
+    console.log(strutCount[i]);
+  }*/
 }
+
+domekit.Controller.prototype.strutQuantities = function(){
+  var quantities = [];
+  if(this.triangleFrequency_ == 1) quantities = [25];
+  else if(this.triangleFrequency_ == 2) quantities = [30,35];
+  else if(this.triangleFrequency_ == 3) quantities = [30,55,80];
+  else if(this.triangleFrequency_ == 4) quantities = [30,60,30,30,70,30];
+  else if(this.triangleFrequency_ == 5) quantities = [30,60,30,30,80,20,70,70,35];
+  else if(this.triangleFrequency_ == 6) quantities = [30,60,30,30,60,90,130,65,60];
+  else if(this.triangleFrequency_ == 7) quantities = [30,60,30,30,60,30,60,60,80,90,70,35,70,70,30];
+  else if(this.triangleFrequency_ == 8) quantities = [30,60,30,30,60,60,30,60,60,60,70,30,60,90,60,30,70,60,30];
+  return quantities;
+}
+
 
 domekit.Controller.prototype.findNeighbors = function(index) {
   var neighbors = [];
