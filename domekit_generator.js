@@ -109,6 +109,17 @@ domekit.TopView.prototype.handleFrequencyChange = function() {
 
 /** @constructor */
 domekit.Generator = function() {
+  // image preloader
+  var images = [
+   'images/topviews/1v.svg',
+   'images/topviews/2v.svg',
+   'images/topviews/3v.svg',
+   'images/topviews/4v.svg'];
+  goog.array.forEach(images, function(el, i) {
+    var image = new Image()
+    image.src = el;
+  }, this)
+
   var domekitController = new domekit.Controller(600, 350);
   var goesHere = document.getElementById('scaledview');
   domekitController.render(goesHere);
