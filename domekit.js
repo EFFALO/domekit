@@ -73,6 +73,11 @@ domekit.Controller.prototype.enterDocument = function() {
 
   this.generateModelPointsAndConnections();
   this.setTriangleFrequency(2);
+  this.clipToVisiblePoints();
+  this.projectPoints();
+  this.clearCanvas();
+  this.drawFrame();
+  this.strutLengths();
 
   var runloop = goog.bind(function() {
     this.clipToVisiblePoints();
@@ -408,6 +413,7 @@ domekit.Controller.prototype.generateFaces = function() {
 
 domekit.Controller.prototype.strutLengths = function() {
   var struts = [];
+  var strutCount = [];
   var neighbors = [];
   var distance;
   var nudger = .000000000002;
@@ -473,6 +479,20 @@ domekit.Controller.prototype.strutQuantities = function(){
   else if(this.triangleFrequency_ == 7) quantities = [30,60,30,30,60,30,60,60,80,90,70,35,70,70,30];
   else if(this.triangleFrequency_ == 8) quantities = [30,60,30,30,60,60,30,60,60,60,70,30,60,90,60,30,70,60,30];
   return quantities;
+}
+
+domekit.Controller.prototype.connectorQuantities = function(){
+  //first number: # of 5 way joints, second: # of 6 way joints
+  var connectors = [];
+  if(this.triangleFrequency_ == 1) connectors = [11,0];
+  else if(this.triangleFrequency_ == 2) connectors = [6,20];
+  else if(this.triangleFrequency_ == 3) connectors = [6,55];
+  else if(this.triangleFrequency_ == 4) connectors = [6,85];
+  else if(this.triangleFrequency_ == 5) connectors = [6,145];
+  else if(this.triangleFrequency_ == 6) connectors = [6,190];
+  else if(this.triangleFrequency_ == 7) connectors = [6,275];
+  else if(this.triangleFrequency_ == 8) connectors = [6,335];
+  return connectors;
 }
 
 
