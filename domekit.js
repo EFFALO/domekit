@@ -443,28 +443,104 @@ domekit.Controller.prototype.strutLengths = function() {
 
 domekit.Controller.prototype.strutQuantities = function(){
   var quantities = [];
-  if(this.triangleFrequency_ == 1) quantities = [25];
-  else if(this.triangleFrequency_ == 2) quantities = [30,35];
-  else if(this.triangleFrequency_ == 3) quantities = [30,55,80];
-  else if(this.triangleFrequency_ == 4) quantities = [30,60,30,30,70,30];
-  else if(this.triangleFrequency_ == 5) quantities = [30,60,30,30,80,20,70,70,35];
-  else if(this.triangleFrequency_ == 6) quantities = [30,60,30,30,60,90,130,65,60];
-  else if(this.triangleFrequency_ == 7) quantities = [30,60,30,30,60,30,60,60,80,90,70,35,70,70,30];
-  else if(this.triangleFrequency_ == 8) quantities = [30,60,30,30,60,60,30,60,60,60,70,30,60,90,60,30,70,60,30];
+  if(this.clipDome_ == true){
+    if(this.triangleFrequency_ == 1) quantities = [25];
+    else if(this.triangleFrequency_ == 2) quantities = [30,35];
+    else if(this.triangleFrequency_ == 3) quantities = [30,55,80];
+    else if(this.triangleFrequency_ == 4) quantities = [30,60,30,30,70,30];
+    else if(this.triangleFrequency_ == 5) quantities = [30,60,30,30,80,20,70,70,35];
+    else if(this.triangleFrequency_ == 6) quantities = [30,60,30,30,60,90,130,65,60];
+    else if(this.triangleFrequency_ == 7) quantities = [30,60,30,30,60,30,60,60,80,90,70,35,70,70,30];
+    else if(this.triangleFrequency_ == 8) quantities = [30,60,30,30,60,60,30,60,60,60,70,30,60,90,60,30,70,60,30];
+  }
+  else{
+    if(this.triangleFrequency_ == 1) quantities = [30];
+    else if(this.triangleFrequency_ == 2) quantities = [60,60];
+    else if(this.triangleFrequency_ == 3) quantities = [60,90,120];
+    else if(this.triangleFrequency_ == 4) quantities = [60,120,60,60,120,60];
+
+    /// COMPUTATIONAL STRUT COUNTER to be implemented when i feel like rewriting it ///
+    ///////////////////////////////////////////////////////////////////////////////////
+    /*var lengthsofthem = [];
+    var numberofthem = [0,0,0,0,0,0];
+    for(var i=0; i < this.connections_.length; i++){
+      this.connections_[i][0]    
+      distance = Math.sqrt(
+        (this.points_[this.connections_[i][0]].x - this.points_[this.connections_[i][1]].x) * 
+          (this.points_[this.connections_[i][0]].x - this.points_[this.connections_[i][1]].x) + 
+        (this.points_[this.connections_[i][0]].y - this.points_[this.connections_[i][1]].y) * 
+          (this.points_[this.connections_[i][0]].y - this.points_[this.connections_[i][1]].y) + 
+        (this.points_[this.connections_[i][0]].z - this.points_[this.connections_[i][1]].z) * 
+          (this.points_[this.connections_[i][0]].z - this.points_[this.connections_[i][1]].z)
+        );
+      distance+=.000000002;
+      distance*=10000;
+      distance = Math.floor(distance);
+      //console.log(i + ": " + distance);
+      if(i==0) {
+        lengthsofthem[0] = distance;
+        numberofthem[0] = 1;
+      }
+      else{
+        if(lengthsofthem[0] == distance) numberofthem[0]++;
+        else if(numberofthem[1] == 0){
+          lengthsofthem[1] = distance;
+          numberofthem[1]++;
+        }
+        else if(lengthsofthem[1] == distance) numberofthem[1]++;
+        else if(numberofthem[2] == 0){
+          lengthsofthem[2] = distance;
+          numberofthem[2]++;
+        }
+        else if(lengthsofthem[2] == distance) numberofthem[2]++;
+        else if(numberofthem[3] == 0){
+          lengthsofthem[3] = distance;
+          numberofthem[3]++;
+        }
+        else if(lengthsofthem[3] == distance) numberofthem[3]++;
+        else if(numberofthem[4] == 0){
+          lengthsofthem[4] = distance;
+          numberofthem[4]++;
+        }
+        else if(lengthsofthem[4] == distance) numberofthem[4]++;
+        else if(numberofthem[5] == 0){
+          lengthsofthem[5] = distance;
+          numberofthem[5]++;
+        }
+        else if(lengthsofthem[5] == distance) numberofthem[5]++;
+      }
+        
+    }
+    console.log(lengthsofthem[0] + ": " + numberofthem[0]);
+    console.log(lengthsofthem[1] + ": " + numberofthem[1]);
+    console.log(lengthsofthem[2] + ": " + numberofthem[2]);
+    console.log(lengthsofthem[3] + ": " + numberofthem[3]);
+    console.log(lengthsofthem[4] + ": " + numberofthem[4]);
+    console.log(lengthsofthem[5] + ": " + numberofthem[5]);*/
+  }
   return quantities;
 }
 
 domekit.Controller.prototype.nodeQuantities = function(){
   //first number: # of 5 way joints, second: # of 6 way joints
   var nodes = [];
-  if(this.triangleFrequency_ == 1) nodes = [11,0];
-  else if(this.triangleFrequency_ == 2) nodes = [6,20];
-  else if(this.triangleFrequency_ == 3) nodes = [6,55];
-  else if(this.triangleFrequency_ == 4) nodes = [6,85];
-  else if(this.triangleFrequency_ == 5) nodes = [6,145];
-  else if(this.triangleFrequency_ == 6) nodes = [6,190];
-  else if(this.triangleFrequency_ == 7) nodes = [6,275];
-  else if(this.triangleFrequency_ == 8) nodes = [6,335];
+  if(this.clipDome_ == true){
+    if(this.triangleFrequency_ == 1) nodes = [11,0];
+    else if(this.triangleFrequency_ == 2) nodes = [6,20];
+    else if(this.triangleFrequency_ == 3) nodes = [6,55];
+    else if(this.triangleFrequency_ == 4) nodes = [6,85];
+    else if(this.triangleFrequency_ == 5) nodes = [6,145];
+    else if(this.triangleFrequency_ == 6) nodes = [6,190];
+    else if(this.triangleFrequency_ == 7) nodes = [6,275];
+    else if(this.triangleFrequency_ == 8) nodes = [6,335];
+  }
+  else{
+    if(this.triangleFrequency_ == 1) nodes = [12,0];
+    else if(this.triangleFrequency_ == 2) nodes = [12,30];
+    else if(this.triangleFrequency_ == 3) nodes = [12,80];
+    else if(this.triangleFrequency_ == 4) nodes = [12,150];
+  
+  }
   return nodes;
 }
 
