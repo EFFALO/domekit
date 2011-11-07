@@ -169,11 +169,11 @@ domekit.GeometryTable.prototype.handleGeometryChange = function() {
                                          ));
 
   goog.dom.appendChild(nodeDataEl, gcd('tr', null,
-                                     gcd('td', {'class': 'type', 'colspan': '2'}, '6-way'),
+                                     gcd('td', {'class': 'type', 'colspan': '2'}, '5-way'),
                                      gcd('td', 'total', 'x ' + nodeQuantities[0]))
                                    );
   goog.dom.appendChild(nodeDataEl, gcd('tr', null,
-                                     gcd('td', {'class': 'type', 'colspan': '2'}, '5-way'),
+                                     gcd('td', {'class': 'type', 'colspan': '2'}, '6-way'),
                                      gcd('td', 'total', 'x ' + nodeQuantities[1]))
                                    );
 
