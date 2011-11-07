@@ -22,7 +22,7 @@ Download closure.jar into the domekit project directory from <https://github.com
 
     java -jar closure.jar
 
-Once you're up and running, browse to <http://localhost:8080/>
+Once you're up and running, browse to <http://localhost:9292/>
 
 # Deploying
 
