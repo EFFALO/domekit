@@ -180,7 +180,7 @@ domekit.Controller.prototype.drawFrame = function() {
   for(var i = 0; i < projectedPoints.length; i++) {
     // projection null when point invisible
     if (projectedPoints[i]) {
-      this.drawPoint(projectedPoints[i], this.pointSize_, "rgb(116,133,78)");
+      this.drawPoint(projectedPoints[i], this.pointSize_, "rgb(82,95,52)");
     }
   }
 }
