@@ -90,9 +90,9 @@ goog.inherits(domekit.TopView, goog.ui.Component);
 domekit.TopView.prototype.createDom = function() {
   goog.base(this, 'createDom');
 
-  var topViewGoesHere = goog.dom.getElement('topview');
+  var topViewGoesHere = goog.dom.getElement('topviewimg');
 
-  this.image_.src = 'images/topviews/2v.svg';
+  this.image_.src = 'images/topviews/2v.png';
   goog.dom.appendChild(topViewGoesHere, this.image_);
 }
 
@@ -103,7 +103,7 @@ domekit.TopView.prototype.enterDocument = function() {
 }
 
 domekit.TopView.prototype.handleFrequencyChange = function() {
-  this.image_.src = 'images/topviews/' + this.controller_.getFrequency() + 'v.svg'
+  this.image_.src = 'images/topviews/' + this.controller_.getFrequency() + 'v.png'
 }
 
 /** @constructor
@@ -190,10 +190,10 @@ domekit.GeometryTable.arraySum = function(array) {
 domekit.Generator = function() {
   // image preloader
   var images = [
-   'images/topviews/1v.svg',
-   'images/topviews/2v.svg',
-   'images/topviews/3v.svg',
-   'images/topviews/4v.svg'];
+   'images/topviews/1v.png',
+   'images/topviews/2v.png',
+   'images/topviews/3v.png',
+   'images/topviews/4v.png'];
   goog.array.forEach(images, function(el, i) {
     var image = new Image()
     image.src = el;

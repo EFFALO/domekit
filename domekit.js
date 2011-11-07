@@ -160,6 +160,7 @@ domekit.Controller.prototype.drawConnection = function(point1, point2, color) {
   this.context_.save();
   this.context_.beginPath();
   this.context_.strokeStyle = color;
+  this.context_.lineWidth = 3;
   this.context_.moveTo(point1.x, point1.y);
   this.context_.lineTo(point2.x, point2.y);
   this.context_.stroke();
@@ -173,13 +174,13 @@ domekit.Controller.prototype.drawFrame = function() {
   for(var i = 0; i < connections.length; i++) {
     // check connection visibility
     if (this.visibleConnections_[i]) {
-      this.drawConnection(projectedPoints[connections[i][0]], projectedPoints[connections[i][1]], "rgb(10,200,30)");
+      this.drawConnection(projectedPoints[connections[i][0]], projectedPoints[connections[i][1]], "rgb(116,133,78)");
     }
   }
   for(var i = 0; i < projectedPoints.length; i++) {
     // projection null when point invisible
     if (projectedPoints[i]) {
-      this.drawPoint(projectedPoints[i], this.pointSize_, "rgb(150,0,200)");
+      this.drawPoint(projectedPoints[i], this.pointSize_, "rgb(116,133,78)");
     }
   }
 }
@@ -263,7 +264,7 @@ domekit.Controller.prototype.calculateProjectionDimensions = function() {
     //Why is this here?
     if(this.triangleFrequency_ == 1) this.offsets.y+=13;
   } else {
-    this.maximumRadius_ = Math.min(this.canvasWidth_, this.canvasHeight_) / 2;
+    this.maximumRadius_ = (Math.min(this.canvasWidth_, this.canvasHeight_) / 2) - 20;
     this.offsets = {
       x : this.projectionWidth_ / 2,
       y : this.projectionHeight_ / 2
