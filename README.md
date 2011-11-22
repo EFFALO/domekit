@@ -1,6 +1,6 @@
 # Domekit
 
-Domekit is a library and application for generating deodesic solids using JavaScript and Canvas. It will be the basis of the [domekit.cc dome generator](http://domekit.cc/generator/).
+Domekit is a library and application for generating geodesic solids using JavaScript and Canvas. It will be the basis of the [domekit.cc dome generator](http://domekit.cc/generator/).
 
 # Usage
 
