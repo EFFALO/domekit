@@ -2,11 +2,15 @@ goog.provide('domekit.Point3D');
 goog.provide('domekit.EventType');
 goog.provide('domekit.Controller');
 
+goog.require('domekit.ScaleIcon');
 goog.require('goog.ui.Component');
 goog.require('goog.dom');
-goog.require('goog.ui.Slider');
 
-/** @constructor */
+/** 
+* @constructor 
+* @param {float} x
+* @param {float} y
+* @param {float} z */
 domekit.Point3D = function(x,y,z) {
   this.x = x || 0.0;
   this.y = y || 0.0;
@@ -22,19 +26,27 @@ domekit.EventType = {
   GEOMETRY_CHANGE:  'gc'
 }
 
-/** @constructor */
-domekit.Controller = function(width, height, scale) {
+/** 
+* @constructor 
+* @param {integer} width
+* @param {integer} height
+* @param {float}   scale*/
+domekit.Controller = function(opts) {
   goog.base(this);
+
+  this.scale_             = opts.scale  || 1.0;
+  this.triangleFrequency_ = opts.freq   || 2;
+  this.canvasWidth_       = opts.width  || 500;
+  this.canvasHeight_      = opts.height || 500;
+
   this.context_ = null
   this.clipDome_ = true;
   this.enableClipZ_ = true;
   this.clipY_ = 0.5;
-  this.clipZ = -Math.PI/10;
-  this.scale_ = scale || 1.0;
   this.pointSize_ = 4.0;
   this.points_ = [];
   // V number
-  this.triangleFrequency_ = 2;
+  this.clipZ = -Math.PI/10;
   // index on points for visibility
   // [i] == true if points[i] is visible
   this.visiblePoints_ = [];
@@ -44,8 +56,16 @@ domekit.Controller = function(width, height, scale) {
   // index on connections for visibility
   // [i] == true if connections[i] contains only visible points
   this.visibleConnections_ = [];
-  this.canvasWidth_ = width || 500;
-  this.canvasHeight_ = height || 500;
+
+  // scale icon
+  this.scaleIconInfo_ = {
+    maxX : 56,
+    maxY : 150
+  }
+  this.scaleIcon_ = new domekit.ScaleIcon(
+    new goog.math.Size(this.scaleIconInfo_.maxX,
+      this.scaleIconInfo_.maxY)
+  )
 
   this.calculateProjectionDimensions();
 }
@@ -53,25 +73,27 @@ goog.inherits(domekit.Controller, goog.ui.Component);
 
 domekit.Controller.prototype.createDom = function() {
   goog.base(this, 'createDom');
-  var canvas = goog.dom.createDom('canvas', {
-    id     : 'domekit-visual-efforts',
-    width  : this.canvasWidth_,
-    height : this.canvasHeight_
+  goog.dom.classes.add(this.getElement(), 'domekit-viewport')
+
+  // canvas
+  this.canvas_ = goog.dom.createDom('canvas', {
+    'class'  : 'domekit-canvas',
+    'width'  : this.canvasWidth_,
+    'height' : this.canvasHeight_
   });
-  this.setElementInternal(canvas);
+  goog.dom.append(this.getElement(), this.canvas_);
 }
 
 domekit.Controller.prototype.enterDocument = function() {
   goog.base(this, 'enterDocument');
 
-  var canvas = this.getElement();
-
-  if(canvas.getContext){
-    this.context_ = canvas.getContext('2d');
+  if(this.canvas_.getContext){
+    this.context_ = this.canvas_.getContext('2d');
   } else {
-    throw new Error(canvas.innerHTML);
+    throw new Error(this.canvas_.innerHTML);
   }
 
+  this.scaleIcon_.setFloor(this.calculateFloor())
   this.generateModelPointsAndConnections();
   this.setTriangleFrequency(2);
   this.clipToVisiblePoints();
@@ -85,6 +107,7 @@ domekit.Controller.prototype.enterDocument = function() {
     this.projectPoints();
     this.clearCanvas();
     this.drawFrame();
+    this.drawScaleIcon();
   }, this);
   setInterval(runloop, 1000/45);
 }
@@ -105,11 +128,6 @@ domekit.Controller.prototype.resetModelPointsAndConnections = function() {
   this.connections_ = [];
   this.faces_ = [];
 }
-
-domekit.Controller.prototype.getFrequency = function () {
-  return this.triangleFrequency_;
-}
-
 
 ///////////////////////////////////////////
 //DRAWING, PROJECTING, CLIPPING, ROTATING//
@@ -136,8 +154,8 @@ domekit.Controller.prototype.projectPoints = function() {
     if (this.visiblePoints_[i]) {
       // visible points are projected
       newPoint = this.projectedPoints_[i] = new domekit.Point3D();
-      newPoint.x = this.project(points[i].x, points[i].z, 2, .005, xOffset, this.scale_);
-      newPoint.y = this.project(points[i].y, points[i].z, 2, .005, yOffset, this.scale_);
+      newPoint.x = this.project(points[i].x, points[i].z, 2.2, .005, xOffset, this.scale_);
+      newPoint.y = this.project(points[i].y, points[i].z, 2.2, .005, yOffset, this.scale_);
       newPoint.z = points[i].z;
     } else {
       // invisible points are null in the projection
@@ -185,6 +203,16 @@ domekit.Controller.prototype.drawFrame = function() {
   }
 }
 
+domekit.Controller.prototype.drawScaleIcon = function() {
+  this.context_.drawImage(
+    this.scaleIcon_.img_,
+    this.scaleIcon_.offsets_.x,
+    this.scaleIcon_.offsets_.y,
+    this.scaleIcon_.size_.width,
+    this.scaleIcon_.size_.height
+  );
+}
+
 domekit.Controller.prototype.clearCanvas = function() {
   this.context_.clearRect(0, 0, this.canvasWidth_, this.canvasHeight_);
 }
@@ -213,6 +241,7 @@ domekit.Controller.prototype.clipToVisiblePoints = function() {
 
 domekit.Controller.prototype.setDomeMode = function() {
   this.clipDome_ = true;
+  this.scaleIcon_.setFloor(this.calculateFloor())
   this.calculateProjectionDimensions();
 
   goog.events.dispatchEvent(this, domekit.EventType.GEOMETRY_CHANGE)
@@ -220,9 +249,14 @@ domekit.Controller.prototype.setDomeMode = function() {
 
 domekit.Controller.prototype.setSphereMode = function() {
   this.clipDome_ = false;
+  this.scaleIcon_.setCenter(this.calculateCenter())
   this.calculateProjectionDimensions();
 
   goog.events.dispatchEvent(this, domekit.EventType.GEOMETRY_CHANGE)
+}
+
+domekit.Controller.prototype.getTriangleFrequency = function() {
+  return this.triangleFrequency_;
 }
 
 domekit.Controller.prototype.setTriangleFrequency = function(frequency) {
@@ -261,7 +295,7 @@ domekit.Controller.prototype.calculateProjectionDimensions = function() {
       x : this.projectionWidth_ / 2,
       y : this.projectionHeight_ / 2 + domeVOffset * this.projectionHeight_ - 40
     };
-    //Why is this here?
+    // FIXME: Why is this here?
     if(this.triangleFrequency_ == 1) this.offsets.y+=13;
   } else {
     this.maximumRadius_ = (Math.min(this.canvasWidth_, this.canvasHeight_) / 2) - 20;
@@ -272,6 +306,21 @@ domekit.Controller.prototype.calculateProjectionDimensions = function() {
   }
 }
 
+domekit.Controller.prototype.calculateFloor = function() {
+  // in the middle on the floor
+  return (new goog.math.Coordinate(
+    this.canvasWidth_ / 2,
+    this.canvasHeight_
+  ))
+}
+
+domekit.Controller.prototype.calculateCenter = function() {
+  // in the middle of the canvas
+  return (new goog.math.Coordinate(
+    this.canvasWidth_ / 2,
+    this.canvasHeight_ / 2
+  ))
+}
 
 // TODO: The only differences between the three rotate functions are the axes used in the calculations. 
 // Consider how to make these functions DRY.
@@ -317,6 +366,20 @@ domekit.Controller.prototype.rotateZ = function(rotationAngleInRadians) {
   }
 }
 
+domekit.Controller.prototype.getScale = function() {
+  return this.scale_
+}
+
+// scale is specified 0.0 - 1.0
+domekit.Controller.prototype.setScale = function(scale) {
+  var iconDomeScaleRatio = 0.9
+  var iconScale = 1 - (scale * iconDomeScaleRatio)
+  this.scaleIcon_.setSize(
+    new goog.math.Size(
+      this.scaleIconInfo_.maxX * iconScale,
+      this.scaleIconInfo_.maxY * iconScale))
+  this.scale_ = scale
+}
 
 /////////////////////////////
 //GEOMETRY AND CALCULATIONS//

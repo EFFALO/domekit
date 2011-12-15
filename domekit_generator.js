@@ -1,5 +1,6 @@
 goog.provide('domekit.Generator');
 goog.provide('domekit.FrequencyControl');
+goog.provide('domekit.RadiusControl');
 
 goog.require('goog.dom');
 goog.require('goog.ui.Component');
@@ -18,7 +19,7 @@ domekit.FrequencyControl = function(controller) {
   this.frequencySlider_ = new goog.ui.Slider();
   this.maxFrequency_ = 4;
   this.minFrequency_ = 1;
-  this.defaultFrequency_ = 2;
+  this.defaultFrequency_ = controller.getTriangleFrequency();
   this.frequency_ = this.defaultFrequency_;
 }
 goog.inherits(domekit.FrequencyControl, goog.ui.Component);
@@ -26,11 +27,12 @@ goog.inherits(domekit.FrequencyControl, goog.ui.Component);
 domekit.FrequencyControl.prototype.createDom = function() {
   goog.base(this, 'createDom');
 
-  var inputGoesHere = document.getElementById('frequency-input');
-  var sliderGoesHere = document.getElementById('frequency-slider');
-
-  this.frequencyInput_.render(inputGoesHere);
-  this.frequencySlider_.render(sliderGoesHere);
+  this.frequencyInput_.render(
+    document.getElementById('frequency-input')
+  );
+  this.frequencySlider_.render(
+    document.getElementById('frequency-slider')
+  );
 }
 
 domekit.FrequencyControl.prototype.enterDocument = function() {
@@ -58,22 +60,92 @@ domekit.FrequencyControl.prototype.enterDocument = function() {
       textVal = textVal.replace(/v/i,'')
       var num = goog.string.toNumber(textVal);
       if (num === NaN) {
-        this.updateSubControls(this.frequency_);
+        this.updateFrequency(this.frequency_);
       } else if (num > this.maxFrequency_) {
-        this.updateSubControls(this.maxFrequency_);
+        this.updateFrequency(this.maxFrequency_);
       } else if (num < this.minFrequency_) {
-        this.updateSubControls(this.minFrequency_);
+        this.updateFrequency(this.minFrequency_);
       } else {
-        this.updateSubControls(num);
+        this.updateFrequency(num);
       }
     }, this)
   );
 }
 
-domekit.FrequencyControl.prototype.updateSubControls = function(val) {
+domekit.FrequencyControl.prototype.updateFrequency = function(val) {
   this.frequencyInput_.setValue(val + 'v')
   this.frequencySlider_.setValue(val)
   this.controller_.setTriangleFrequency(val);
+};
+
+/** @constructor 
+ controller : the thing to control (hint - it's a geodesic)
+*/
+domekit.RadiusControl = function(controller) {
+  goog.base(this);
+
+  this.controller_ = controller;
+  this.radiusInput_ = new goog.ui.LabelInput();
+  this.radiusSlider_ = new goog.ui.Slider();
+  this.minRadius_ = 609; // 2 feet in mm
+  this.maxRadius_ = 217322; // 713 feet in mm
+  this.defaultRadius_ = this.maxRadius_ * this.controller_.getScale();
+}
+goog.inherits(domekit.RadiusControl, goog.ui.Component);
+
+domekit.RadiusControl.prototype.createDom = function() {
+  goog.base(this, 'createDom');
+
+  this.radiusInput_.render(
+    document.getElementById('radius-input')
+  );
+  this.radiusSlider_.render(
+    document.getElementById('radius-slider')
+  );
+}
+
+domekit.RadiusControl.prototype.enterDocument = function() {
+  goog.base(this, 'enterDocument');
+
+  this.radiusInput_.setValue(this.defaultRadius_ + 'mm');
+  this.radiusSlider_.setMaximum(this.maxRadius_);
+  this.radiusSlider_.setMinimum(this.minRadius_);
+  this.radiusSlider_.setValue(this.defaultRadius_);
+
+  this.controller_.setScale(this.defaultRadius_/this.maxRadius_);
+  this.radiusSlider_.addEventListener(goog.ui.Component.EventType.CHANGE,
+    goog.bind(function() {
+      var sliderVal = this.radiusSlider_.getValue();
+      this.radiusInput_.setValue(sliderVal + 'mm');
+      this.controller_.setScale(sliderVal/this.maxRadius_);
+    }, this)
+  );
+
+  // this is a hack. I have no idea why goog.ui.LabelInput,
+  // which is a goog.ui.Component, doesn't throw events of the Component
+  // enum
+  goog.events.listen(this.radiusInput_.getElement(), 'change',
+    goog.bind(function() {
+      var textVal = this.radiusInput_.getValue();
+      textVal = textVal.replace(/mm/i,'')
+      var num = goog.string.toNumber(textVal);
+      if (num === NaN) {
+        this.updateRadius(this.radius_);
+      } else if (num > this.maxRadius_) {
+        this.updateRadius(this.maxRadius_);
+      } else if (num < this.minRadius_) {
+        this.updateRadius(this.minRadius_);
+      } else {
+        this.updateRadius(num);
+      }
+    }, this)
+  );
+}
+
+domekit.RadiusControl.prototype.updateRadius = function(val) {
+  this.radiusInput_.setValue(val + 'mm')
+  this.radiusSlider_.setValue(val)
+  this.controller_.setScale(val / this.maxRadius_);
 };
 
 /** @constructor
@@ -103,7 +175,7 @@ domekit.TopView.prototype.enterDocument = function() {
 }
 
 domekit.TopView.prototype.handleFrequencyChange = function() {
-  this.image_.src = 'images/topviews/' + this.controller_.getFrequency() + 'v.png'
+  this.image_.src = 'images/topviews/' + this.controller_.getTriangleFrequency() + 'v.png'
 }
 
 /** @constructor
@@ -199,7 +271,12 @@ domekit.Generator = function() {
     image.src = el;
   }, this)
 
-  var domekitController = new domekit.Controller(600, 350);
+  var domekitController = new domekit.Controller({
+    width  : 600,
+    height : 350,
+    scale  : 1.0
+  });
+
   var goesHere = document.getElementById('scaledview');
   domekitController.render(goesHere);
 
@@ -219,6 +296,9 @@ domekit.Generator = function() {
 
   var frequencyControl = new domekit.FrequencyControl(domekitController);
   frequencyControl.render();
+
+  var radiusControl = new domekit.RadiusControl(domekitController);
+  radiusControl.render();
 
   var topView = new domekit.TopView(domekitController);
   topView.render();
