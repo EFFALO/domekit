@@ -389,6 +389,7 @@ a:hover {
 }
 
 #footer {
+	clear: both;
 	border-top: 3px solid #aaa;
 	padding: 10px 0 20px 0;
 }
@@ -481,7 +482,6 @@ a:hover {
 	border-left: 1px solid #ddd;
 	border-right: 1px solid #ccc;
 	width: 898px;
-	height: 600px;
 }
 
 #generator-help {
@@ -509,14 +509,25 @@ a:hover {
 #topview {
 	float: left;
 	width: 300px;
-	height: 250px;
 	text-align: center;
+}
+
+#topview img {
+  padding: 20px;
+  opacity: .35;
+}
+
+#topview span {
+	font-size: 12px;
+	font-style: italic;
+	display: block;
+	margin: -10px 0 10px 0;
+	color: #666;
 }
 
 #specifications {
 	float: left;
 	width: 288px;
-	height: 250px;
 }
 
 #specifications h1 {
@@ -619,9 +630,9 @@ a:hover {
 .generate {
 	text-align: center;
 	display: block;
-	font-size: 24px;
+	font-size: 18px;
 	color: #333;
-	padding: 20px;
+	padding: 15px 0;
 	background: #eaf7cd;
 	border: 2px solid #d0dfb0;
 	font-weight: bold;
@@ -634,14 +645,41 @@ a:hover {
 	border-color: #e7e4bb !important;
 	text-decoration: none;
 }
+
 /* — — — — — — — — — — — — — — — — — — — — — — — — — — — — — — — */
 
-.slider {
+.toggle_box {
+	float: left;
+	border: 1px solid #ddd;
+}
+
+.toggle_box a {
+	float:left;
+	background: #d5d5d5;
+	padding: 0 8px;
+	color: #111;
+}
+
+.toggle_box a:hover {
+	text-decoration: none;
+	background-color: #fffbcd;
+	color: #111;
+}
+
+.toggle_box a.selected {
+	background: #666 !important;
+	color: #fff !important;
+	font-weight: bold;
+}
+
+/* — — — — — — — — — — — — — — — — — — — — — — — — — — — — — — — */
+
+.slider, .toggle {
 	padding: 5px 0;
 	line-height: 32px;
 }
 
-.slider span {
+.slider span, .toggle span {
 	float: left;
 	width: 75px;
 	font-size: 14px;
@@ -662,6 +700,10 @@ a:hover {
 	height: 24px;
 	background: url(../images/slider-repeat.png) repeat-x;
 	position: relative;
+}
+
+.slider .goog-slider-horizontal:focus {
+	outline: none;
 }
 
 .slider .handle {

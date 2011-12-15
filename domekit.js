@@ -1,4 +1,5 @@
 goog.provide('domekit.Point3D');
+goog.provide('domekit.EventType');
 goog.provide('domekit.Controller');
 
 goog.require('domekit.ScaleIcon');
@@ -16,6 +17,15 @@ domekit.Point3D = function(x,y,z) {
   this.z = z || 0.0;
 }
 
+/**
+ * Constants for event names.
+ * @enum {string}
+ */
+domekit.EventType = {
+  FREQUENCY_CHANGE: 'fc',
+  GEOMETRY_CHANGE:  'gc'
+}
+
 /** 
 * @constructor 
 * @param {integer} width
@@ -23,15 +33,20 @@ domekit.Point3D = function(x,y,z) {
 * @param {float}   scale*/
 domekit.Controller = function(opts) {
   goog.base(this);
+
+  this.scale_             = opts.scale  || 1.0;
+  this.triangleFrequency_ = opts.freq   || 2;
+  this.canvasWidth_       = opts.width  || 500;
+  this.canvasHeight_      = opts.height || 500;
+
   this.context_ = null
   this.clipDome_ = true;
   this.enableClipZ_ = true;
   this.clipY_ = 0.5;
-  this.scale_ = opts.scale || 1.0;
   this.pointSize_ = 4.0;
   this.points_ = [];
   // V number
-  this.triangleFrequency_ = opts.freq || 3;
+  this.clipZ = -Math.PI/10;
   // index on points for visibility
   // [i] == true if points[i] is visible
   this.visiblePoints_ = [];
@@ -41,8 +56,6 @@ domekit.Controller = function(opts) {
   // index on connections for visibility
   // [i] == true if connections[i] contains only visible points
   this.visibleConnections_ = [];
-  this.canvasWidth_ = opts.width || 500;
-  this.canvasHeight_ = opts.height || 500;
 
   // scale icon
   this.scaleIconInfo_ = {
@@ -82,6 +95,12 @@ domekit.Controller.prototype.enterDocument = function() {
 
   this.scaleIcon_.setFloor(this.calculateFloor())
   this.generateModelPointsAndConnections();
+  this.setTriangleFrequency(2);
+  this.clipToVisiblePoints();
+  this.projectPoints();
+  this.clearCanvas();
+  this.drawFrame();
+  this.strutLengths();
 
   var runloop = goog.bind(function() {
     this.clipToVisiblePoints();
@@ -109,7 +128,6 @@ domekit.Controller.prototype.resetModelPointsAndConnections = function() {
   this.connections_ = [];
   this.faces_ = [];
 }
-
 
 ///////////////////////////////////////////
 //DRAWING, PROJECTING, CLIPPING, ROTATING//
@@ -160,6 +178,7 @@ domekit.Controller.prototype.drawConnection = function(point1, point2, color) {
   this.context_.save();
   this.context_.beginPath();
   this.context_.strokeStyle = color;
+  this.context_.lineWidth = 3;
   this.context_.moveTo(point1.x, point1.y);
   this.context_.lineTo(point2.x, point2.y);
   this.context_.stroke();
@@ -173,13 +192,13 @@ domekit.Controller.prototype.drawFrame = function() {
   for(var i = 0; i < connections.length; i++) {
     // check connection visibility
     if (this.visibleConnections_[i]) {
-      this.drawConnection(projectedPoints[connections[i][0]], projectedPoints[connections[i][1]], "rgb(10,200,30)");
+      this.drawConnection(projectedPoints[connections[i][0]], projectedPoints[connections[i][1]], "rgb(116,133,78)");
     }
   }
   for(var i = 0; i < projectedPoints.length; i++) {
     // projection null when point invisible
     if (projectedPoints[i]) {
-      this.drawPoint(projectedPoints[i], this.pointSize_, "rgb(150,0,200)");
+      this.drawPoint(projectedPoints[i], this.pointSize_, "rgb(82,95,52)");
     }
   }
 }
@@ -200,7 +219,6 @@ domekit.Controller.prototype.clearCanvas = function() {
 
 domekit.Controller.prototype.clipToVisiblePoints = function() {
   // clip visibility below these values
-  var zClip = -Math.PI/10;
   var shouldClipZ, shouldClipY;
   var containingConns;
 
@@ -210,7 +228,7 @@ domekit.Controller.prototype.clipToVisiblePoints = function() {
 
   goog.array.forEach(this.points_, function(point, i) {
     shouldClipY = this.clipDome_ && point.y > this.clipY_
-    shouldClipZ = this.enableClipZ_ && point.z < zClip
+    shouldClipZ = this.enableClipZ_ && point.z < this.clipZ_
     if ( shouldClipY || shouldClipZ ) {
       this.visiblePoints_[i] = false;
       containingConns = this.connectionIdsForPointId(i);
@@ -225,12 +243,16 @@ domekit.Controller.prototype.setDomeMode = function() {
   this.clipDome_ = true;
   this.scaleIcon_.setFloor(this.calculateFloor())
   this.calculateProjectionDimensions();
+
+  goog.events.dispatchEvent(this, domekit.EventType.GEOMETRY_CHANGE)
 }
 
 domekit.Controller.prototype.setSphereMode = function() {
   this.clipDome_ = false;
   this.scaleIcon_.setCenter(this.calculateCenter())
   this.calculateProjectionDimensions();
+
+  goog.events.dispatchEvent(this, domekit.EventType.GEOMETRY_CHANGE)
 }
 
 domekit.Controller.prototype.getTriangleFrequency = function() {
@@ -240,21 +262,26 @@ domekit.Controller.prototype.getTriangleFrequency = function() {
 domekit.Controller.prototype.setTriangleFrequency = function(frequency) {
   this.resetModelPointsAndConnections();
   this.triangleFrequency_ = frequency;
-  this.setYClip();
+  this.setClip();
   this.generateModelPointsAndConnections();
   this.calculateProjectionDimensions();
+  this.rotateY(Math.PI/32);
+  this.rotateX(Math.PI/48);
+  this.strutLengths();
+
+  goog.events.dispatchEvent(this, domekit.EventType.FREQUENCY_CHANGE)
+  goog.events.dispatchEvent(this, domekit.EventType.GEOMETRY_CHANGE)
 }
 
-// TODO: fine tune this logic
-domekit.Controller.prototype.setYClip = function() {
-  if(this.triangleFrequency_ == 1) this.clipY_ = 1.5;
-  else if(this.triangleFrequency_ == 2) this.clipY_ = .1;
-  else if(this.triangleFrequency_ == 3) this.clipY_ = .5;
-  else if(this.triangleFrequency_ == 4) this.clipY_ = .1;
-  else if(this.triangleFrequency_ == 5) this.clipY_ = .5;
-  else if(this.triangleFrequency_ == 6) this.clipY_ = .1;
-  else if(this.triangleFrequency_ == 7) this.clipY_ = .3;
-  else this.clipY_ = .2;
+domekit.Controller.prototype.setClip = function() {
+  if(this.triangleFrequency_ == 1) {this.clipY_ = 1.5; this.clipZ_ = -Math.PI/3;}
+  else if(this.triangleFrequency_ == 2) {this.clipY_ = .15; this.clipZ_ = -Math.PI/10;}
+  else if(this.triangleFrequency_ == 3) {this.clipY_ = .5; this.clipZ_ = -Math.PI/10;}
+  else if(this.triangleFrequency_ == 4) {this.clipY_ = .15; this.clipZ_ = -Math.PI/10;}
+  else if(this.triangleFrequency_ == 5) {this.clipY_ = .5; this.clipZ_ = -Math.PI/10;}
+  else if(this.triangleFrequency_ == 6) {this.clipY_ = .15; this.clipZ_ = -Math.PI/10;}
+  else if(this.triangleFrequency_ == 7) {this.clipY_ = .3; this.clipZ_ = -Math.PI/10;}
+  else {this.clipY_ = .2; this.clipZ_ = -Math.PI/10;}
 }
 
 domekit.Controller.prototype.calculateProjectionDimensions = function() {
@@ -266,12 +293,12 @@ domekit.Controller.prototype.calculateProjectionDimensions = function() {
     this.maximumRadius_ = Math.min(this.canvasWidth_, this.canvasHeight_) /2;
     this.offsets = {
       x : this.projectionWidth_ / 2,
-      y : this.projectionHeight_ / 2 + domeVOffset * this.projectionHeight_
+      y : this.projectionHeight_ / 2 + domeVOffset * this.projectionHeight_ - 40
     };
     // FIXME: Why is this here?
     if(this.triangleFrequency_ == 1) this.offsets.y+=13;
   } else {
-    this.maximumRadius_ = Math.min(this.canvasWidth_, this.canvasHeight_) / 2;
+    this.maximumRadius_ = (Math.min(this.canvasWidth_, this.canvasHeight_) / 2) - 20;
     this.offsets = {
       x : this.projectionWidth_ / 2,
       y : this.projectionHeight_ / 2
@@ -453,6 +480,134 @@ domekit.Controller.prototype.generateFaces = function() {
   }
   return faces;
 }
+
+domekit.Controller.prototype.strutLengths = function() {
+  var struts = [];
+  var strutCount = [];
+  var neighbors = [];
+  var distance;
+  var nudger = .000000000002;
+  var i;
+  var j;
+  var k;
+  var found;
+  for(i = 0; i < this.connections_.length; i++){
+    distance = Math.sqrt( ((this.points_[this.connections_[i][0]].x-this.points_[this.connections_[i][1]].x)*(this.points_[this.connections_[i][0]].x-this.points_[this.connections_[i][1]].x)) +
+                          ((this.points_[this.connections_[i][0]].y-this.points_[this.connections_[i][1]].y)*(this.points_[this.connections_[i][0]].y-this.points_[this.connections_[i][1]].y)) +
+                          ((this.points_[this.connections_[i][0]].z-this.points_[this.connections_[i][1]].z)*(this.points_[this.connections_[i][0]].z-this.points_[this.connections_[i][1]].z)) );
+    distance+=nudger;
+    found = 0;
+    for(k = 0; k < struts.length; k++){
+      if(Math.floor(struts[k]*100000000.0) == Math.floor(distance*100000000.0)) found = 1;
+    }
+    if(found == 0) struts.push(distance);
+  }
+  return struts;
+}
+
+domekit.Controller.prototype.strutQuantities = function(){
+  var quantities = [];
+  if(this.clipDome_ == true){
+    if(this.triangleFrequency_ == 1) quantities = [25];
+    else if(this.triangleFrequency_ == 2) quantities = [30,35];
+    else if(this.triangleFrequency_ == 3) quantities = [30,55,80];
+    else if(this.triangleFrequency_ == 4) quantities = [30,60,30,30,70,30];
+    else if(this.triangleFrequency_ == 5) quantities = [30,60,30,30,80,20,70,70,35];
+    else if(this.triangleFrequency_ == 6) quantities = [30,60,30,30,60,90,130,65,60];
+    else if(this.triangleFrequency_ == 7) quantities = [30,60,30,30,60,30,60,60,80,90,70,35,70,70,30];
+    else if(this.triangleFrequency_ == 8) quantities = [30,60,30,30,60,60,30,60,60,60,70,30,60,90,60,30,70,60,30];
+  }
+  else{
+    if(this.triangleFrequency_ == 1) quantities = [30];
+    else if(this.triangleFrequency_ == 2) quantities = [60,60];
+    else if(this.triangleFrequency_ == 3) quantities = [60,90,120];
+    else if(this.triangleFrequency_ == 4) quantities = [60,120,60,60,120,60];
+
+    /// COMPUTATIONAL STRUT COUNTER to be implemented when i feel like rewriting it ///
+    ///////////////////////////////////////////////////////////////////////////////////
+    /*var lengthsofthem = [];
+    var numberofthem = [0,0,0,0,0,0];
+    for(var i=0; i < this.connections_.length; i++){
+      this.connections_[i][0]    
+      distance = Math.sqrt(
+        (this.points_[this.connections_[i][0]].x - this.points_[this.connections_[i][1]].x) * 
+          (this.points_[this.connections_[i][0]].x - this.points_[this.connections_[i][1]].x) + 
+        (this.points_[this.connections_[i][0]].y - this.points_[this.connections_[i][1]].y) * 
+          (this.points_[this.connections_[i][0]].y - this.points_[this.connections_[i][1]].y) + 
+        (this.points_[this.connections_[i][0]].z - this.points_[this.connections_[i][1]].z) * 
+          (this.points_[this.connections_[i][0]].z - this.points_[this.connections_[i][1]].z)
+        );
+      distance+=.000000002;
+      distance*=10000;
+      distance = Math.floor(distance);
+      //console.log(i + ": " + distance);
+      if(i==0) {
+        lengthsofthem[0] = distance;
+        numberofthem[0] = 1;
+      }
+      else{
+        if(lengthsofthem[0] == distance) numberofthem[0]++;
+        else if(numberofthem[1] == 0){
+          lengthsofthem[1] = distance;
+          numberofthem[1]++;
+        }
+        else if(lengthsofthem[1] == distance) numberofthem[1]++;
+        else if(numberofthem[2] == 0){
+          lengthsofthem[2] = distance;
+          numberofthem[2]++;
+        }
+        else if(lengthsofthem[2] == distance) numberofthem[2]++;
+        else if(numberofthem[3] == 0){
+          lengthsofthem[3] = distance;
+          numberofthem[3]++;
+        }
+        else if(lengthsofthem[3] == distance) numberofthem[3]++;
+        else if(numberofthem[4] == 0){
+          lengthsofthem[4] = distance;
+          numberofthem[4]++;
+        }
+        else if(lengthsofthem[4] == distance) numberofthem[4]++;
+        else if(numberofthem[5] == 0){
+          lengthsofthem[5] = distance;
+          numberofthem[5]++;
+        }
+        else if(lengthsofthem[5] == distance) numberofthem[5]++;
+      }
+        
+    }
+    console.log(lengthsofthem[0] + ": " + numberofthem[0]);
+    console.log(lengthsofthem[1] + ": " + numberofthem[1]);
+    console.log(lengthsofthem[2] + ": " + numberofthem[2]);
+    console.log(lengthsofthem[3] + ": " + numberofthem[3]);
+    console.log(lengthsofthem[4] + ": " + numberofthem[4]);
+    console.log(lengthsofthem[5] + ": " + numberofthem[5]);*/
+  }
+  return quantities;
+}
+
+domekit.Controller.prototype.nodeQuantities = function(){
+  //first number: # of 5 way joints, second: # of 6 way joints
+  var nodes = [];
+  if(this.clipDome_ == true){
+    if(this.triangleFrequency_ == 1) nodes = [11,0];
+    else if(this.triangleFrequency_ == 2) nodes = [6,20];
+    else if(this.triangleFrequency_ == 3) nodes = [6,55];
+    else if(this.triangleFrequency_ == 4) nodes = [6,85];
+    else if(this.triangleFrequency_ == 5) nodes = [6,145];
+    else if(this.triangleFrequency_ == 6) nodes = [6,190];
+    else if(this.triangleFrequency_ == 7) nodes = [6,275];
+    else if(this.triangleFrequency_ == 8) nodes = [6,335];
+  }
+  else{
+    if(this.triangleFrequency_ == 1) nodes = [12,0];
+    else if(this.triangleFrequency_ == 2) nodes = [12,30];
+    else if(this.triangleFrequency_ == 3) nodes = [12,80];
+    else if(this.triangleFrequency_ == 4) nodes = [12,150];
+  
+  }
+  return nodes;
+}
+
 
 domekit.Controller.prototype.findNeighbors = function(index) {
   var neighbors = [];

@@ -5,7 +5,7 @@
     <title>domekit &mdash; generator</title>
     <link rel="stylesheet" href="style/reset-min.css" type="text/css" />
     <link rel="stylesheet" href="style/style.css" type="text/css" media="screen" />
-    <script src='generator.js?<%= query_string %>'></script>
+    <script src='generator.js?build'></script>
     <script type="text/javascript">
 //      var _gaq = _gaq || [];
 //      _gaq.push(['_setAccount', 'UA-23347296-1']);
@@ -110,11 +110,13 @@
               <div id="frequency-slider"></div>
               <div id="frequency-input"></div>
               <div class="clear"></div>
-            </div> <!-- frequency slider -->
+            </div> <!-- radius slider -->
             <div id="radius" class="slider">
               <span>radius:</span>
-              <div id="radius-slider"></div>
-              <div id="radius-input"></div>
+              <div class="track">
+                <div class="handle"></div>
+              </div>
+              <input type="text" value="1.00m" />
               <div class="clear"></div>
             </div> <!-- radius slider -->
 						<div class="divider"></div> 

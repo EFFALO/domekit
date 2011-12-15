@@ -1,6 +1,6 @@
 # Domekit
 
-Domekit is a library and application for generating deodesic solids using JavaScript and Canvas. It will be the basis of the [domekit.cc dome generator](http://domekit.cc/generator/).
+Domekit is a library and application for generating geodesic solids using JavaScript and Canvas. It will be the basis of the [domekit.cc dome generator](http://domekit.cc/generator/).
 
 # Usage
 
@@ -22,7 +22,15 @@ Download closure.jar into the domekit project directory from <https://github.com
 
     java -jar closure.jar
 
-Once you're up and running, browse to <http://localhost:8080/>
+Once you're up and running, browse to <http://localhost:9292/>
+
+# Deploying
+
+```bash
+rake #builds a copy of the generator to the build directory
+git commit -am "re-built generator"
+git push heroku
+```
 
 # References
 
