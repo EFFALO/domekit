@@ -5,7 +5,8 @@ goog.require('goog.events');
 
 /** @constructor */
 domekit.Demo = function () {
-  var domekitController = new domekit.Controller();
+  var domekitController = new domekit.Controller({
+    width : 600, height : 600});
   var goesHere = document.getElementById('canvas-goes-here');
   // begin drawing dome canvas component
   domekitController.render(goesHere);
@@ -17,17 +18,18 @@ domekit.Demo = function () {
   );
   var rotationSliderState = {
     value : rotationSlider.getValue(),
-    // slider is in degrees
-    maxVal : 360
+    maxVal : 360 // degrees
   }
   rotationSlider.setMaximum(rotationSliderState.maxVal);
   rotationSlider.addEventListener(goog.ui.Component.EventType.CHANGE, function() {
     var newVal = rotationSlider.getValue();
     var rotation = newVal - rotationSliderState.value;
     rotationSliderState.value = newVal;
-    // rotation in degrees converted to radians,
-    // requirement of rotation function
-    domekitController.rotateY(rotation * (2*Math.PI) / rotationSliderState.maxVal);
+    // convert degrees to radians
+    domekitController.rotateY(
+      rotation * (2*Math.PI) /
+      rotationSliderState.maxVal
+    );
   });
 
   // scale slider
@@ -35,20 +37,14 @@ domekit.Demo = function () {
   scaleSlider.render(
     document.getElementById('scale-slider-goes-here')
   );
-  var scaleSliderState = {
-    value : scaleSlider.getValue(),
-    // TODO: what units?
-    maxVal : 100
-  }
-  scaleSlider.setMaximum(scaleSliderState.maxVal);
+  var scaleSliderMaxVal = 100;
+  scaleSlider.setMaximum(scaleSliderMaxVal);
   scaleSlider.addEventListener(goog.ui.Component.EventType.CHANGE, function() {
-    var newVal = scaleSlider.getValue();
-    var scale = newVal - scaleSliderState.value;
-    scaleSliderState.value = newVal;
-    // scale in degrees converted to radians,
-    // requirement of scale function
-    domekitController.changeScale(scale);
+    var scale = scaleSlider.getValue() / scaleSliderMaxVal;
+    domekitController.setScale(scale);
   });
+  scaleSlider.setValue(0.5 * scaleSliderMaxVal);
+  domekitController.setScale(0.5)
 
   // dome mode button
   var domeButton = goog.dom.getElement('choose-a-dome');

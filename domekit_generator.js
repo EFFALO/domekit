@@ -18,7 +18,7 @@ domekit.FrequencyControl = function(controller) {
   this.frequencySlider_ = new goog.ui.Slider();
   this.maxFrequency_ = 8;
   this.minFrequency_ = 1;
-  this.defaultFrequency_ = 5;
+  this.defaultFrequency_ = controller.getTriangleFrequency();
   this.frequency_ = this.defaultFrequency_;
 }
 goog.inherits(domekit.FrequencyControl, goog.ui.Component);
@@ -86,9 +86,9 @@ domekit.RadiusControl = function(controller) {
   this.controller_ = controller;
   this.radiusInput_ = new goog.ui.LabelInput();
   this.radiusSlider_ = new goog.ui.Slider();
-  this.minRadius_ = 1;
-  this.maxRadius_ = 10;
-  this.defaultRadius_ = 3;
+  this.minRadius_ = 609; // 2 feet in mm
+  this.maxRadius_ = 217322; // 713 feet in mm
+  this.defaultRadius_ = this.maxRadius_ * this.controller_.getScale();
 }
 goog.inherits(domekit.RadiusControl, goog.ui.Component);
 
@@ -106,16 +106,17 @@ domekit.RadiusControl.prototype.createDom = function() {
 domekit.RadiusControl.prototype.enterDocument = function() {
   goog.base(this, 'enterDocument');
 
-  this.radiusInput_.setValue(this.defaultRadius_ + 'm');
+  this.radiusInput_.setValue(this.defaultRadius_ + 'mm');
   this.radiusSlider_.setMaximum(this.maxRadius_);
   this.radiusSlider_.setMinimum(this.minRadius_);
   this.radiusSlider_.setValue(this.defaultRadius_);
 
+  this.controller_.setScale(this.defaultRadius_/this.maxRadius_);
   this.radiusSlider_.addEventListener(goog.ui.Component.EventType.CHANGE,
     goog.bind(function() {
       var sliderVal = this.radiusSlider_.getValue();
-      this.radiusInput_.setValue(sliderVal + 'm');
-      this.controller_.setRadiusInMeters(sliderVal);
+      this.radiusInput_.setValue(sliderVal + 'mm');
+      this.controller_.setScale(sliderVal/this.maxRadius_);
     }, this)
   );
 
@@ -125,7 +126,7 @@ domekit.RadiusControl.prototype.enterDocument = function() {
   goog.events.listen(this.radiusInput_.getElement(), 'change',
     goog.bind(function() {
       var textVal = this.radiusInput_.getValue();
-      textVal = textVal.replace(/m/i,'')
+      textVal = textVal.replace(/mm/i,'')
       var num = goog.string.toNumber(textVal);
       if (num === NaN) {
         this.updateRadius(this.radius_);
@@ -141,14 +142,18 @@ domekit.RadiusControl.prototype.enterDocument = function() {
 }
 
 domekit.RadiusControl.prototype.updateRadius = function(val) {
-  this.radiusInput_.setValue(val + 'm')
+  this.radiusInput_.setValue(val + 'mm')
   this.radiusSlider_.setValue(val)
-  this.controller_.setRadiusInMeters(val);
+  this.controller_.setScale(val / this.maxRadius_);
 };
 
 /** @constructor */
 domekit.Generator = function() {
-  var domekitController = new domekit.Controller(600, 350);
+  var domekitController = new domekit.Controller({
+    width  : 600,
+    height : 350,
+    scale  : 0.5
+  });
   var goesHere = document.getElementById('scaledview');
   domekitController.render(goesHere);
 

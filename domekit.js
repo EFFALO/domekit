@@ -21,17 +21,17 @@ domekit.Point3D = function(x,y,z) {
 * @param {integer} width
 * @param {integer} height
 * @param {float}   scale*/
-domekit.Controller = function(width, height, scale) {
+domekit.Controller = function(opts) {
   goog.base(this);
   this.context_ = null
   this.clipDome_ = true;
   this.enableClipZ_ = true;
   this.clipY_ = 0.5;
-  this.scale_ = scale || 1.0;
+  this.scale_ = opts.scale || 1.0;
   this.pointSize_ = 4.0;
   this.points_ = [];
   // V number
-  this.triangleFrequency_ = 5;
+  this.triangleFrequency_ = opts.freq || 3;
   // index on points for visibility
   // [i] == true if points[i] is visible
   this.visiblePoints_ = [];
@@ -41,14 +41,17 @@ domekit.Controller = function(width, height, scale) {
   // index on connections for visibility
   // [i] == true if connections[i] contains only visible points
   this.visibleConnections_ = [];
-  this.canvasWidth_ = width || 500;
-  this.canvasHeight_ = height || 500;
+  this.canvasWidth_ = opts.width || 500;
+  this.canvasHeight_ = opts.height || 500;
 
   // scale icon
-  // TODO: move iconScale logic into domekit.ScaleIcon
-  this.iconScale_ = 1
+  this.scaleIconInfo_ = {
+    maxX : 56,
+    maxY : 150
+  }
   this.scaleIcon_ = new domekit.ScaleIcon(
-    new goog.math.Size(56, 150)
+    new goog.math.Size(this.scaleIconInfo_.maxX,
+      this.scaleIconInfo_.maxY)
   )
 
   this.calculateProjectionDimensions();
@@ -230,6 +233,10 @@ domekit.Controller.prototype.setSphereMode = function() {
   this.calculateProjectionDimensions();
 }
 
+domekit.Controller.prototype.getTriangleFrequency = function() {
+  return this.triangleFrequency_;
+}
+
 domekit.Controller.prototype.setTriangleFrequency = function(frequency) {
   this.resetModelPointsAndConnections();
   this.triangleFrequency_ = frequency;
@@ -332,13 +339,19 @@ domekit.Controller.prototype.rotateZ = function(rotationAngleInRadians) {
   }
 }
 
-domekit.Controller.prototype.changeScale = function(scale) {
-  // magic numbers COMPUTER FRIENDS
-  // 713 feet IS MAX SIZE
-  // 2 feet is max radius
-  this.iconScale_ = this.iconScale_ + (scale / 100)
-  this.scale_ = this.scale_ + (scale / 1000)
-  this.scaleIcon_.setSize(new goog.math.Size(56 / this.iconScale_, 150 / this.iconScale_))
+domekit.Controller.prototype.getScale = function() {
+  return this.scale_
+}
+
+// scale is specified 0.0 - 1.0
+domekit.Controller.prototype.setScale = function(scale) {
+  var iconDomeScaleRatio = 0.9
+  var iconScale = 1 - (scale * iconDomeScaleRatio)
+  this.scaleIcon_.setSize(
+    new goog.math.Size(
+      this.scaleIconInfo_.maxX * iconScale,
+      this.scaleIconInfo_.maxY * iconScale))
+  this.scale_ = scale
 }
 
 /////////////////////////////
