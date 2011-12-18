@@ -27,10 +27,9 @@ domekit.EventType = {
 }
 
 /** 
-* @constructor 
-* @param {integer} width
-* @param {integer} height
-* @param {float}   scale*/
+* @constructor
+* @param {{width: integer, height: integer, scale: float}} opts
+*/
 domekit.Controller = function(opts) {
   goog.base(this);
 
