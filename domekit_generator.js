@@ -99,7 +99,7 @@ domekit.RadiusControl = function(controller) {
   this.minRadius_ = 0; // percent
   this.maxRadius_ = 100;
   this.defaultRadius_ = this.maxRadius_ * this.controller_.getScale();
-  this.radiusUnitsAbbrv_ = domekit.RadiusUnits.METERS;
+  this.radiusUnitsAbbrv_ = domekit.RadiusUnits.FEET;
 }
 goog.inherits(domekit.RadiusControl, goog.ui.Component);
 

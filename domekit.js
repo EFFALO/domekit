@@ -93,22 +93,17 @@ domekit.Controller.prototype.enterDocument = function() {
   this.scaleIcon_.setFloor(this.calculateFloor())
   this.generateModelPointsAndConnections();
   this.setTriangleFrequency(2);
-  this.clipToVisiblePoints();
-  this.projectPoints();
-  this.clearCanvas();
-  this.drawFrame();
+  this.renderView();
   this.strutLengths();
+}
 
-  var runloop = goog.bind(function() {
+domekit.Controller.prototype.renderView = function() {
     this.clipToVisiblePoints();
     this.projectPoints();
     this.clearCanvas();
     this.drawFrame();
     this.drawScaleIcon();
-  }, this);
-  setInterval(runloop, 1000/45);
 }
-
 
 domekit.Controller.prototype.generateModelPointsAndConnections = function() {
   this.generatePoints();
@@ -242,6 +237,7 @@ domekit.Controller.prototype.setDomeMode = function() {
   this.calculateProjectionDimensions();
 
   goog.events.dispatchEvent(this, domekit.EventType.GEOMETRY_CHANGE)
+  this.renderView();
 }
 
 domekit.Controller.prototype.setSphereMode = function() {
@@ -250,6 +246,7 @@ domekit.Controller.prototype.setSphereMode = function() {
   this.calculateProjectionDimensions();
 
   goog.events.dispatchEvent(this, domekit.EventType.GEOMETRY_CHANGE)
+  this.renderView();
 }
 
 domekit.Controller.prototype.getTriangleFrequency = function() {
@@ -268,8 +265,11 @@ domekit.Controller.prototype.setTriangleFrequency = function(frequency) {
 
   goog.events.dispatchEvent(this, domekit.EventType.FREQUENCY_CHANGE)
   goog.events.dispatchEvent(this, domekit.EventType.GEOMETRY_CHANGE)
+  this.renderView();
 }
 
+// TODO: is this correctly named? looks like an external setter
+// seems like it's used like an internal update
 domekit.Controller.prototype.setClip = function() {
   if(this.triangleFrequency_ == 1) {this.clipY_ = 1.5; this.clipZ_ = -Math.PI/3;}
   else if(this.triangleFrequency_ == 2) {this.clipY_ = .15; this.clipZ_ = -Math.PI/10;}
@@ -280,6 +280,21 @@ domekit.Controller.prototype.setClip = function() {
   else if(this.triangleFrequency_ == 7) {this.clipY_ = .3; this.clipZ_ = -Math.PI/10;}
   else {this.clipY_ = .2; this.clipZ_ = -Math.PI/10;}
 }
+
+// scale is specified 0.0 - 1.0
+domekit.Controller.prototype.setScale = function(scale) {
+  var iconDomeScaleRatio = 0.9
+  var iconScale = 1 - (scale * iconDomeScaleRatio)
+  this.scaleIcon_.setSize(
+    new goog.math.Size(
+      this.scaleIconInfo_.maxX * iconScale,
+      this.scaleIconInfo_.maxY * iconScale))
+  this.scale_ = scale
+
+  goog.events.dispatchEvent(this, domekit.EventType.GEOMETRY_CHANGE)
+  this.renderView();
+}
+
 
 domekit.Controller.prototype.calculateProjectionDimensions = function() {
   var domeVOffset;
@@ -333,6 +348,7 @@ domekit.Controller.prototype.rotateX = function(rotationAngleInRadians) {
     point.y = distance * Math.sin(angle);
     point.z = distance * Math.cos(angle);
   }
+  this.renderView();
 }
 
 domekit.Controller.prototype.rotateY = function(rotationAngleInRadians) {
@@ -347,6 +363,7 @@ domekit.Controller.prototype.rotateY = function(rotationAngleInRadians) {
     point.x = distance * Math.sin(angle);
     point.z = distance * Math.cos(angle);
   }
+  this.renderView();
 }
 
 domekit.Controller.prototype.rotateZ = function(rotationAngleInRadians) {
@@ -361,21 +378,11 @@ domekit.Controller.prototype.rotateZ = function(rotationAngleInRadians) {
     point.x = distance * Math.sin(angle);
     point.y = distance * Math.cos(angle);
   }
+  this.renderView();
 }
 
 domekit.Controller.prototype.getScale = function() {
   return this.scale_
-}
-
-// scale is specified 0.0 - 1.0
-domekit.Controller.prototype.setScale = function(scale) {
-  var iconDomeScaleRatio = 0.9
-  var iconScale = 1 - (scale * iconDomeScaleRatio)
-  this.scaleIcon_.setSize(
-    new goog.math.Size(
-      this.scaleIconInfo_.maxX * iconScale,
-      this.scaleIconInfo_.maxY * iconScale))
-  this.scale_ = scale
 }
 
 /////////////////////////////
