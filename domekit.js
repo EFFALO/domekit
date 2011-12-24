@@ -18,9 +18,8 @@ domekit.Point3D = function(x,y,z) {
 }
 
 /**
- * Constants for event names.
- * @enum {string}
- */
+* Constants for event names.
+* @enum {string} */
 domekit.EventType = {
   FREQUENCY_CHANGE: 'fc',
   GEOMETRY_CHANGE:  'gc'
@@ -28,8 +27,7 @@ domekit.EventType = {
 
 /** 
 * @constructor
-* @param {{width: integer, height: integer, scale: float}} opts
-*/
+* @param {{width: integer, height: integer, scale: float}} opts */
 domekit.Controller = function(opts) {
   goog.base(this);
 
