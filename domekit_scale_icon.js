@@ -6,7 +6,7 @@ goog.provide('domekit.ScaleIcon');
 * @param {goog.math.Coordinate} opt_floor
 */
 domekit.ScaleIcon = function(size, opt_floor) {
-  this.imgSrc_   = '/human.png'
+  this.imgSrc_   = 'images/human.png'
   this.img_      = new Image();
   this.img_.src  = this.imgSrc_;
   this.size_     = size
