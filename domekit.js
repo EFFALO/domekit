@@ -54,7 +54,6 @@ domekit.Controller = function(opts) {
   // [i] == true if connections[i] contains only visible points
   this.visibleConnections_ = [];
 
-  // scale icon
   this.scaleIconInfo_ = {
     maxX : 56,
     maxY : 150
@@ -72,7 +71,6 @@ domekit.Controller.prototype.createDom = function() {
   goog.base(this, 'createDom');
   goog.dom.classes.add(this.getElement(), 'domekit-viewport')
 
-  // canvas
   this.canvas_ = goog.dom.createDom('canvas', {
     'class'  : 'domekit-canvas',
     'width'  : this.canvasWidth_,
@@ -195,14 +193,21 @@ domekit.Controller.prototype.drawFrame = function() {
   }
 }
 
+// asynchronous draw (better than blocking til load?)
 domekit.Controller.prototype.drawScaleIcon = function() {
-  this.context_.drawImage(
-    this.scaleIcon_.img_,
-    this.scaleIcon_.offsets_.x,
-    this.scaleIcon_.offsets_.y,
-    this.scaleIcon_.size_.width,
-    this.scaleIcon_.size_.height
-  );
+  if(this.scaleIcon_.img_.complete) {
+    this.context_.drawImage(
+      this.scaleIcon_.img_,
+      this.scaleIcon_.offsets_.x,
+      this.scaleIcon_.offsets_.y,
+      this.scaleIcon_.size_.width,
+      this.scaleIcon_.size_.height
+    );
+  } else {
+    this.scaleIcon_.img_.onload = goog.bind(function() {
+      this.drawScaleIcon()
+    }, this) 
+  }
 }
 
 domekit.Controller.prototype.clearCanvas = function() {
