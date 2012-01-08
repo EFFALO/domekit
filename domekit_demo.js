@@ -1,12 +1,12 @@
 goog.provide('domekit.Demo');
+goog.require('goog.events');
 goog.require('goog.ui.Slider');
 
-goog.require('goog.events');
 
 /** @constructor */
-domekit.Demo = function () {
+domekit.Demo = function() {
   var domekitController = new domekit.Controller({
-    width : 600, height : 600});
+    width: 600, height: 600});
   var goesHere = document.getElementById('canvas-goes-here');
   // begin drawing dome canvas component
   domekitController.render(goesHere);
@@ -17,9 +17,9 @@ domekit.Demo = function () {
     document.getElementById('rotation-slider-goes-here')
   );
   var rotationSliderState = {
-    value : rotationSlider.getValue(),
-    maxVal : 360 // degrees
-  }
+    value: rotationSlider.getValue(),
+    maxVal: 360 // degrees
+  };
   rotationSlider.setMaximum(rotationSliderState.maxVal);
   rotationSlider.addEventListener(goog.ui.Component.EventType.CHANGE, function() {
     var newVal = rotationSlider.getValue();
@@ -27,7 +27,7 @@ domekit.Demo = function () {
     rotationSliderState.value = newVal;
     // convert degrees to radians
     domekitController.rotateY(
-      rotation * (2*Math.PI) /
+      rotation * (2 * Math.PI) /
       rotationSliderState.maxVal
     );
   });
@@ -44,19 +44,19 @@ domekit.Demo = function () {
     domekitController.setScale(scale);
   });
   scaleSlider.setValue(0.5 * scaleSliderMaxVal);
-  domekitController.setScale(0.5)
+  domekitController.setScale(0.5);
 
   // dome mode button
   var domeButton = goog.dom.getElement('choose-a-dome');
-  goog.events.listen(domeButton, goog.events.EventType.CLICK, function() { 
+  goog.events.listen(domeButton, goog.events.EventType.CLICK, function() {
     domekitController.setDomeMode();
   });
 
   // sphere mode button
   var sphereButton = goog.dom.getElement('choose-a-sphere');
-  goog.events.listen(sphereButton, goog.events.EventType.CLICK, function() { 
+  goog.events.listen(sphereButton, goog.events.EventType.CLICK, function() {
     domekitController.setSphereMode();
   });
-}
+};
 
-goog.exportSymbol('domekit.Demo', domekit.Demo)
+goog.exportSymbol('domekit.Demo', domekit.Demo);
