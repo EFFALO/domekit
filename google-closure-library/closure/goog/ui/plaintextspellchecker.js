@@ -15,6 +15,8 @@
 /**
  * @fileoverview Plain text spell checker implementation.
  *
+ * @author eae@google.com (Emil A Eklund)
+ * @author sergeys@google.com (Sergey Solyanik)
  * @see ../demos/plaintextspellchecker.html
  */
 
@@ -163,7 +165,7 @@ goog.ui.PlainTextSpellChecker.prototype.enterDocument = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.PlainTextSpellChecker.prototype.exitDocument = function() {
   goog.ui.PlainTextSpellChecker.superClass_.exitDocument.call(this);
 
@@ -522,7 +524,7 @@ goog.ui.PlainTextSpellChecker.prototype.positionOverlay_ = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.PlainTextSpellChecker.prototype.disposeInternal = function() {
   this.getDomHelper().removeNode(this.overlay_);
   delete this.overlay_;

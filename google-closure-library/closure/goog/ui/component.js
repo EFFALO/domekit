@@ -345,7 +345,7 @@ goog.ui.Component.prototype.dom_;
 goog.ui.Component.prototype.inDocument_ = false;
 
 
-// TODO(user): Stop referring to this private field in subclasses.
+// TODO(attila): Stop referring to this private field in subclasses.
 /**
  * The DOM element for the component.
  * @type {Element}
@@ -505,7 +505,7 @@ goog.ui.Component.prototype.getElementsByClass = function(className) {
  * Returns the first element in this component's DOM with the provided
  * className.
  * @param {string} className The name of the class to look for.
- * @return {?Element} The first item with the class name provided.
+ * @return {Element} The first item with the class name provided.
  */
 goog.ui.Component.prototype.getElementByClass = function(className) {
   return this.element_ ?
@@ -628,11 +628,11 @@ goog.ui.Component.prototype.render = function(opt_parentElement) {
  *
  * Throws an Error if the component is already rendered.
  *
- * @param {Element} siblingElement  Element to render the component before.
+ * @param {Node} sibling Node to render the component before.
  */
-goog.ui.Component.prototype.renderBefore = function(siblingElement) {
-  this.render_(/** @type {Element} */(siblingElement.parentNode),
-               siblingElement);
+goog.ui.Component.prototype.renderBefore = function(sibling) {
+  this.render_(/** @type {Element} */ (sibling.parentNode),
+               sibling);
 };
 
 
@@ -650,12 +650,12 @@ goog.ui.Component.prototype.renderBefore = function(siblingElement) {
  *
  * @param {Element=} opt_parentElement Optional parent element to render the
  *    component into.
- * @param {Element=} opt_beforeElement Element before which the component is to
+ * @param {Node=} opt_beforeNode Node before which the component is to
  *    be rendered.  If left out the node is appended to the parent element.
  * @private
  */
 goog.ui.Component.prototype.render_ = function(opt_parentElement,
-                                               opt_beforeElement) {
+                                               opt_beforeNode) {
   if (this.inDocument_) {
     throw Error(goog.ui.Component.Error.ALREADY_RENDERED);
   }
@@ -665,7 +665,7 @@ goog.ui.Component.prototype.render_ = function(opt_parentElement,
   }
 
   if (opt_parentElement) {
-    opt_parentElement.insertBefore(this.element_, opt_beforeElement || null);
+    opt_parentElement.insertBefore(this.element_, opt_beforeNode || null);
   } else {
     this.dom_.getDocument().body.appendChild(this.element_);
   }
@@ -819,7 +819,7 @@ goog.ui.Component.prototype.disposeInternal = function() {
   this.element_ = null;
   this.model_ = null;
   this.parent_ = null;
-  // TODO(user): delete this.dom_ breaks many unit tests.
+  // TODO(gboyer): delete this.dom_ breaks many unit tests.
 };
 
 
@@ -1003,7 +1003,7 @@ goog.ui.Component.prototype.addChildAt = function(child, index, opt_render) {
     }
     // Render the child into the parent at the appropriate location.  Note that
     // getChildAt(index + 1) returns undefined if inserting at the end.
-    // TODO(user): We should have a renderer with a renderChildAt API.
+    // TODO(attila): We should have a renderer with a renderChildAt API.
     var sibling = this.getChildAt(index + 1);
     // render_() calls enterDocument() if the parent is already in the document.
     child.render_(this.getContentElement(), sibling ? sibling.element_ : null);

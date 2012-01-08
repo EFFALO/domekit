@@ -257,7 +257,7 @@ goog.events.BrowserEvent.prototype.init = function(e, opt_currentTarget) {
         relatedTarget = null;
       }
     }
-    // TODO(user): Use goog.events.EventType when it has been refactored into its
+    // TODO(arv): Use goog.events.EventType when it has been refactored into its
     // own file.
   } else if (type == goog.events.EventType.MOUSEOVER) {
     relatedTarget = e.fromElement;
@@ -267,8 +267,13 @@ goog.events.BrowserEvent.prototype.init = function(e, opt_currentTarget) {
 
   this.relatedTarget = relatedTarget;
 
-  this.offsetX = e.offsetX !== undefined ? e.offsetX : e.layerX;
-  this.offsetY = e.offsetY !== undefined ? e.offsetY : e.layerY;
+  // Webkit emits a lame warning whenever layerX/layerY is accessed.
+  // http://code.google.com/p/chromium/issues/detail?id=101733
+  this.offsetX = (goog.userAgent.WEBKIT || e.offsetX !== undefined) ?
+      e.offsetX : e.layerX;
+  this.offsetY = (goog.userAgent.WEBKIT || e.offsetY !== undefined) ?
+      e.offsetY : e.layerY;
+
   this.clientX = e.clientX !== undefined ? e.clientX : e.pageX;
   this.clientY = e.clientY !== undefined ? e.clientY : e.pageY;
   this.screenX = e.screenX || 0;
@@ -337,7 +342,7 @@ goog.events.BrowserEvent.prototype.isMouseActionButton = function() {
 
 
 /**
- * @inheritDoc
+ * @override
  */
 goog.events.BrowserEvent.prototype.stopPropagation = function() {
   goog.events.BrowserEvent.superClass_.stopPropagation.call(this);
@@ -350,7 +355,7 @@ goog.events.BrowserEvent.prototype.stopPropagation = function() {
 
 
 /**
- * @inheritDoc
+ * @override
  */
 goog.events.BrowserEvent.prototype.preventDefault = function() {
   goog.events.BrowserEvent.superClass_.preventDefault.call(this);
@@ -397,7 +402,7 @@ goog.events.BrowserEvent.prototype.getBrowserEvent = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.events.BrowserEvent.prototype.disposeInternal = function() {
   goog.events.BrowserEvent.superClass_.disposeInternal.call(this);
   this.event_ = null;

@@ -23,6 +23,7 @@ goog.provide('goog.net.xpc.NativeMessagingTransport');
 
 goog.require('goog.events');
 goog.require('goog.net.xpc');
+goog.require('goog.net.xpc.CrossPageChannelRole');
 goog.require('goog.net.xpc.Transport');
 
 
@@ -126,6 +127,10 @@ goog.net.xpc.NativeMessagingTransport.initialize_ = function(listenWindow) {
 goog.net.xpc.NativeMessagingTransport.messageReceived_ = function(msgEvt) {
   var data = msgEvt.getBrowserEvent().data;
 
+  if (!goog.isString(data)) {
+    return false;
+  }
+
   var headDelim = data.indexOf('|');
   var serviceDelim = data.indexOf(':');
 
@@ -157,7 +162,7 @@ goog.net.xpc.NativeMessagingTransport.messageReceived_ = function(msgEvt) {
   // Check if there are any stale channel names that can be updated.
   for (var staleChannelName in goog.net.xpc.channels_) {
     var staleChannel = goog.net.xpc.channels_[staleChannelName];
-    if (staleChannel.getRole() == goog.net.xpc.CrossPageChannel.Role.INNER &&
+    if (staleChannel.getRole() == goog.net.xpc.CrossPageChannelRole.INNER &&
         !staleChannel.isConnected() &&
         service == goog.net.xpc.TRANSPORT_SERVICE_ &&
         payload == goog.net.xpc.SETUP) {
@@ -258,7 +263,7 @@ goog.net.xpc.NativeMessagingTransport.prototype.send = function(service,
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.net.xpc.NativeMessagingTransport.prototype.disposeInternal = function() {
   goog.base(this, 'disposeInternal');
   if (this.initialized_) {

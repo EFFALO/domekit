@@ -41,6 +41,7 @@
  *   <li>Safari 4+
  * </ul>
  *
+ * @author brenneman@google.com (Shawn Brenneman)
  * @see ../demos/history1.html
  * @see ../demos/history2.html
  */
@@ -423,7 +424,7 @@ goog.History.HASH_ALWAYS_REQUIRED = goog.userAgent.IE;
 goog.History.prototype.lockedToken_ = null;
 
 
-/** @inheritDoc */
+/** @override */
 goog.History.prototype.disposeInternal = function() {
   goog.History.superClass_.disposeInternal.call(this);
   this.eventHandler_.dispose();

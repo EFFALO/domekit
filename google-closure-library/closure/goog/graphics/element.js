@@ -17,6 +17,8 @@
  * @fileoverview A thin wrapper around the DOM element returned from
  * the different draw methods of the graphics implementation, and
  * all interfaces that the various element types support.
+ * @author arv@google.com (Erik Arvidsson)
+ * @author yoah@google.com (Yoah Bar-David)
  */
 
 
@@ -122,7 +124,7 @@ goog.graphics.Element.prototype.getTransform = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.graphics.Element.prototype.addEventListener = function(
     type, handler, opt_capture, opt_handlerScope) {
   goog.events.listen(this.element_, type, handler, opt_capture,
@@ -130,7 +132,7 @@ goog.graphics.Element.prototype.addEventListener = function(
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.graphics.Element.prototype.removeEventListener = function(
     type, handler, opt_capture, opt_handlerScope) {
   goog.events.unlisten(this.element_, type, handler, opt_capture,
@@ -138,7 +140,7 @@ goog.graphics.Element.prototype.removeEventListener = function(
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.graphics.Element.prototype.disposeInternal = function() {
   goog.graphics.Element.superClass_.disposeInternal.call(this);
   goog.events.removeAll(this.element_);

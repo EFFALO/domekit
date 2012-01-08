@@ -196,24 +196,31 @@ function assertThrows(a, opt_b) {
 
 
 /**
- * @param {*} a
- * @param {*=} opt_b
+ * Asserts that the function does not throw an error.
+ *
+ * @param {!(string|Function)} a The assertion comment or the function to call.
+ * @param {!Function=} opt_b The function to call (if the first argument of
+ *     {@code assertNotThrows} was the comment).
+ * @throws {goog.testing.JsUnitException} If the assertion failed.
  */
 function assertNotThrows(a, opt_b) {
   _validateArguments(1, arguments);
+  var comment = commentArg(1, arguments);
   var func = nonCommentArg(1, 1, arguments);
-  _assert(commentArg(1, arguments), typeof func == 'function',
+  _assert(comment, typeof func == 'function',
       'Argument passed to assertNotThrows is not a function');
 
-  var isOk = true;
   try {
     func();
   } catch (e) {
-    isOk = false;
+    comment = comment ? (comment + '\n') : '';
+    comment += 'A non expected exception was thrown from function passed to ' +
+               'assertNotThrows';
+    // Some browsers don't have a stack trace so at least have the error
+    // description.
+    var stackTrace = e['stack'] || e['stacktrace'] || e.toString();
+    goog.testing.asserts.raiseException_(comment, stackTrace);
   }
-  _assert(commentArg(1, arguments), isOk,
-      'A non expected exception was thrown from function passed to ' +
-      'assertNotThrows');
 }
 
 
@@ -436,7 +443,7 @@ goog.testing.asserts.findDifferences = function(expected, actual) {
   // To avoid infinite recursion when the two parameters are self-referential
   // along the same path of properties, keep track of the object pairs already
   // seen in this call subtree, and abort when a cycle is detected.
-  // TODO(user,user): The algorithm still does not terminate in cases
+  // TODO(gboyer,user): The algorithm still does not terminate in cases
   // with exponential recursion, e.g. a binary tree with leaf->root links.
   // Investigate ways to solve this without significant performance loss
   // for the common case.
@@ -445,7 +452,7 @@ goog.testing.asserts.findDifferences = function(expected, actual) {
     if (depth % 2) {
       // Compare with midpoint of seen ("Tortoise and hare" loop detection).
       // http://en.wikipedia.org/wiki/Cycle_detection#Tortoise_and_hare
-      // TODO(user,user): For cases with complex cycles the algorithm
+      // TODO(gboyer,user): For cases with complex cycles the algorithm
       // can take a long time to terminate, look into ways to terminate sooner
       // without adding more than constant-time work in non-cycle cases.
       var mid = depth >> 1;
@@ -595,9 +602,12 @@ goog.testing.asserts.findDifferences = function(expected, actual) {
  *
  * See asserts_test.html for more interesting edge cases.
  *
- * @param {*} a
- * @param {*} b
- * @param {*=} opt_c
+ * The first comparison object provided is the expected value, the second is
+ * the actual.
+ *
+ * @param {*} a Assertion message or comparison object.
+ * @param {*} b Comparison object.
+ * @param {*=} opt_c Comparison object, if an assertion message was provided.
  */
 function assertObjectEquals(a, b, opt_c) {
   _validateArguments(2, arguments);
@@ -607,6 +617,27 @@ function assertObjectEquals(a, b, opt_c) {
   var differences = goog.testing.asserts.findDifferences(v1, v2);
 
   _assert(failureMessage, !differences, differences);
+}
+
+
+/**
+ * Compares two arbitrary objects for non-equalness.
+ *
+ * All the same caveats as for assertObjectEquals apply here:
+ * Undefined values may be confused for missing values, or vice versa.
+ *
+ * @param {*} a Assertion message or comparison object.
+ * @param {*} b Comparison object.
+ * @param {*=} opt_c Comparison object, if an assertion message was provided.
+ */
+function assertObjectNotEquals(a, b, opt_c) {
+  _validateArguments(2, arguments);
+  var v1 = nonCommentArg(1, 2, arguments);
+  var v2 = nonCommentArg(2, 2, arguments);
+  var failureMessage = commentArg(2, arguments) ? commentArg(2, arguments) : '';
+  var differences = goog.testing.asserts.findDifferences(v1, v2);
+
+  _assert(failureMessage, differences, 'Objects should not be equal');
 }
 
 
@@ -667,11 +698,11 @@ function assertElementsEquals(a, b, c) {
  * each element is roughly equal.
  * @param {string|Object} a Failure message (4 arguments)
  *     or object #1 (3 arguments).
- * @param {Object} b Object #1 (3 arguments) or object #2 (4 arguments).
- * @param {Object} c Object #2 (4 arguments) or tolerance (3 arguments).
- * @param {number} d tolerance (4 arguments).
+ * @param {Object} b Object #1 (4 arguments) or object #2 (3 arguments).
+ * @param {Object|number} c Object #2 (4 arguments) or tolerance (3 arguments).
+ * @param {number=} opt_d tolerance (4 arguments).
  */
-function assertElementsRoughlyEqual(a, b, c, d) {
+function assertElementsRoughlyEqual(a, b, c, opt_d) {
   _validateArguments(3, arguments);
 
   var v1 = nonCommentArg(1, 3, arguments);
@@ -684,7 +715,7 @@ function assertElementsRoughlyEqual(a, b, c, d) {
   } else {
     assertEquals('length mismatch: ' + failureMessage, v1.length, v2.length);
     for (var i = 0; i < v1.length; ++i) {
-      assertRoughlyEquals(failureMessage, v2[i], v1[i], tolerance);
+      assertRoughlyEquals(failureMessage, v1[i], v2[i], tolerance);
     }
   }
 }
@@ -843,9 +874,12 @@ function assertRoughlyEquals(a, b, c, opt_d) {
 
 
 /**
- * @param {*} a
- * @param {*} b
- * @param {*=} opt_c
+ * Checks if the given element is the member of the given container.
+ * @param {*} a Failure message (3 arguments) or the contained element
+ *     (2 arguments).
+ * @param {*} b The contained element (3 arguments) or the container
+ *     (2 arguments).
+ * @param {*=} opt_c The container.
  */
 function assertContains(a, b, opt_c) {
   _validateArguments(2, arguments);
@@ -858,9 +892,12 @@ function assertContains(a, b, opt_c) {
 
 
 /**
- * @param {*} a
- * @param {*} b
- * @param {*=} opt_c
+ * Checks if the given element is not the member of the given container.
+ * @param {*} a Failure message (3 arguments) or the contained element
+ *     (2 arguments).
+ * @param {*} b The contained element (3 arguments) or the container
+ *     (2 arguments).
+ * @param {*=} opt_c The container.
  */
 function assertNotContains(a, b, opt_c) {
   _validateArguments(2, arguments);
@@ -995,7 +1032,7 @@ goog.testing.JsUnitException = function(comment, opt_message) {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.testing.JsUnitException.prototype.toString = function() {
   // TODO(agrieve): Fix dependency in build rules.  For more info see
   // http://b/2020085
@@ -1019,8 +1056,10 @@ goog.exportSymbol('assertNonEmptyString', assertNonEmptyString);
 goog.exportSymbol('assertNaN', assertNaN);
 goog.exportSymbol('assertNotNaN', assertNotNaN);
 goog.exportSymbol('assertObjectEquals', assertObjectEquals);
+goog.exportSymbol('assertObjectNotEquals', assertObjectNotEquals);
 goog.exportSymbol('assertArrayEquals', assertArrayEquals);
 goog.exportSymbol('assertElementsEquals', assertElementsEquals);
+goog.exportSymbol('assertElementsRoughlyEqual', assertElementsRoughlyEqual);
 goog.exportSymbol('assertSameElements', assertSameElements);
 goog.exportSymbol('assertEvaluatesToTrue', assertEvaluatesToTrue);
 goog.exportSymbol('assertEvaluatesToFalse', assertEvaluatesToFalse);

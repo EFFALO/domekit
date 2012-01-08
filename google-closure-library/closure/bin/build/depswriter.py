@@ -34,7 +34,7 @@ import source
 import treescan
 
 
-
+__author__ = 'nnaze@google.com (Nathan Naze)'
 
 
 def MakeDepsFile(source_map):
@@ -100,7 +100,7 @@ def _GetOptionsParser():
                     help='A root directory to scan for JS source files, plus '
                     'a prefix (if either contains a space, surround with '
                     'quotes).  Paths in generated deps file will be relative '
-                    'to the root, but preceeded by the prefix.  This flag '
+                    'to the root, but preceded by the prefix.  This flag '
                     'may be specified multiple times.')
   parser.add_option('--path_with_depspath',
                     dest='paths_with_depspath',
@@ -109,7 +109,7 @@ def _GetOptionsParser():
                     help='A path to a source file and an alternate path to '
                     'the file in the generated deps file (if either contains '
                     'a space, surround with whitespace). This flag may be '
-                    'specifified multiple times.')
+                    'specified multiple times.')
   return parser
 
 

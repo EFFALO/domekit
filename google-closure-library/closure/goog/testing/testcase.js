@@ -440,7 +440,17 @@ goog.testing.TestCase.prototype.log = function(val) {
     if (typeof val == 'string') {
       val = this.getTimeStamp_() + ' : ' + val;
     }
-    window.console.log(val);
+    if (val instanceof Error && val.stack) {
+      // Chrome does console.log asynchronously in a different process
+      // (http://code.google.com/p/chromium/issues/detail?id=50316).
+      // This is an acute problem for Errors, which almost never survive.
+      // Grab references to the immutable strings so they survive.
+      window.console.log(val, val.message, val.stack);
+      // TODO(gboyer): Consider for Chrome cloning any object if we can ensure
+      // there are no circular references.
+    } else {
+      window.console.log(val);
+    }
   }
 };
 
@@ -656,7 +666,7 @@ goog.testing.TestCase.prototype.autoDiscoverTests = function() {
     try {
       var ref = testSource[name];
     } catch (ex) {
-      // NOTE(user): When running tests from a file:// URL on Firefox 3.5
+      // NOTE(brenneman): When running tests from a file:// URL on Firefox 3.5
       // for Windows, any reference to window.sessionStorage raises
       // an "Operation is not supported" exception. Ignore any exceptions raised
       // by simply accessing global properties.
@@ -842,7 +852,7 @@ goog.testing.TestCase.prototype.doSuccess = function(test) {
 /**
  * Handles a test that failed.
  * @param {goog.testing.TestCase.Test} test The test that failed.
- * @param {string|Error=} opt_e The exception object associated with the
+ * @param {*=} opt_e The exception object associated with the
  *     failure or a string.
  * @protected
  */
@@ -857,7 +867,7 @@ goog.testing.TestCase.prototype.doError = function(test, opt_e) {
 
 /**
  * @param {string} name Failed test name.
- * @param {string|Error=} opt_e The exception object associated with the
+ * @param {*=} opt_e The exception object associated with the
  *     failure or a string.
  * @return {goog.testing.TestCase.Error} Error object.
  */
@@ -1040,7 +1050,7 @@ goog.testing.TestCase.initializeTestRunner = function(testCase) {
   testCase.autoDiscoverTests();
   var gTestRunner = goog.global['G_testRunner'];
   if (gTestRunner) {
-    gTestRunner.initialize(testCase);
+    gTestRunner['initialize'](testCase);
   } else {
     throw Error('G_testRunner is undefined. Please ensure goog.testing.jsunit' +
         'is included.');

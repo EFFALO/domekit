@@ -99,6 +99,8 @@
  * p:     undefined      80 undefined
  * P:     undefined      80 undefined
  *
+ * @author arv@google.com (Erik Arvidsson)
+ * @author eae@google.com (Emil A Eklund)
  * @see ../demos/keyhandler.html
  */
 
@@ -476,7 +478,7 @@ goog.events.KeyHandler.prototype.detach = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.events.KeyHandler.prototype.disposeInternal = function() {
   goog.events.KeyHandler.superClass_.disposeInternal.call(this);
   this.detach();

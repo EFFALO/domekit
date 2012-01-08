@@ -26,7 +26,7 @@ goog.require('goog.events.EventType');
 goog.require('goog.userAgent');
 
 
-// TODO(user): Move this to goog.events instead.
+// TODO(arv): Move this to goog.events instead.
 
 
 
@@ -64,7 +64,8 @@ goog.dom.FontSizeMonitor = function(opt_domHelper) {
       // iframe has a non zero size and is completely off screen.
       goog.userAgent.IE ? 'div' : 'iframe', {
         'style': 'position:absolute;width:9em;height:9em;top:-99em',
-        'tabIndex': -1
+        'tabIndex': -1,
+        'aria-hidden': 'true'
       });
   var p = dom.getDocument().body;
   p.insertBefore(this.sizeElement_, p.firstChild);
@@ -108,7 +109,7 @@ goog.inherits(goog.dom.FontSizeMonitor, goog.events.EventTarget);
  * @enum {string}
  */
 goog.dom.FontSizeMonitor.EventType = {
-  // TODO(user): Change value to 'change' after updating the callers.
+  // TODO(arv): Change value to 'change' after updating the callers.
   CHANGE: 'fontsizechange'
 };
 
@@ -122,7 +123,7 @@ goog.dom.FontSizeMonitor.CHANGE_EVENT =
     goog.dom.FontSizeMonitor.EventType.CHANGE;
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.FontSizeMonitor.prototype.disposeInternal = function() {
   goog.dom.FontSizeMonitor.superClass_.disposeInternal.call(this);
 

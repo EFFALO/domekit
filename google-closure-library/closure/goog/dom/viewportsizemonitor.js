@@ -15,6 +15,7 @@
 /**
  * @fileoverview Utility class that monitors viewport size changes.
  *
+ * @author attila@google.com (Attila Bodis)
  * @see ../demos/viewportsizemonitor.html
  */
 
@@ -151,7 +152,7 @@ goog.dom.ViewportSizeMonitor.prototype.windowSizePollInterval_ = null;
 
 /**
  * Checks if polling is required for this user agent. Opera only requires
- * polling when the page is loaded within an IRAME.
+ * polling when the page is loaded within an IFRAME.
  * @return {boolean} Whether polling is required.
  * @private
  */
@@ -172,7 +173,7 @@ goog.dom.ViewportSizeMonitor.prototype.getSize = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.dom.ViewportSizeMonitor.prototype.disposeInternal = function() {
   goog.dom.ViewportSizeMonitor.superClass_.disposeInternal.call(this);
 

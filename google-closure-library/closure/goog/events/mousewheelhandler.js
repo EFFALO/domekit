@@ -24,6 +24,7 @@
  * against extremely large deltas, use the setMaxDeltaX and setMaxDeltaY APIs
  * to set maximum values that make sense for your application.
  *
+ * @author arv@google.com (Erik Arvidsson)
  * @see ../demos/mousewheelhandler.html
  */
 
@@ -220,7 +221,7 @@ goog.events.MouseWheelHandler.smartScale_ = function(mouseWheelDelta,
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.events.MouseWheelHandler.prototype.disposeInternal = function() {
   goog.events.MouseWheelHandler.superClass_.disposeInternal.call(this);
   goog.events.unlistenByKey(this.listenKey_);

@@ -51,7 +51,6 @@ goog.require('goog.net.ErrorCode');
 goog.require('goog.net.EventType');
 goog.require('goog.net.HttpStatus');
 goog.require('goog.net.XmlHttp');
-goog.require('goog.net.xhrMonitor');
 goog.require('goog.object');
 goog.require('goog.structs');
 goog.require('goog.structs.Map');
@@ -121,7 +120,7 @@ goog.net.XhrIo.CONTENT_TYPE_HEADER = 'Content-Type';
  * The pattern matching the 'http' and 'https' URI schemes
  * @type {!RegExp}
  */
-goog.net.XhrIo.HTTP_SCHEME_PATTERN = /^https?:?$/i;
+goog.net.XhrIo.HTTP_SCHEME_PATTERN = /^https?$/i;
 
 
 /**
@@ -135,7 +134,7 @@ goog.net.XhrIo.FORM_CONTENT_TYPE =
 /**
  * All non-disposed instances of goog.net.XhrIo created
  * by {@link goog.net.XhrIo.send} are in this Array.
- * @see goog.net.XhrIo.cleanupAllPendingStaticSends
+ * @see goog.net.XhrIo.cleanup
  * @type {Array.<goog.net.XhrIo>}
  * @private
  */
@@ -145,7 +144,7 @@ goog.net.XhrIo.sendInstances_ = [];
 /**
  * Static send that creates a short lived instance of XhrIo to send the
  * request.
- * @see goog.net.XhrIo.cleanupAllPendingStaticSends
+ * @see goog.net.XhrIo.cleanup
  * @param {string|goog.Uri} url Uri to make request to.
  * @param {Function=} opt_callback Callback function for when request is
  *     complete.
@@ -187,7 +186,7 @@ goog.net.XhrIo.send = function(url, opt_callback, opt_method, opt_content,
  * significantly more complicated for the client, and the whole point
  * of {@link goog.net.XhrIo.send} is that it's simple and easy to use.
  * Clients of {@link goog.net.XhrIo.send} should call
- * {@link goog.net.XhrIo.cleanupAllPendingStaticSends} when doing final
+ * {@link goog.net.XhrIo.cleanup} when doing final
  * cleanup on window unload.
  */
 goog.net.XhrIo.cleanup = function() {
@@ -460,12 +459,6 @@ goog.net.XhrIo.prototype.send = function(url, opt_method, opt_content,
   this.xhrOptions_ = this.xmlHttpFactory_ ?
       this.xmlHttpFactory_.getOptions() : goog.net.XmlHttp.getOptions();
 
-  // We tell the Xhr Monitor that we are opening an XMLHttpRequest.  This stops
-  // IframeIo from destroying iframes that may have been the source of the
-  // execution context, which can result in an error in FF.  See xhrmonitor.js
-  // for more details.
-  goog.net.xhrMonitor.markXhrOpen(this.xhr_);
-
   // Set up the onreadystatechange callback
   this.xhr_.onreadystatechange = goog.bind(this.onReadyStateChange_, this);
 
@@ -554,27 +547,7 @@ goog.net.XhrIo.prototype.send = function(url, opt_method, opt_content,
  */
 goog.net.XhrIo.prototype.createXhr = function() {
   return this.xmlHttpFactory_ ?
-      this.xmlHttpFactory_.createInstance() : new goog.net.XmlHttp();
-};
-
-
-/**
- * Override of dispatchEvent.  We need to keep track if an XMLHttpRequest is
- * being sent from the context of another requests' response.  If it is then, we
- * make the XHR send async.
- * @override
- */
-goog.net.XhrIo.prototype.dispatchEvent = function(e) {
-  if (this.xhr_) {
-    goog.net.xhrMonitor.pushContext(this.xhr_);
-    try {
-      return goog.net.XhrIo.superClass_.dispatchEvent.call(this, e);
-    } finally {
-      goog.net.xhrMonitor.popContext();
-    }
-  } else {
-    return goog.net.XhrIo.superClass_.dispatchEvent.call(this, e);
-  }
+      this.xmlHttpFactory_.createInstance() : goog.net.XmlHttp();
 };
 
 
@@ -798,13 +771,8 @@ goog.net.XhrIo.prototype.cleanUpXhr_ = function(opt_fromDispose) {
     }
 
     if (!opt_fromDispose) {
-      goog.net.xhrMonitor.pushContext(xhr);
       this.dispatchEvent(goog.net.EventType.READY);
-      goog.net.xhrMonitor.popContext();
     }
-
-    // Mark the request as having completed.
-    goog.net.xhrMonitor.markXhrClosed(xhr);
 
     try {
       // NOTE(user): Not nullifying in FireFox can still leak if the callbacks
@@ -843,19 +811,10 @@ goog.net.XhrIo.prototype.isComplete = function() {
  * @return {boolean} Whether the request completed with a success.
  */
 goog.net.XhrIo.prototype.isSuccess = function() {
-  switch (this.getStatus()) {
-    case 0:         // Used for local XHR requests
-      return !this.isLastUriEffectiveSchemeHttp_();
-
-    case goog.net.HttpStatus.OK:
-    case goog.net.HttpStatus.NO_CONTENT:
-    case goog.net.HttpStatus.NOT_MODIFIED:
-    case goog.net.HttpStatus.QUIRK_IE_NO_CONTENT:
-      return true;
-
-    default:
-      return false;
-  }
+  var status = this.getStatus();
+  // A zero status code is considered successful for local files.
+  return goog.net.HttpStatus.isSuccess(status) ||
+      status === 0 && !this.isLastUriEffectiveSchemeHttp_();
 };
 
 
@@ -865,22 +824,8 @@ goog.net.XhrIo.prototype.isSuccess = function() {
  * @private
  */
 goog.net.XhrIo.prototype.isLastUriEffectiveSchemeHttp_ = function() {
-  var lastUriScheme = goog.isString(this.lastUri_) ?
-      goog.uri.utils.getScheme(this.lastUri_) :
-      (/** @type {!goog.Uri} */ this.lastUri_).getScheme();
-  // if it's an absolute URI, we're done.
-  if (lastUriScheme) {
-    return goog.net.XhrIo.HTTP_SCHEME_PATTERN.test(lastUriScheme);
-  }
-
-  // if it's a relative URI, it inherits the scheme of the page.
-  if (self.location) {
-    return goog.net.XhrIo.HTTP_SCHEME_PATTERN.test(self.location.protocol);
-  } else {
-    // This case can occur from a web worker in Firefox 3.5 . All other browsers
-    // with web workers support self.location from the worker.
-    return true;
-  }
+  var scheme = goog.uri.utils.getEffectiveScheme(String(this.lastUri_));
+  return goog.net.XhrIo.HTTP_SCHEME_PATTERN.test(scheme);
 };
 
 

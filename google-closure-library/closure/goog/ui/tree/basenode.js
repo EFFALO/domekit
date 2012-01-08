@@ -15,6 +15,9 @@
 /**
  * @fileoverview Definition of the goog.ui.tree.BaseNode class.
  *
+ * @author arv@google.com (Erik Arvidsson)
+ * @author eae@google.com (Emil A Eklund)
+ * @author jonp@google.com (Jon Perlow)
  *
  * This is a based on the webfx tree control. It since been updated to add
  * typeahead support, as well as accessibility support using ARIA framework.
@@ -138,7 +141,7 @@ goog.ui.tree.BaseNode.prototype.isUserCollapsible_ = true;
 goog.ui.tree.BaseNode.prototype.depth_ = -1;
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.tree.BaseNode.prototype.disposeInternal = function() {
   goog.ui.tree.BaseNode.superClass_.disposeInternal.call(this);
   if (this.tree_) {
@@ -196,7 +199,7 @@ goog.ui.tree.BaseNode.prototype.initAccessibility = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.tree.BaseNode.prototype.createDom = function() {
   var sb = new goog.string.StringBuffer();
   this.toHtml(sb);
@@ -205,7 +208,7 @@ goog.ui.tree.BaseNode.prototype.createDom = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.tree.BaseNode.prototype.enterDocument = function() {
   goog.ui.tree.BaseNode.superClass_.enterDocument.call(this);
   goog.ui.tree.BaseNode.allNodes[this.getId()] = this;
@@ -213,7 +216,7 @@ goog.ui.tree.BaseNode.prototype.enterDocument = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.tree.BaseNode.prototype.exitDocument = function() {
   goog.ui.tree.BaseNode.superClass_.exitDocument.call(this);
   delete goog.ui.tree.BaseNode.allNodes[this.getId()];

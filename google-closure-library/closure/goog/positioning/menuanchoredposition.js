@@ -16,6 +16,8 @@
  * @fileoverview Anchored viewport positioning class with both adjust and
  *     resize options for the popup.
  *
+ * @author eae@google.com (Emil A Eklund)
+ * @author tildahl@google.com (Michael Tildahl)
  */
 
 goog.provide('goog.positioning.MenuAnchoredPosition');
@@ -68,7 +70,7 @@ goog.inherits(goog.positioning.MenuAnchoredPosition,
               goog.positioning.AnchoredViewportPosition);
 
 
-/** @inheritDoc */
+/** @override */
 goog.positioning.MenuAnchoredPosition.prototype.getLastResortOverflow =
     function() {
   var overflowX = goog.positioning.Overflow.ADJUST_X_EXCEPT_OFFSCREEN;
