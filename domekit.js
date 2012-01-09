@@ -4,6 +4,7 @@ goog.provide('domekit.Point3D');
 
 goog.require('domekit.ScaleIcon');
 goog.require('goog.dom');
+goog.require('goog.fx.Dragger');
 goog.require('goog.ui.Component');
 
 /**
@@ -88,11 +89,44 @@ domekit.Controller.prototype.enterDocument = function() {
     throw new Error(this.canvas_.innerHTML);
   }
 
+  this.bindDragger();
+
   this.scaleIcon_.setFloor(this.calculateFloor());
   this.generateModelPointsAndConnections();
   this.setTriangleFrequency(2);
   this.renderView();
   this.strutLengths();
+};
+
+domekit.Controller.prototype.bindDragger = function() {
+  var target = this.canvas_,
+      controller = this;
+
+  var initDragger = function(e) {
+    var d = new goog.fx.Dragger(target);
+    var curX = e.clientX;
+
+    var incr = function(newX) {
+      var diff = newX - curX;
+      curX = newX;
+      return diff;
+    };
+
+    d.addEventListener(goog.fx.Dragger.EventType.DRAG, function(e) {
+      var pixPerRad = 200;
+      var pix = incr(e.clientX);
+      controller.rotateY(pix / pixPerRad);
+    });
+
+    d.addEventListener(goog.fx.Dragger.EventType.END, function(e) {
+      d.dispose();
+    });
+
+    d.startDrag(e);
+  };
+
+  goog.events.listen(target, goog.events.EventType.MOUSEDOWN, initDragger, this);
+  goog.events.listen(target, goog.events.EventType.TOUCHSTART, initDragger, this);
 };
 
 domekit.Controller.prototype.renderView = function() {

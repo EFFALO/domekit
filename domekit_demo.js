@@ -11,27 +11,6 @@ domekit.Demo = function() {
   // begin drawing dome canvas component
   domekitController.render(goesHere);
 
-  // rotation slider
-  var rotationSlider = new goog.ui.Slider();
-  rotationSlider.render(
-    document.getElementById('rotation-slider-goes-here')
-  );
-  var rotationSliderState = {
-    value: rotationSlider.getValue(),
-    maxVal: 360 // degrees
-  };
-  rotationSlider.setMaximum(rotationSliderState.maxVal);
-  rotationSlider.addEventListener(goog.ui.Component.EventType.CHANGE, function() {
-    var newVal = rotationSlider.getValue();
-    var rotation = newVal - rotationSliderState.value;
-    rotationSliderState.value = newVal;
-    // convert degrees to radians
-    domekitController.rotateY(
-      rotation * (2 * Math.PI) /
-      rotationSliderState.maxVal
-    );
-  });
-
   // scale slider
   var scaleSlider = new goog.ui.Slider();
   scaleSlider.render(
