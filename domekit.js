@@ -183,7 +183,11 @@ domekit.Controller.prototype.drawFrame = function() {
   for (var i = 0; i < connections.length; i++) {
     // check connection visibility
     if (this.visibleConnections_[i]) {
-      this.drawConnection(projectedPoints[connections[i][0]], projectedPoints[connections[i][1]], 'rgb(116,133,78)');
+      this.drawConnection(
+        projectedPoints[connections[i][0]],
+        projectedPoints[connections[i][1]],
+        'rgb(116,133,78)'
+      );
     }
   }
   for (var i = 0; i < projectedPoints.length; i++) {
@@ -303,10 +307,14 @@ domekit.Controller.prototype.setScale = function(scale) {
 
 
 domekit.Controller.prototype.calculateProjectionDimensions = function() {
-  var domeVOffset;
   this.projectionWidth_ = this.canvasWidth_;
   this.projectionHeight_ = this.canvasHeight_;
-  domeVOffset = Math.cos(Math.ceil(this.triangleFrequency_ * 3.0 / 2.0) / (this.triangleFrequency_ * 3.0) * Math.PI) / 2.0 + .5;
+
+  var domeVOffset = Math.cos(
+    Math.ceil(this.triangleFrequency_ * 3.0 / 2.0) /
+    (this.triangleFrequency_ * 3.0) * Math.PI
+  ) / 2.0 + .5;
+
   if (this.clipDome_) {
     this.maximumRadius_ = Math.min(this.canvasWidth_, this.canvasHeight_) / 2;
     this.offsets = {
@@ -441,6 +449,7 @@ domekit.Controller.prototype.generateFaces = function() {
   // used in search for last edge of triangle
   var foundFirst;
   var foundThird;
+
   for (var i = 0; i < this.connections_.length; i++) {
     // grab both points from starting edge
     first = this.connections_[i][0];
@@ -459,8 +468,8 @@ domekit.Controller.prototype.generateFaces = function() {
           foundTriangle = false;
           // do the first and third points also connect?
           for (var k = 0; k < this.connections_.length; k++) {
-            var foundFirst = (this.connections_[k].indexOf(first) > -1);
-            var foundThird = (this.connections_[k].indexOf(third) > -1);
+            foundFirst = (this.connections_[k].indexOf(first) > -1);
+            foundThird = (this.connections_[k].indexOf(third) > -1);
             if (foundFirst && foundThird) foundTriangle = true;
           }
           if (foundTriangle) faces.push([first, second, third]);
@@ -468,6 +477,7 @@ domekit.Controller.prototype.generateFaces = function() {
       }
     }
   }
+
   // remove duplicates
   var dupsIndexes = [];
   for (i = 0; i < faces.length; i++) {
@@ -501,11 +511,17 @@ domekit.Controller.prototype.strutLengths = function() {
   var j;
   var k;
   var found;
+  var points = this.points_;
+  var connections = this.connections_;
+  var conn0, conn1;
+
   for (i = 0; i < this.connections_.length; i++) {
+    conn0 = connections[i][0];
+    conn1 = connections[i][1];
     distance = Math.sqrt(
-      Math.pow(this.points_[this.connections_[i][0]].x - this.points_[this.connections_[i][1]].x, 2) +
-      Math.pow(this.points_[this.connections_[i][0]].y - this.points_[this.connections_[i][1]].y, 2) +
-      Math.pow(this.points_[this.connections_[i][0]].z - this.points_[this.connections_[i][1]].z, 2)
+      Math.pow(points[conn0].x - points[conn1].x, 2) +
+      Math.pow(points[conn0].y - points[conn1].y, 2) +
+      Math.pow(points[conn0].z - points[conn1].z, 2)
     );
     distance += nudger;
     found = 0;
