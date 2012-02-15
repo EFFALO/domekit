@@ -39,9 +39,9 @@ domekit.Controller = function(opts) {
 
   this.context_ = null;
   this.clipDome_ = true;
-  this.enableClipZ_ = true;
+  this.enableClipZ_ = false;
   this.clipY_ = 0.5;
-  this.pointSize_ = 4.0;
+  this.pointSize_ = 2.0;
   this.points_ = [];
   // V number
   this.clipZ = -Math.PI / 10;
@@ -203,7 +203,7 @@ domekit.Controller.prototype.drawConnection = function(point1, point2, color) {
   this.context_.save();
   this.context_.beginPath();
   this.context_.strokeStyle = color;
-  this.context_.lineWidth = 3;
+  this.context_.lineWidth = 2;
   this.context_.moveTo(point1.x, point1.y);
   this.context_.lineTo(point2.x, point2.y);
   this.context_.stroke();
@@ -303,8 +303,8 @@ domekit.Controller.prototype.setTriangleFrequency = function(frequency) {
   this.setClip();
   this.generateModelPointsAndConnections();
   this.calculateProjectionDimensions();
-  this.rotateY(Math.PI / 32);
-  this.rotateX(Math.PI / 48);
+  //this.rotateY(Math.PI / 32);
+  //this.rotateX(Math.PI / 48);
   this.strutLengths();
 
   goog.events.dispatchEvent(this, domekit.EventType.FREQUENCY_CHANGE);
