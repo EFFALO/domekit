@@ -45,10 +45,12 @@ domekit.Controller = function(opts) {
   this.points_ = [];
   // V number
   this.clipZ = -Math.PI / 10;
+  this.domeTilt_ = .1;    // Tilt for Visualization
   // index on points for visibility
   // [i] == true if points[i] is visible
   this.visiblePoints_ = [];
   this.projectedPoints_ = [];
+  this.projectedRotatedPoints_ = [];  // Part of domeTilt
   this.connections_ = [];
   this.faces_ = [];
   // index on connections for visibility
@@ -174,17 +176,36 @@ domekit.Controller.prototype.projectPoints = function() {
     yOffset = this.offsets.y,
     points = this.points_;
 
+  var i;
+  var distance;
+  var angle;
+  var newRotatedPoint;
   this.projectedPoints_ = [];
-  for (var i = 0; i < points.length; i++) {
+  this.projectedRotatedPoints_ = [];
+  for (i = 0; i < points.length; i++) {
     if (this.visiblePoints_[i]) {
       // visible points are projected
       newPoint = this.projectedPoints_[i] = new domekit.Point3D();
       newPoint.x = this.project(points[i].x, points[i].z, 2.2, .005, xOffset, this.scale_);
       newPoint.y = this.project(points[i].y, points[i].z, 2.2, .005, yOffset, this.scale_);
       newPoint.z = points[i].z;
+
+      distance = Math.sqrt(points[i].y * points[i].y + points[i].z * points[i].z);
+      angle = Math.atan2(points[i].y, points[i].z) + this.domeTilt_;
+      newRotatedPoint = new domekit.Point3D();
+      newRotatedPoint.x = points[i].x;
+      newRotatedPoint.y = distance * Math.sin(angle);
+      newRotatedPoint.z = distance * Math.cos(angle);
+
+      this.projectedRotatedPoints_[i] = new domekit.Point3D();
+      this.projectedRotatedPoints_[i].z = newRotatedPoint.z;
+      this.projectedRotatedPoints_[i].x = this.project(newRotatedPoint.x, newRotatedPoint.z, 2.2, .005, xOffset, this.scale_);
+      this.projectedRotatedPoints_[i].y = this.project(newRotatedPoint.y, newRotatedPoint.z, 2.2, .005, yOffset, this.scale_);
+    
     } else {
       // invisible points are null in the projection
       this.projectedPoints_[i] = null;
+      this.projectedRotatedPoints_[i] = null;
     }
   }
 };
@@ -212,22 +233,22 @@ domekit.Controller.prototype.drawConnection = function(point1, point2, color) {
 };
 
 domekit.Controller.prototype.drawFrame = function() {
-  var projectedPoints = this.projectedPoints_;
+  var projectedRotatedPoints = this.projectedRotatedPoints_;
   var connections = this.connections_;
   for (var i = 0; i < connections.length; i++) {
     // check connection visibility
     if (this.visibleConnections_[i]) {
       this.drawConnection(
-        projectedPoints[connections[i][0]],
-        projectedPoints[connections[i][1]],
+        projectedRotatedPoints[connections[i][0]],
+        projectedRotatedPoints[connections[i][1]],
         'rgb(116,133,78)'
       );
     }
   }
-  for (var i = 0; i < projectedPoints.length; i++) {
+  for (var i = 0; i < projectedRotatedPoints.length; i++) {
     // projection null when point invisible
-    if (projectedPoints[i]) {
-      this.drawPoint(projectedPoints[i], this.pointSize_, 'rgb(82,95,52)');
+    if (projectedRotatedPoints[i]) {
+      this.drawPoint(projectedRotatedPoints[i], this.pointSize_, 'rgb(82,95,52)');
     }
   }
 };
