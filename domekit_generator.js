@@ -40,6 +40,7 @@ domekit.FrequencyControl.prototype.enterDocument = function() {
   goog.base(this, 'enterDocument');
 
   this.frequencyInput_.setValue(this.defaultFrequency_ + 'v');
+  goog.dom.setProperties(this.frequencyInput_.getElement(), {'readOnly':true});
   this.frequencySlider_.setMaximum(this.maxFrequency_);
   this.frequencySlider_.setMinimum(this.minFrequency_);
   this.frequencySlider_.setValue(this.defaultFrequency_);
@@ -51,32 +52,6 @@ domekit.FrequencyControl.prototype.enterDocument = function() {
       this.controller_.setTriangleFrequency(sliderVal);
     }, this)
   );
-
-  // this is a hack. I have no idea why goog.ui.LabelInput,
-  // which is a goog.ui.Component, doesn't throw events of the Component
-  // enum
-  goog.events.listen(this.frequencyInput_.getElement(), 'change',
-    goog.bind(function() {
-      var textVal = this.frequencyInput_.getValue();
-      textVal = textVal.replace(/v/i, '');
-      var num = goog.string.toNumber(textVal);
-      if (num === NaN) {
-        this.updateFrequency(this.frequency_);
-      } else if (num > this.maxFrequency_) {
-        this.updateFrequency(this.maxFrequency_);
-      } else if (num < this.minFrequency_) {
-        this.updateFrequency(this.minFrequency_);
-      } else {
-        this.updateFrequency(num);
-      }
-    }, this)
-  );
-};
-
-domekit.FrequencyControl.prototype.updateFrequency = function(val) {
-  this.frequencyInput_.setValue(val + 'v');
-  this.frequencySlider_.setValue(val);
-  this.controller_.setTriangleFrequency(val);
 };
 
 /**

@@ -13,8 +13,12 @@ and a Java version of the Closure Script tool. Your choice.
 
 **Ruby:**
 
-    gem install closure
-    rackup
+```bash
+gem install bundler
+bundle
+rake app:start #server is started, browse to <http://localhost:3000/>
+rake app:stop #the server is stopped
+```
 
 **Java:**
 
@@ -22,7 +26,7 @@ Download closure.jar into the domekit project directory from <https://github.com
 
     java -jar closure.jar
 
-Once you're up and running, browse to <http://localhost:9292/>
+Once you're up and running, browse to <http://localhost:3000/>
 
 # Deploying
 
