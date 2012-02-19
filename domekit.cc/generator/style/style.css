@@ -734,9 +734,15 @@ a:hover {
 	height:32px;
 }
 
+.slider input:read-only:hover {
+	background-color: #eaf9ff;
+	border: 1px solid #cadfe7;
+	color: #54727e;
+}
+
 .slider input:hover {
-	background-color: #fffbcd !important;
-	border: 1px solid #e7e4bb !important;
+	background-color: #fffbcd;
+	border: 1px solid #e7e4bb;
 	color: #111;
 }
 /* — — — — — — — — — — — — — — — — — — — — — — — — — — — — — — — */
