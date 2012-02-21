@@ -232,23 +232,61 @@ domekit.Controller.prototype.drawConnection = function(point1, point2, color) {
   this.context_.restore();
 };
 
+// Color table: (4 levels of lightening gradient) (dots are darker than lines)
+// (82,95,52)
+// (116,133,78)
+// (145,159,110)
+// (182,189,159)
+// Lines, not points, are drawn in order of Z-closeness for layering.  far first, close last.
 domekit.Controller.prototype.drawFrame = function() {
+  var zmean;
   var projectedRotatedPoints = this.projectedRotatedPoints_;
   var connections = this.connections_;
   for (var i = 0; i < connections.length; i++) {
     // check connection visibility
     if (this.visibleConnections_[i]) {
-      this.drawConnection(
-        projectedRotatedPoints[connections[i][0]],
-        projectedRotatedPoints[connections[i][1]],
-        'rgb(116,133,78)'
-      );
+      zmean = (this.points_[connections[i][0]].z + this.points_[connections[i][1]].z) / 2;
+      if(zmean < -.3){
+        this.drawConnection(projectedRotatedPoints[connections[i][0]],
+                          projectedRotatedPoints[connections[i][1]],
+                          'rgb(182,189,159)' );
+      }
     }
   }
+  for (var i = 0; i < connections.length; i++) {
+    // check connection visibility
+    if (this.visibleConnections_[i]) {
+      zmean = (this.points_[connections[i][0]].z + this.points_[connections[i][1]].z) / 2;
+      if(zmean < 0 && zmean >= -.3){
+        this.drawConnection(projectedRotatedPoints[connections[i][0]],
+                          projectedRotatedPoints[connections[i][1]],
+                          'rgb(145,159,110)' );
+      }
+    }
+  }  
+  for (var i = 0; i < connections.length; i++) {
+    // check connection visibility
+    if (this.visibleConnections_[i]) {
+      zmean = (this.points_[connections[i][0]].z + this.points_[connections[i][1]].z) / 2;
+      if(zmean >= 0){
+        this.drawConnection(projectedRotatedPoints[connections[i][0]],
+                          projectedRotatedPoints[connections[i][1]],
+                          'rgb(116,133,78)' );
+      }
+    }
+  } 
   for (var i = 0; i < projectedRotatedPoints.length; i++) {
     // projection null when point invisible
     if (projectedRotatedPoints[i]) {
-      this.drawPoint(projectedRotatedPoints[i], this.pointSize_, 'rgb(82,95,52)');
+      if(this.points_[i].z < -.3){
+        this.drawPoint(projectedRotatedPoints[i], this.pointSize_, 'rgb(145,159,110)');
+      }
+      else if(this.points_[i].z < 0 && this.points_[i].z >= -.3){
+        this.drawPoint(projectedRotatedPoints[i], this.pointSize_, 'rgb(116,133,78)');
+      }
+      else if(this.points_[i].z >= 0){
+        this.drawPoint(projectedRotatedPoints[i], this.pointSize_, 'rgb(82,95,52)');
+      }
     }
   }
 };
