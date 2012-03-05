@@ -1,0 +1,42 @@
+Correct Proportions Feature:
+  IconInfo {
+    actual: actual dimensions of scale object
+      y: height
+
+    min: min size icon
+      pix: pixel dimensions
+        x:
+        y:
+    max: max size icon
+      pix: pixel dimensions
+        x:
+        y:
+  }
+
+  GeodesicInfo {
+    actual: actual radius of dome
+    min:
+      radius: min radius dome (meters)
+      pix:
+        x:
+        y:
+    max: max radius dome
+      radius: max radius dome (meters)
+  }
+
+
+Different Icons Feature:
+  icons
+    cat: 1ft
+    human: 6ft
+    horse: 6ft
+    elephant: 10.5ft
+    giraffe: 17ft
+    brachiosaurus: 14 meters (45.9 feet)
+
+  icon windows
+    2 feet (? meters)
+
+Fading Icon Transition:
+  Use some kind of canvas compositing feature to 
+animate scale window transitions as visual crossfades
