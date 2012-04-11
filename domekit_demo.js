@@ -5,25 +5,35 @@ goog.require('goog.ui.Slider');
 
 /** @constructor */
 domekit.Demo = function() {
-  var domekitController = new domekit.Controller({
-    width: 600, height: 600});
+  var domeOpts = {
+    width: 500,
+    height: 500,
+    scaleMin: 0.7,
+    scaleMax: 1.0,
+    radiusMin: 1,
+    radiusMax: 500
+  };
+  var domekitController = new domekit.Controller(domeOpts);
   var goesHere = document.getElementById('canvas-goes-here');
   // begin drawing dome canvas component
   domekitController.render(goesHere);
 
   // scale slider
-  var scaleSlider = new goog.ui.Slider();
-  scaleSlider.render(
-    document.getElementById('scale-slider-goes-here')
+  var radiusSlider = new goog.ui.Slider();
+  radiusSlider.render(
+    document.getElementById('radius-slider-goes-here')
   );
-  var scaleSliderMaxVal = 100;
-  scaleSlider.setMaximum(scaleSliderMaxVal);
-  scaleSlider.addEventListener(goog.ui.Component.EventType.CHANGE, function() {
-    var scale = scaleSlider.getValue() / scaleSliderMaxVal;
-    domekitController.setScale(scale);
+  var radiusSliderMaxVal = domeOpts.radiusMax;
+  var radiusSliderMinVal = domeOpts.radiusMin;
+  radiusSlider.setMaximum(radiusSliderMaxVal);
+  radiusSlider.setMinimum(radiusSliderMinVal);
+  radiusSlider.addEventListener(goog.ui.Component.EventType.CHANGE, function() {
+    var height = radiusSlider.getValue();
+    domekitController.setRadius(height);
+    goog.dom.setTextContent(document.getElementById('radius-slider-value'), '' + height)
   });
-  scaleSlider.setValue(0.5 * scaleSliderMaxVal);
-  domekitController.setScale(0.5);
+  //default
+  radiusSlider.setValue(6); // HUMAN SIZED
 
   // dome mode button
   var domeButton = goog.dom.getElement('choose-a-dome');

@@ -70,9 +70,9 @@ domekit.RadiusControl = function(controller) {
   this.controller_ = controller;
   this.radiusInput_ = new goog.ui.LabelInput();
   this.radiusSlider_ = new goog.ui.Slider();
-  this.minRadius_ = 0; // percent
-  this.maxRadius_ = 100;
-  this.defaultRadius_ = this.maxRadius_ * this.controller_.getScale();
+  this.minRadius_ = 1; // feet
+  this.maxRadius_ = 500;
+  this.defaultRadius_ = 6 // HUMAN SIZED
   this.radiusUnitsAbbrv_ = domekit.RadiusUnits.FEET;
 };
 goog.inherits(domekit.RadiusControl, goog.ui.Component);
@@ -96,61 +96,40 @@ domekit.RadiusControl.prototype.enterDocument = function() {
   this.radiusSlider_.setMinimum(this.minRadius_);
   this.radiusSlider_.setValue(this.defaultRadius_);
 
-  this.controller_.setScale(this.defaultRadius_ / this.maxRadius_);
+  this.controller_.setRadius(this.defaultRadius_);
   this.radiusSlider_.addEventListener(goog.ui.Component.EventType.CHANGE,
     goog.bind(function() {
       var sliderVal = this.radiusSlider_.getValue();
       this.updateRadiusInput(sliderVal);
-      this.controller_.setScale(sliderVal / this.maxRadius_);
+      this.controller_.setRadius(sliderVal);
     }, this)
   );
+
+  var handleInputChange = goog.bind(function() {
+    var textVal = this.radiusInput_.getValue();
+    textVal = textVal.replace(new RegExp(this.radiusUnitsAbbrv_, 'i'), '');
+    var num = goog.string.toNumber(textVal);
+    if (num === NaN) {
+      this.updateRadius(this.defaultRadius_);
+    } else if (num > this.maxRadius_) {
+      this.updateRadius(this.maxRadius_);
+    } else if (num < this.minRadius_) {
+      this.updateRadius(this.minRadius_);
+    } else {
+      this.updateRadius(num);
+    }
+  }, this)
 
   // this is a hack. I have no idea why goog.ui.LabelInput,
   // which is a goog.ui.Component, doesn't throw events of the Component
   // enum
-  goog.events.listen(this.radiusInput_.getElement(), 'change',
-    goog.bind(function() {
-      var textVal = this.radiusInput_.getValue();
-      textVal = textVal.replace(new RegExp(this.radiusUnitsAbbrv_, 'i'), '');
-      var num = goog.string.toNumber(textVal);
-      var pct = this.convertDistanceToPct(num);
-      if (pct === NaN) {
-        this.updateRadius(this.defaultRadius_);
-      } else if (pct > this.maxRadius_) {
-        this.updateRadius(this.maxRadius_);
-      } else if (pct < this.minRadius_) {
-        this.updateRadius(this.minRadius_);
-      } else {
-        this.updateRadius(pct);
-      }
-    }, this)
-  );
+  goog.events.listen(this.radiusInput_.getElement(), 'change', handleInputChange);
 };
 
-domekit.RadiusControl.prototype.convertPctToDistance = function(pct) {
-  var maxM = 204;
-  var maxF = 713;
-  if (this.radiusUnitsAbbrv_ === domekit.RadiusUnits.METERS) {
-    return (pct / this.maxRadius_) * maxM;
-  } else if (this.radiusUnitsAbbrv_ === domekit.RadiusUnits.FEET) {
-    return (pct / this.maxRadius_) * maxF;
-  }
-};
-
-domekit.RadiusControl.prototype.convertDistanceToPct = function(distance) {
-  var maxM = 204;
-  var maxF = 713;
-  if (this.radiusUnitsAbbrv_ === domekit.RadiusUnits.METERS) {
-    return (distance / maxM) * this.maxRadius_;
-  } else if (this.radiusUnitsAbbrv_ === domekit.RadiusUnits.FEET) {
-    return (distance / maxF) * this.maxRadius_;
-  }
-};
-
-domekit.RadiusControl.prototype.updateRadius = function(pct) {
-  this.updateRadiusInput(pct);
-  this.radiusSlider_.setValue(pct);
-  this.controller_.setScale(pct / this.maxRadius_);
+domekit.RadiusControl.prototype.updateRadius = function(radius) {
+  this.updateRadiusInput(radius);
+  this.radiusSlider_.setValue(radius);
+  this.controller_.setRadius(radius);
 };
 
 /**
@@ -161,9 +140,8 @@ domekit.RadiusControl.prototype.setRadiusUnits = function(units) {
   this.updateRadius(sliderVal);
 };
 
-domekit.RadiusControl.prototype.updateRadiusInput = function(pct) {
-  var distance = this.convertPctToDistance(pct);
-  this.radiusInput_.setValue(distance + this.radiusUnitsAbbrv_);
+domekit.RadiusControl.prototype.updateRadiusInput = function(radius) {
+  this.radiusInput_.setValue(radius + this.radiusUnitsAbbrv_);
 };
 
 /** @constructor
@@ -292,7 +270,10 @@ domekit.Generator = function() {
   var domekitController = new domekit.Controller({
     width: 600,
     height: 350,
-    scale: 1.0
+    scaleMin: 0.7,
+    scaleMax: 1.0,
+    radiusMin: 1,
+    radiusMax: 500
   });
 
   var goesHere = document.getElementById('scaledview');

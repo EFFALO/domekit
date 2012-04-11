@@ -32,12 +32,27 @@ domekit.EventType = {
 domekit.Controller = function(opts) {
   goog.base(this);
 
-  this.scale_ = opts.scale || 1.0;
+  this.scale_ = opts.scaleMin || 1.0;
+  this.scaleMin_ = opts.scaleMin || 1.0;
+  this.scaleMax_ = opts.scaleMax || 1.0;
+
   this.triangleFrequency_ = opts.freq || 2;
+  this.context_ = null;
   this.canvasWidth_ = opts.width || 500;
   this.canvasHeight_ = opts.height || 500;
+  // actual 2d pixels height and width of geodesic
+  this.projectionHeight_ = null;
+  this.projectionWidth_ = null;
+  // how tall the dome is compared to the sphere
+  this.domeVProportion_ = this.calcDomeVProportion();
+  // related to domeVProportion_
+  this.domeHeightFeet_ = opts.radiusMax * this.domeVProportion_;
+  this.sphereHeightFeet_ = opts.radiusMax * 2;
 
-  this.context_ = null;
+  this.radiusMin_ = opts.radiusMin || 1 // feet
+  this.radiusMax_ = opts.radiusMax || 500
+  this.radius_ = this.radiusMax_
+
   this.clipDome_ = true;
   this.enableClipZ_ = false;
   this.clipY_ = 0.5;
@@ -57,16 +72,9 @@ domekit.Controller = function(opts) {
   // [i] == true if connections[i] contains only visible points
   this.visibleConnections_ = [];
 
-  this.scaleIconInfo_ = {
-    maxX: 56,
-    maxY: 150
-  };
-  this.scaleIcon_ = new domekit.ScaleIcon(
-    new goog.math.Size(this.scaleIconInfo_.maxX,
-      this.scaleIconInfo_.maxY)
-  );
+  this.updateScaleIconCompareHeight()
 
-  this.calculateProjectionDimensions();
+  this.updateProjectionDimensions();
 };
 goog.inherits(domekit.Controller, goog.ui.Component);
 
@@ -172,9 +180,9 @@ domekit.Controller.prototype.project = function(xy, z, zCameraOffset, zDepth, xy
 
 domekit.Controller.prototype.projectPoints = function() {
   var newPoint,
-    xOffset = this.offsets.x,
-    yOffset = this.offsets.y,
-    points = this.points_;
+      xOffset = this.offsets_.x,
+      yOffset = this.offsets_.y,
+      points = this.points_;
 
   var i;
   var distance;
@@ -186,8 +194,8 @@ domekit.Controller.prototype.projectPoints = function() {
     if (this.visiblePoints_[i]) {
       // visible points are projected
       newPoint = this.projectedPoints_[i] = new domekit.Point3D();
-      newPoint.x = this.project(points[i].x, points[i].z, 2.2, .005, xOffset, this.scale_);
-      newPoint.y = this.project(points[i].y, points[i].z, 2.2, .005, yOffset, this.scale_);
+      newPoint.x = this.project(points[i].x, points[i].z, 2.0, .005, xOffset, this.scale_);
+      newPoint.y = this.project(points[i].y, points[i].z, 2.0, .005, yOffset, this.scale_);
       newPoint.z = points[i].z;
 
       distance = Math.sqrt(points[i].y * points[i].y + points[i].z * points[i].z);
@@ -337,7 +345,7 @@ domekit.Controller.prototype.clipToVisiblePoints = function() {
 domekit.Controller.prototype.setDomeMode = function() {
   this.clipDome_ = true;
   this.scaleIcon_.setFloor(this.calculateFloor());
-  this.calculateProjectionDimensions();
+  this.updateProjectionDimensions();
 
   goog.events.dispatchEvent(this, domekit.EventType.GEOMETRY_CHANGE);
   this.renderView();
@@ -346,7 +354,7 @@ domekit.Controller.prototype.setDomeMode = function() {
 domekit.Controller.prototype.setSphereMode = function() {
   this.clipDome_ = false;
   this.scaleIcon_.setCenter(this.calculateCenter());
-  this.calculateProjectionDimensions();
+  this.updateProjectionDimensions();
 
   goog.events.dispatchEvent(this, domekit.EventType.GEOMETRY_CHANGE);
   this.renderView();
@@ -361,7 +369,7 @@ domekit.Controller.prototype.setTriangleFrequency = function(frequency) {
   this.triangleFrequency_ = frequency;
   this.setClip();
   this.generateModelPointsAndConnections();
-  this.calculateProjectionDimensions();
+  this.updateProjectionDimensions();
   //this.rotateY(Math.PI / 32);
   //this.rotateX(Math.PI / 48);
   this.strutLengths();
@@ -384,45 +392,94 @@ domekit.Controller.prototype.setClip = function() {
   else {this.clipY_ = .2; this.clipZ_ = -Math.PI / 10;}
 };
 
+domekit.Controller.prototype.updateScaleIconCompareHeight = function() {
+  var pixels = this.projectionHeight_
+  var feet = (this.clipDome_ ? this.domeHeightFeet_ : this.sphereHeightFeet_)
+
+  if (!this.scaleIcon_) {
+    this.scaleIcon_ = new domekit.ScaleIcon({
+        feet: feet,
+        pixels: this.canvasHeight_
+      },
+      new goog.math.Size(56, 150)
+    );
+  }
+
+  this.scaleIcon_.setCompareHeight({
+    feet: feet,
+    pixelsToFeet: pixels / this.sphereHeightFeet_
+  })
+}
+
 // scale is specified 0.0 - 1.0
 domekit.Controller.prototype.setScale = function(scale) {
-  var iconDomeScaleRatio = 0.9;
-  var iconScale = 1 - (scale * iconDomeScaleRatio);
-  this.scaleIcon_.setSize(
-    new goog.math.Size(
-      this.scaleIconInfo_.maxX * iconScale,
-      this.scaleIconInfo_.maxY * iconScale));
   this.scale_ = scale;
-
+  this.updateProjectionDimensions()
   goog.events.dispatchEvent(this, domekit.EventType.GEOMETRY_CHANGE);
   this.renderView();
 };
 
+domekit.Controller.prototype.updateScaleAndGradient = function() {
+  // a linear transition
+  var gradientPosition = this.radius_ - this.radiusMin_
+  var gradientLength = this.radiusMax_ - this.radiusMin_
+  var gradientValue = gradientPosition / gradientLength;
+  var scaleLength = this.scaleMax_ - this.scaleMin_
+  var scale = gradientValue * scaleLength + this.scaleMin_;
 
-domekit.Controller.prototype.calculateProjectionDimensions = function() {
-  this.projectionWidth_ = this.canvasWidth_;
-  this.projectionHeight_ = this.canvasHeight_;
+  this.scale_ = scale;
 
+  this.projectionWidth_ = this.canvasWidth_ * this.scale_;
+  this.projectionHeight_ = this.canvasHeight_ * this.scale_;
+}
+
+domekit.Controller.prototype.setRadius = function(feet) {
+  this.radius_ = feet
+  var sphereHeight = this.sphereHeightFeet_ = 2 * feet
+  if (this.clipDome_) {
+    this.domeHeightFeet_ = sphereHeight * this.domeVProportion_
+  } else {
+    this.domeHeightFeet_ = sphereHeight
+  }
+
+  this.updateProjectionDimensions()
+  goog.events.dispatchEvent(this, domekit.EventType.GEOMETRY_CHANGE);
+  this.renderView();
+}
+
+domekit.Controller.prototype.calcDomeVProportion = function() {
+  return  1 - this.calcDomeVOffset();
+}
+
+domekit.Controller.prototype.calcDomeVOffset = function() {
+  // number of triangles (divisions) rotation around a circle?
   var domeVOffset = Math.cos(
     Math.ceil(this.triangleFrequency_ * 3.0 / 2.0) /
     (this.triangleFrequency_ * 3.0) * Math.PI
   ) / 2.0 + .5;
+  return domeVOffset;
+}
+
+domekit.Controller.prototype.updateProjectionDimensions = function() {
+  this.domeVProportion_ = this.calcDomeVProportion()
+  var domeVOffset = this.calcDomeVOffset()
 
   if (this.clipDome_) {
     this.maximumRadius_ = Math.min(this.canvasWidth_, this.canvasHeight_) / 2;
-    this.offsets = {
-      x: this.projectionWidth_ / 2,
-      y: this.projectionHeight_ / 2 + domeVOffset * this.projectionHeight_ - 40
+    this.offsets_ = {
+      x: this.canvasWidth_ / 2,
+      y: this.canvasHeight_ / 2 + domeVOffset * this.canvasHeight_ - 5
     };
-    // FIXME: Why is this here?
-    if (this.triangleFrequency_ == 1) this.offsets.y += 13;
   } else {
-    this.maximumRadius_ = (Math.min(this.canvasWidth_, this.canvasHeight_) / 2) - 20;
-    this.offsets = {
-      x: this.projectionWidth_ / 2,
-      y: this.projectionHeight_ / 2
+    this.maximumRadius_ = (Math.min(this.canvasWidth_, this.canvasHeight_) / 2);
+    this.offsets_ = {
+      x: this.canvasWidth_ / 2,
+      y: this.canvasHeight_ / 2
     };
   }
+
+  this.updateScaleAndGradient();
+  this.updateScaleIconCompareHeight()
 };
 
 domekit.Controller.prototype.calculateFloor = function() {

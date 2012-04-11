@@ -1,47 +1,148 @@
 goog.provide('domekit.ScaleIcon');
+goog.provide('domekit.ScaleIconKinds');
+
+domekit.ScaleIconKinds = {
+  'cat': {
+    height: 1.0,
+    imgSrc: 'images/cat.png',
+    imgWidth: 171,
+    imgHeight: 131
+  },
+  'human': {
+    height: 6.0,
+    imgSrc: 'images/human.png',
+    imgWidth: 134,
+    imgHeight: 355
+  },
+  'horse': {
+    height: 7.3, // 5.3 + head up
+    imgSrc: 'images/horse.png',
+    imgWidth: 56,
+    imgHeight: 150
+  },
+  'elephant': {
+    height: 10.0,
+    imgSrc: 'images/elephant.png',
+    imgWidth: 165,
+    imgHeight: 127
+  },
+  'giraffe': {
+    height: 16.0,
+    imgSrc: 'images/giraffe.png',
+    imgWidth: 56,
+    imgHeight: 150
+  },
+  'brachiosaurus': {
+    height: 35.0,
+    imgSrc: 'images/brachiosaurus.png',
+    imgWidth: 56,
+    imgHeight: 150
+  }
+};
+
+domekit.ScaleIconKindRanges = [
+  { kind: 'cat', start: 0, stop: 4 },
+  { kind: 'human', start: 4, stop: 12 },
+  //{ kind: 'horse', start: 12, stop: 15 },
+  { kind: 'elephant', start: 12, stop: 500 }
+  //{ kind: 'giraffe', start:40, stop: 60 },
+  //{ kind: 'brachiosaurus', start: 60, stop: null }
+];
 
 /**
 * @constructor
-* @param {goog.math.Size} size
+* @param {object} compareHeight
 * @param {goog.math.Coordinate} opt_floor
 */
-domekit.ScaleIcon = function(size, opt_floor) {
-  this.imgSrc_ = 'images/human.png';
+domekit.ScaleIcon = function(compareHeight, opt_floor) {
+  this.compareHeight_ = compareHeight
+  this.kind_ = this.findCurrentKind()
+  // if we're not outside of this range we don't change kinds
+  this.kindRange_ = this.findCurrentKindRange();
+
   this.img_ = new Image();
-  this.img_.src = this.imgSrc_;
-  this.size_ = size;
+  this.loadIconImage(this.img_,this.kind_);
+
   // TODO: floor and center positioning are mutually exclusive modes
   // should figure out some state machine setup here
   this.floor_ = opt_floor || new goog.math.Coordinate(0, 0);
   this.center_ = null;
   this.offsets_ = this.calculateOffsets({floor: this.floor_});
+  this.size_ = this.calculateSize()
+
+  this.updateCurrentKind()
 };
 
 domekit.ScaleIcon.prototype.calculateOffsets = function(centerOrFloor) {
-  var floor, center;
+  var floor, center, coord;
+  var size = this.calculateSize()
 
   if (floor = centerOrFloor.floor) {
-    return (new goog.math.Coordinate(
-      floor.x - this.size_.width / 2,
-      floor.y - this.size_.height
-    ));
+    coord = new goog.math.Coordinate(
+      floor.x - size.width / 2,
+      floor.y - size.height
+    );
+    return coord;
   } else if (center = centerOrFloor.center) {
-    return (new goog.math.Coordinate(
-      center.x - this.size_.width / 2,
-      center.y - this.size_.height / 2
-    ));
+    coord = new goog.math.Coordinate(
+      center.x - size.width / 2,
+      center.y - size.height / 2
+    );
+    return coord
   }
 
   return null;
 };
 
-/** @param {goog.math.Size} size */
-domekit.ScaleIcon.prototype.setSize = function(size) {
-  this.size_ = size;
+domekit.ScaleIcon.prototype.setCompareHeight = function(compareHeight) {
+  this.compareHeight_ = compareHeight;
+  this.updateCurrentKind()
   this.offsets_ = this.calculateOffsets(
     { floor: this.floor_, center: this.center_ }
   );
 };
+
+domekit.ScaleIcon.prototype.findCurrentKindRange = function() {
+  var compare = this.compareHeight_.feet
+  var ranges = domekit.ScaleIconKindRanges
+  var kindRange = goog.array.find(ranges, function(range) {
+    return this.inRange(range);
+  }, this)
+
+  return kindRange;
+}
+
+// Based on our current comparison height, are we currently within range
+// of an arbitrary range?
+domekit.ScaleIcon.prototype.inRange = function(range) {
+  var start     = range.start,
+      stop      = range.stop,
+      compare   = this.compareHeight_.feet
+
+  var inRange = start <= compare && compare < stop
+
+  return inRange;
+}
+
+domekit.ScaleIcon.prototype.findCurrentKind = function() {
+  var kindName = this.findCurrentKindRange().kind
+  return domekit.ScaleIconKinds[kindName];
+}
+
+domekit.ScaleIcon.prototype.updateCurrentKind = function() {
+  var inRange = this.inRange(this.kindRange_)
+  if (!inRange) { this.changeIconKind() }
+}
+
+domekit.ScaleIcon.prototype.changeIconKind = function() {
+  this.kind_ = this.findCurrentKind();
+  this.kindRange_ = this.findCurrentKindRange()
+  this.loadIconImage(this.img_, this.kind_)
+}
+
+domekit.ScaleIcon.prototype.loadIconImage = function(img, kind) {
+  img.src = kind.imgSrc;
+}
 
 /** @param {goog.math.Coordinate} floor */
 domekit.ScaleIcon.prototype.setFloor = function(newFloor) {
@@ -56,3 +157,13 @@ domekit.ScaleIcon.prototype.setCenter = function(newCenter) {
   this.center_ = newCenter;
   this.offsets_ = this.calculateOffsets({ center: newCenter });
 };
+
+domekit.ScaleIcon.prototype.calculateSize = function() {
+  var pixToFeet = this.compareHeight_.pixelsToFeet
+  var feet = this.kind_.height
+  var yPix = pixToFeet * feet
+  var xPix = yPix * (this.kind_.imgWidth / this.kind_.imgHeight);
+  var size = new goog.math.Size(xPix, yPix)
+
+  return this.size_ = size
+}

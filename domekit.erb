@@ -36,14 +36,15 @@
     <div id='canvas-title'>
       DOMEKIT DRAWING SURFACE ENVISIONED
     </div>
-    <div id='canvas-goes-here'>
+    <div id='canvas-goes-here' style="border: 1px solid red">
     </div>
     <div id="dome-sphere-controls">
       <div id="choose-a-dome" style="background-color: #aaa; width: 3em; height: 3em;">Dome</div>
       <div id="choose-a-sphere" style="background-color: #aaa; width: 3em; height: 3em;">Sphere</div>
     </div>
-    Scale:
-    <div id="scale-slider-goes-here"></div>
+    Radius (feet):
+    <div id="radius-slider-goes-here"></div>
+    <div id="radius-slider-value"></div>
     <script>
       window.onload = function() {
         var demo = new domekit.Demo();
