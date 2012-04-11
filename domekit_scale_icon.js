@@ -44,7 +44,7 @@ domekit.ScaleIconKindRanges = [
   { kind: 'cat', start: 0, stop: 4 },
   { kind: 'human', start: 4, stop: 12 },
   //{ kind: 'horse', start: 12, stop: 15 },
-  { kind: 'elephant', start: 12, stop: 500 }
+  { kind: 'elephant', start: 12, stop: 501 }
   //{ kind: 'giraffe', start:40, stop: 60 },
   //{ kind: 'brachiosaurus', start: 60, stop: null }
 ];
