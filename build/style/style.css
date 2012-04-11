@@ -613,12 +613,14 @@ a:hover {
 }
 
 #makedome {
+  cursor: pointer;
 	margin-right: 10px;
 	background-image: url(../images/makedome.png);
 
 }
 
 #makesphere {
+  cursor: pointer;
 	background-image: url(../images/makesphere.png);	
 }
 
