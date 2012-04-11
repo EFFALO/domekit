@@ -207,8 +207,8 @@ domekit.Controller.prototype.projectPoints = function() {
 
       this.projectedRotatedPoints_[i] = new domekit.Point3D();
       this.projectedRotatedPoints_[i].z = newRotatedPoint.z;
-      this.projectedRotatedPoints_[i].x = this.project(newRotatedPoint.x, newRotatedPoint.z, 2.2, .005, xOffset, this.scale_);
-      this.projectedRotatedPoints_[i].y = this.project(newRotatedPoint.y, newRotatedPoint.z, 2.2, .005, yOffset, this.scale_);
+      this.projectedRotatedPoints_[i].x = this.project(newRotatedPoint.x, newRotatedPoint.z, 2.0, .005, xOffset, this.scale_);
+      this.projectedRotatedPoints_[i].y = this.project(newRotatedPoint.y, newRotatedPoint.z, 2.0, .005, yOffset, this.scale_);
     
     } else {
       // invisible points are null in the projection
@@ -468,7 +468,7 @@ domekit.Controller.prototype.updateProjectionDimensions = function() {
     this.maximumRadius_ = Math.min(this.canvasWidth_, this.canvasHeight_) / 2;
     this.offsets_ = {
       x: this.canvasWidth_ / 2,
-      y: this.canvasHeight_ / 2 + domeVOffset * this.canvasHeight_ - 5
+      y: this.canvasHeight_ / 2 + domeVOffset * this.canvasHeight_ - 25
     };
   } else {
     this.maximumRadius_ = (Math.min(this.canvasWidth_, this.canvasHeight_) / 2);
