@@ -23,10 +23,8 @@ domekit.Demo = function() {
   radiusSlider.render(
     document.getElementById('radius-slider-goes-here')
   );
-  var radiusSliderMaxVal = domeOpts.radiusMax;
-  var radiusSliderMinVal = domeOpts.radiusMin;
-  radiusSlider.setMaximum(radiusSliderMaxVal);
-  radiusSlider.setMinimum(radiusSliderMinVal);
+  radiusSlider.setMaximum(domeOpts.radiusMax);
+  radiusSlider.setMinimum(domeOpts.radiusMin);
   radiusSlider.addEventListener(goog.ui.Component.EventType.CHANGE, function() {
     var height = radiusSlider.getValue();
     domekitController.setRadius(height);

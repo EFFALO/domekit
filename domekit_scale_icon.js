@@ -46,7 +46,7 @@ domekit.ScaleIconKindRanges = [
   { kind: 'horse', start: 12, stop: 15 },
   { kind: 'elephant', start: 12, stop: 40 },
   { kind: 'giraffe', start:40, stop: 60 },
-  { kind: 'brachiosaurus', start: 60, stop: 501 }
+  { kind: 'brachiosaurus', start: 60, stop: null }
 ];
 
 /**
@@ -123,9 +123,15 @@ domekit.ScaleIcon.prototype.findCurrentKindRange = function() {
 domekit.ScaleIcon.prototype.inRange = function(range) {
   var start     = range.start,
       stop      = range.stop,
-      compare   = this.compareHeight_.feet
+      compare   = this.compareHeight_.feet,
+      inRange;
 
-  var inRange = start <= compare && compare < stop
+  if (stop === null) {
+    // no end to a range without a stop
+    inRange = start <= compare
+  } else {
+    inRange = start <= compare && compare < stop
+  }
 
   return inRange;
 }
