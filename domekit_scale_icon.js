@@ -17,8 +17,8 @@ domekit.ScaleIconKinds = {
   'horse': {
     height: 7.3, // 5.3 + head up
     imgSrc: 'images/horse.png',
-    imgWidth: 56,
-    imgHeight: 150
+    imgWidth: 300,
+    imgHeight: 239
   },
   'elephant': {
     height: 10.0,
@@ -29,24 +29,24 @@ domekit.ScaleIconKinds = {
   'giraffe': {
     height: 16.0,
     imgSrc: 'images/giraffe.png',
-    imgWidth: 56,
-    imgHeight: 150
+    imgWidth: 174,
+    imgHeight: 400
   },
   'brachiosaurus': {
     height: 35.0,
     imgSrc: 'images/brachiosaurus.png',
-    imgWidth: 56,
-    imgHeight: 150
+    imgWidth: 400,
+    imgHeight: 242
   }
 };
 
 domekit.ScaleIconKindRanges = [
   { kind: 'cat', start: 0, stop: 4 },
   { kind: 'human', start: 4, stop: 12 },
-  //{ kind: 'horse', start: 12, stop: 15 },
-  { kind: 'elephant', start: 12, stop: 501 }
-  //{ kind: 'giraffe', start:40, stop: 60 },
-  //{ kind: 'brachiosaurus', start: 60, stop: null }
+  { kind: 'horse', start: 12, stop: 15 },
+  { kind: 'elephant', start: 12, stop: 40 },
+  { kind: 'giraffe', start:40, stop: 60 },
+  { kind: 'brachiosaurus', start: 60, stop: 501 }
 ];
 
 /**
@@ -73,22 +73,28 @@ domekit.ScaleIcon = function(compareHeight, opt_floor) {
   this.updateCurrentKind()
 };
 
+// I guess centerOrFloor is a little like a union but much worse ... I'm not sorry.
 domekit.ScaleIcon.prototype.calculateOffsets = function(centerOrFloor) {
   var floor, center, coord;
+  // scalar to offset amount right of center
+  // negative for left
+  var xShiftAmount = 0.7
   var size = this.calculateSize()
 
   if (floor = centerOrFloor.floor) {
     coord = new goog.math.Coordinate(
-      floor.x - size.width / 2,
+      floor.x * (1 + xShiftAmount) - size.width / 2,
       floor.y - size.height
     );
+
     return coord;
   } else if (center = centerOrFloor.center) {
     coord = new goog.math.Coordinate(
-      center.x - size.width / 2,
+      center.x * (1 + xShiftAmount) - size.width / 2,
       center.y - size.height / 2
     );
-    return coord
+
+    return coord;
   }
 
   return null;

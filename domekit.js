@@ -38,8 +38,8 @@ domekit.Controller = function(opts) {
 
   this.triangleFrequency_ = opts.freq || 2;
   this.context_ = null;
-  this.canvasWidth_ = opts.width || 500;
-  this.canvasHeight_ = opts.height || 500;
+  this.canvasWidth_ = opts.width || 600;
+  this.canvasHeight_ = opts.height || 350;
   // actual 2d pixels height and width of geodesic
   this.projectionHeight_ = null;
   this.projectionWidth_ = null;

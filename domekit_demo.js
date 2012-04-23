@@ -6,8 +6,8 @@ goog.require('goog.ui.Slider');
 /** @constructor */
 domekit.Demo = function() {
   var domeOpts = {
-    width: 500,
-    height: 500,
+    width: 600,
+    height: 350,
     scaleMin: 0.7,
     scaleMax: 1.0,
     radiusMin: 1,
