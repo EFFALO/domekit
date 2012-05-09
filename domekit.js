@@ -767,14 +767,14 @@ domekit.Controller.prototype.nodeQuantities = function() {
   //first number: # of 5 way joints, second: # of 6 way joints
   var nodes = [];
   if (this.clipDome_ == true) {
-    if (this.triangleFrequency_ == 1) nodes = [11, 0];
-    else if (this.triangleFrequency_ == 2) nodes = [6, 20];
-    else if (this.triangleFrequency_ == 3) nodes = [6, 55];
-    else if (this.triangleFrequency_ == 4) nodes = [6, 85];
-    else if (this.triangleFrequency_ == 5) nodes = [6, 145];
-    else if (this.triangleFrequency_ == 6) nodes = [6, 190];
-    else if (this.triangleFrequency_ == 7) nodes = [6, 275];
-    else if (this.triangleFrequency_ == 8) nodes = [6, 335];
+    if (this.triangleFrequency_ == 1) nodes = [0, 11, 0];
+    else if (this.triangleFrequency_ == 2) nodes = [10, 6, 20];
+    else if (this.triangleFrequency_ == 3) nodes = [15, 6, 40];
+    else if (this.triangleFrequency_ == 4) nodes = [20, 6, 65];
+    else if (this.triangleFrequency_ == 5) nodes = [25, 6, 120];
+    else if (this.triangleFrequency_ == 6) nodes = [30, 6, 160];
+    else if (this.triangleFrequency_ == 7) nodes = [35, 6, 240];
+    else if (this.triangleFrequency_ == 8) nodes = [40, 6, 295];
   }
   else {
     if (this.triangleFrequency_ == 1) nodes = [12, 0];
