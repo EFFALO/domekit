@@ -72,6 +72,8 @@ domekit.RadiusControl = function(controller) {
   this.radiusSlider_ = new goog.ui.Slider();
   this.minRadius_ = 1; // feet
   this.maxRadius_ = 500;
+  this.minSliderVal_ = 1;
+  this.maxSliderVal_ = 1000;
   this.defaultRadius_ = 6 // HUMAN SIZED
   this.radiusUnitsAbbrv_ = domekit.RadiusUnits.FEET;
 };
@@ -92,16 +94,18 @@ domekit.RadiusControl.prototype.enterDocument = function() {
   goog.base(this, 'enterDocument');
 
   this.updateRadiusInput(this.defaultRadius_);
-  this.radiusSlider_.setMaximum(this.maxRadius_);
-  this.radiusSlider_.setMinimum(this.minRadius_);
-  this.radiusSlider_.setValue(this.defaultRadius_);
+  this.radiusSlider_.setMaximum(this.maxSliderVal_);
+  this.radiusSlider_.setMinimum(this.minSliderVal_);
+  this.radiusSlider_.setValue(this.radiusToValue(this.defaultRadius_));
 
   this.controller_.setRadius(this.defaultRadius_);
   this.radiusSlider_.addEventListener(goog.ui.Component.EventType.CHANGE,
     goog.bind(function() {
       var sliderVal = this.radiusSlider_.getValue();
-      this.updateRadiusInput(sliderVal);
-      this.controller_.setRadius(sliderVal);
+      var radius = this.valueToRadius(sliderVal)
+
+      this.updateRadius(radius)
+      this.updateRadiusInput(radius)
     }, this)
   );
 
@@ -109,15 +113,20 @@ domekit.RadiusControl.prototype.enterDocument = function() {
     var textVal = this.radiusInput_.getValue();
     textVal = textVal.replace(new RegExp(this.radiusUnitsAbbrv_, 'i'), '');
     var num = goog.string.toNumber(textVal);
+
+    var toRadius;
     if (num === NaN) {
-      this.updateRadius(this.defaultRadius_);
+      toRadius = this.defaultRadius_
     } else if (num > this.maxRadius_) {
-      this.updateRadius(this.maxRadius_);
+      toRadius = this.maxRadius_
     } else if (num < this.minRadius_) {
-      this.updateRadius(this.minRadius_);
+      toRadius = this.minRadius_
     } else {
-      this.updateRadius(num);
+      toRadius = num
     }
+
+    this.updateRadius(toRadius);
+    this.updateRadiusSlider(toRadius);
   }, this)
 
   // this is a hack. I have no idea why goog.ui.LabelInput,
@@ -126,22 +135,72 @@ domekit.RadiusControl.prototype.enterDocument = function() {
   goog.events.listen(this.radiusInput_.getElement(), 'change', handleInputChange);
 };
 
+domekit.RadiusControl.prototype.radiusToValue = function(radius) {
+  // just use a different part of the offset
+  //var unitVal = radius / this.maxRadius_;
+  //var phase = Math.asin(unitVal);
+  //var phaseOffset = 1.5 * Math.PI
+  //var phaseIndex = phase - phaseOffset
+  //var value = (phaseIndex / (Math.PI / 2.0)) * this.maxSliderVal_
+
+  var phaseIndex = (radius / this.maxRadius_) * (Math.PI / 2.0)
+  var phaseOffset = 0;
+  var curve = Math.sin(phaseIndex + phaseOffset);
+  var value =  curve * this.maxSliderVal_;
+
+  console.log('r-c-v', radius, curve, value)
+
+  //console.log('rtv',
+    //radius,
+    //unitVal,
+    //phase / (2*Math.PI),
+    //phaseOffset / (2* Math.PI),
+    //phaseIndex / (2* Math.PI),
+    //value
+  //)
+  //console.log('rtv', radius, phase, value)
+  return value;
+  //return (radius / this.maxRadius_) * this.maxSliderVal_;
+};
+
+domekit.RadiusControl.prototype.valueToRadius = function(value) {
+  // right here, the exponential something
+  // octave formula:
+  //y = sin((x/maxX) * pi/2 + (1.5*pi))*maxX + maxX
+  // my edit:
+  //rad = sin((val/maxVal) * pi/2 + (1.5*pi))*maxRad + maxRad
+  var phaseIndex = (value / this.maxSliderVal_) * (Math.PI / 2.0)
+  var phaseOffset = 1.5 * Math.PI
+  //console.log(phaseIndex + phaseOffset)
+  var curve = Math.sin(phaseIndex + phaseOffset) + 1;
+  var radius = curve * this.maxRadius_;
+  //console.log('vtr', value,radius)
+  return radius;
+  
+  //return (value / this.maxSliderVal_) * this.maxRadius_;
+}
+
 domekit.RadiusControl.prototype.updateRadius = function(radius) {
-  this.updateRadiusInput(radius);
-  this.radiusSlider_.setValue(radius);
+  this.radius_ = radius;
   this.controller_.setRadius(radius);
+};
+
+domekit.RadiusControl.prototype.updateRadiusInput = function(radius) {
+  this.radiusInput_.setValue(radius + this.radiusUnitsAbbrv_);
+};
+
+domekit.RadiusControl.prototype.updateRadiusSlider = function(radius) {
+  var value = this.radiusToValue(radius)
+  this.radiusSlider_.setValue(value);
 };
 
 /**
 * @param {domekit.RadiusUnits} units */
 domekit.RadiusControl.prototype.setRadiusUnits = function(units) {
-  var sliderVal = this.radiusSlider_.getValue();
   this.radiusUnitsAbbrv_ = units;
-  this.updateRadius(sliderVal);
-};
-
-domekit.RadiusControl.prototype.updateRadiusInput = function(radius) {
-  this.radiusInput_.setValue(radius + this.radiusUnitsAbbrv_);
+  this.updateRadius(this.radius_);
+  this.updateRadiusInput(this.radius_)
+  this.updateRadiusSlider(this.radius_)
 };
 
 /** @constructor
