@@ -72,7 +72,7 @@ domekit.RadiusControl = function(controller) {
   this.radiusSlider_ = new goog.ui.Slider();
   this.minRadius_ = 1; // feet
   this.maxRadius_ = 500;
-  this.minSliderVal_ = 1;
+  this.minSliderVal_ = 240;
   this.maxSliderVal_ = 1000;
   this.defaultRadius_ = 6 // HUMAN SIZED
   this.radiusUnitsAbbrv_ = domekit.RadiusUnits.FEET;
@@ -136,48 +136,41 @@ domekit.RadiusControl.prototype.enterDocument = function() {
 };
 
 domekit.RadiusControl.prototype.radiusToValue = function(radius) {
-  // just use a different part of the offset
-  //var unitVal = radius / this.maxRadius_;
-  //var phase = Math.asin(unitVal);
-  //var phaseOffset = 1.5 * Math.PI
-  //var phaseIndex = phase - phaseOffset
-  //var value = (phaseIndex / (Math.PI / 2.0)) * this.maxSliderVal_
+  var r = radius / this.maxRadius_
+  // the curve increases acceleration past a portion of its maximum radius
+  var curveAccelPoint = 0.9
+  // scale the curve up to elongate the period of smaller reference sizes
+  var scaleUp = 2.0
 
-  var phaseIndex = (radius / this.maxRadius_) * (Math.PI / 2.0)
-  var phaseOffset = 0;
-  var curve = Math.sin(phaseIndex + phaseOffset);
-  var value =  curve * this.maxSliderVal_;
+  if (r < curveAccelPoint) {
+    var curve = Math.pow(scaleUp*r, 1/4)
+    var value = curve * this.maxSliderVal_
+  } else {
+    var curve = Math.pow(scaleUp*r, 1/4)
+    var extra = Math.pow(scaleUp*r, 1/4) * ((r-curveAccelPoint) / 0.1)
+    var value = (curve + extra) * this.maxSliderVal_
+  }
 
-  console.log('r-c-v', radius, curve, value)
-
-  //console.log('rtv',
-    //radius,
-    //unitVal,
-    //phase / (2*Math.PI),
-    //phaseOffset / (2* Math.PI),
-    //phaseIndex / (2* Math.PI),
-    //value
-  //)
-  //console.log('rtv', radius, phase, value)
   return value;
-  //return (radius / this.maxRadius_) * this.maxSliderVal_;
 };
 
 domekit.RadiusControl.prototype.valueToRadius = function(value) {
-  // right here, the exponential something
-  // octave formula:
-  //y = sin((x/maxX) * pi/2 + (1.5*pi))*maxX + maxX
-  // my edit:
-  //rad = sin((val/maxVal) * pi/2 + (1.5*pi))*maxRad + maxRad
-  var phaseIndex = (value / this.maxSliderVal_) * (Math.PI / 2.0)
-  var phaseOffset = 1.5 * Math.PI
-  //console.log(phaseIndex + phaseOffset)
-  var curve = Math.sin(phaseIndex + phaseOffset) + 1;
-  var radius = curve * this.maxRadius_;
-  //console.log('vtr', value,radius)
+  var v = value / this.maxSliderVal_
+  // the curve increases acceleration past a portion of its maximum value
+  var curveAccelPoint = 0.9
+  // scale the curve down to elongate the period of smaller reference sizes
+  var scaleDown = 2.0
+
+  if (v < curveAccelPoint) {
+    var curve = Math.pow(v, 4)/scaleDown
+    var radius = curve * this.maxRadius_
+  } else {
+    var curve = Math.pow(v, 4)/scaleDown
+    var extra = (Math.pow(v, 4)/scaleDown) * ((v-curveAccelPoint) / (1-curveAccelPoint))
+    var radius = (curve + extra) * this.maxRadius_
+  }
+
   return radius;
-  
-  //return (value / this.maxSliderVal_) * this.maxRadius_;
 }
 
 domekit.RadiusControl.prototype.updateRadius = function(radius) {
