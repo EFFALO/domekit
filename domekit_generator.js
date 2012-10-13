@@ -70,11 +70,11 @@ domekit.RadiusControl = function(controller) {
   this.controller_ = controller;
   this.radiusInput_ = new goog.ui.LabelInput();
   this.radiusSlider_ = new goog.ui.Slider();
-  this.minRadius_ = 1; // feet
-  this.maxRadius_ = 500;
-  this.minSliderVal_ = 240;
-  this.maxSliderVal_ = 1000;
-  this.defaultRadius_ = 6 // HUMAN SIZED
+  this.minRadius_ = 1.0; // feet
+  this.maxRadius_ = 500.0;
+  this.minSliderVal_ = 240.0;
+  this.maxSliderVal_ = 1000.0;
+  this.defaultRadius_ = 6.0 // HUMAN SIZED
   this.radiusUnitsAbbrv_ = domekit.RadiusUnits.FEET;
 };
 goog.inherits(domekit.RadiusControl, goog.ui.Component);
@@ -99,20 +99,29 @@ domekit.RadiusControl.prototype.enterDocument = function() {
   this.radiusSlider_.setValue(this.radiusToValue(this.defaultRadius_));
 
   this.controller_.setRadius(this.defaultRadius_);
-  this.radiusSlider_.addEventListener(goog.ui.Component.EventType.CHANGE,
-    goog.bind(function() {
-      var sliderVal = this.radiusSlider_.getValue();
-      var radius = this.valueToRadius(sliderVal)
 
+  var handleSliderChange = function() {
+    var sliderVal = this.radiusSlider_.getValue();
+    var radius = this.valueToRadius(sliderVal)
+
+    // HACK: for some reason this handler fires on setValue call,
+    // meaning that if a change to the radiusInput updates
+    // the slider, it updates the radiusInput again
+    if (!this.radiusInput_.hasFocus()) {
       this.updateRadius(radius)
       this.updateRadiusInput(radius)
-    }, this)
-  );
+    }
+  }
+  goog.events.listen(this.radiusSlider_, goog.ui.Component.EventType.CHANGE, handleSliderChange, false, this)
 
-  var handleInputChange = goog.bind(function() {
+  var handleInputChange = function () {
     var textVal = this.radiusInput_.getValue();
     textVal = textVal.replace(new RegExp(this.radiusUnitsAbbrv_, 'i'), '');
     var num = goog.string.toNumber(textVal);
+
+    // make sure we put the units back if ommitted
+    var textValWithUnits = textVal + this.radiusUnitsAbbrv_
+    if (textVal !== textValWithUnits) { this.radiusInput_.setValue(textValWithUnits) }
 
     var toRadius;
     if (num === NaN) {
@@ -127,28 +136,32 @@ domekit.RadiusControl.prototype.enterDocument = function() {
 
     this.updateRadius(toRadius);
     this.updateRadiusSlider(toRadius);
-  }, this)
+  }
 
-  // this is a hack. I have no idea why goog.ui.LabelInput,
-  // which is a goog.ui.Component, doesn't throw events of the Component
-  // enum
-  goog.events.listen(this.radiusInput_.getElement(), 'change', handleInputChange);
+  // HACK: should be able to listen to this component directly with goog.ui.Component events,
+  // rather than generic events on the element
+  goog.events.listen(this.radiusInput_.getElement(), goog.events.EventType.CHANGE, handleInputChange, false, this);
 };
 
+// TODO: Not clear why but these piecemeal non-linear mapping functions don't completely accurately
+// invert each other, it's most pronounced in the values just to the right of the curveDecelPoint
 domekit.RadiusControl.prototype.radiusToValue = function(radius) {
   var r = radius / this.maxRadius_
-  // the curve increases acceleration past a portion of its maximum radius
-  var curveAccelPoint = 0.9
+  // the curve decreases acceleration past a portion of its maximum radius
+  // this inverts the valueToRadius function
+  var curveDecelPoint = this.valueToRadius(0.9 * this.maxSliderVal_) / this.maxRadius_
+
   // scale the curve up to elongate the period of smaller reference sizes
   var scaleUp = 2.0
 
-  if (r < curveAccelPoint) {
+  if (r < curveDecelPoint) {
     var curve = Math.pow(scaleUp*r, 1/4)
     var value = curve * this.maxSliderVal_
   } else {
-    var curve = Math.pow(scaleUp*r, 1/4)
-    var extra = Math.pow(scaleUp*r, 1/4) * ((r-curveAccelPoint) / 0.1)
-    var value = (curve + extra) * this.maxSliderVal_
+    var extraAmt = (r-curveDecelPoint) / (1-curveDecelPoint)
+    var interm = (scaleUp * r) / (1 + extraAmt)
+    var curve = Math.pow(interm, 1/4)
+    var value = curve * this.maxSliderVal_
   }
 
   return value;
@@ -166,7 +179,7 @@ domekit.RadiusControl.prototype.valueToRadius = function(value) {
     var radius = curve * this.maxRadius_
   } else {
     var curve = Math.pow(v, 4)/scaleDown
-    var extra = (Math.pow(v, 4)/scaleDown) * ((v-curveAccelPoint) / (1-curveAccelPoint))
+    var extra = curve * ((v-curveAccelPoint) / (1-curveAccelPoint))
     var radius = (curve + extra) * this.maxRadius_
   }
 
