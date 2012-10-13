@@ -93,6 +93,7 @@ domekit.RadiusControl.prototype.createDom = function() {
 domekit.RadiusControl.prototype.enterDocument = function() {
   goog.base(this, 'enterDocument');
 
+  this.updateRadius(this.defaultRadius_)
   this.updateRadiusInput(this.defaultRadius_);
   this.radiusSlider_.setMaximum(this.maxSliderVal_);
   this.radiusSlider_.setMinimum(this.minSliderVal_);
@@ -119,9 +120,10 @@ domekit.RadiusControl.prototype.enterDocument = function() {
     textVal = textVal.replace(new RegExp(this.radiusUnitsAbbrv_, 'i'), '');
     var num = goog.string.toNumber(textVal);
 
-    // make sure we put the units back if ommitted
-    var textValWithUnits = textVal + this.radiusUnitsAbbrv_
-    if (textVal !== textValWithUnits) { this.radiusInput_.setValue(textValWithUnits) }
+    // make sure we are always using feet internally
+    if (this.radiusUnitsAbbrv_ === domekit.RadiusUnits.METERS) {
+      num = this.metersToFeet(num)
+    }
 
     var toRadius;
     if (num === NaN) {
@@ -133,6 +135,9 @@ domekit.RadiusControl.prototype.enterDocument = function() {
     } else {
       toRadius = num
     }
+
+    // ensures that the units are put back, if they were ommitted
+    this.updateRadiusInput(toRadius)
 
     this.updateRadius(toRadius);
     this.updateRadiusSlider(toRadius);
@@ -186,12 +191,23 @@ domekit.RadiusControl.prototype.valueToRadius = function(value) {
   return radius;
 }
 
+domekit.RadiusControl.prototype.metersToFeet = function(meters) {
+  return meters / 0.3048;
+}
+
+domekit.RadiusControl.prototype.feetToMeters = function(feet) {
+  return feet * 0.3048;
+}
+
 domekit.RadiusControl.prototype.updateRadius = function(radius) {
   this.radius_ = radius;
   this.controller_.setRadius(radius);
 };
 
 domekit.RadiusControl.prototype.updateRadiusInput = function(radius) {
+  if (this.radiusUnitsAbbrv_ === domekit.RadiusUnits.METERS) {
+    radius = this.feetToMeters(radius)
+  }
   this.radiusInput_.setValue(radius + this.radiusUnitsAbbrv_);
 };
 
@@ -373,12 +389,14 @@ domekit.Generator = function() {
 
   var feetButton = goog.dom.getElement('imperial');
   var metersButton = goog.dom.getElement('metric');
-  goog.events.listen(feetButton, goog.events.EventType.CLICK, function() {
+  goog.events.listen(feetButton, goog.events.EventType.CLICK, function(event) {
+    event.preventDefault()
     goog.dom.classes.remove(metersButton, 'selected');
     goog.dom.classes.add(feetButton, 'selected');
     radiusControl.setRadiusUnits(domekit.RadiusUnits.FEET);
   });
-  goog.events.listen(metersButton, goog.events.EventType.CLICK, function() {
+  goog.events.listen(metersButton, goog.events.EventType.CLICK, function(event) {
+    event.preventDefault()
     goog.dom.classes.remove(feetButton, 'selected');
     goog.dom.classes.add(metersButton, 'selected');
     radiusControl.setRadiusUnits(domekit.RadiusUnits.METERS);
