@@ -70,9 +70,11 @@ domekit.RadiusControl = function(controller) {
   this.controller_ = controller;
   this.radiusInput_ = new goog.ui.LabelInput();
   this.radiusSlider_ = new goog.ui.Slider();
-  this.minRadius_ = 1; // feet
-  this.maxRadius_ = 500;
-  this.defaultRadius_ = 6 // HUMAN SIZED
+  this.minRadius_ = 1.0; // feet
+  this.maxRadius_ = 500.0;
+  this.minSliderVal_ = 240.0;
+  this.maxSliderVal_ = 1000.0;
+  this.defaultRadius_ = 6.0 // HUMAN SIZED
   this.radiusUnitsAbbrv_ = domekit.RadiusUnits.FEET;
 };
 goog.inherits(domekit.RadiusControl, goog.ui.Component);
@@ -91,57 +93,136 @@ domekit.RadiusControl.prototype.createDom = function() {
 domekit.RadiusControl.prototype.enterDocument = function() {
   goog.base(this, 'enterDocument');
 
+  this.updateRadius(this.defaultRadius_)
   this.updateRadiusInput(this.defaultRadius_);
-  this.radiusSlider_.setMaximum(this.maxRadius_);
-  this.radiusSlider_.setMinimum(this.minRadius_);
-  this.radiusSlider_.setValue(this.defaultRadius_);
+  this.radiusSlider_.setMaximum(this.maxSliderVal_);
+  this.radiusSlider_.setMinimum(this.minSliderVal_);
+  this.radiusSlider_.setValue(this.radiusToValue(this.defaultRadius_));
 
   this.controller_.setRadius(this.defaultRadius_);
-  this.radiusSlider_.addEventListener(goog.ui.Component.EventType.CHANGE,
-    goog.bind(function() {
-      var sliderVal = this.radiusSlider_.getValue();
-      this.updateRadiusInput(sliderVal);
-      this.controller_.setRadius(sliderVal);
-    }, this)
-  );
 
-  var handleInputChange = goog.bind(function() {
+  var handleSliderChange = function() {
+    var sliderVal = this.radiusSlider_.getValue();
+    var radius = this.valueToRadius(sliderVal)
+
+    // HACK: for some reason this handler fires on setValue call,
+    // meaning that if a change to the radiusInput updates
+    // the slider, it updates the radiusInput again
+    if (!this.radiusInput_.hasFocus()) {
+      this.updateRadius(radius)
+      this.updateRadiusInput(radius)
+    }
+  }
+  goog.events.listen(this.radiusSlider_, goog.ui.Component.EventType.CHANGE, handleSliderChange, false, this)
+
+  var handleInputChange = function () {
     var textVal = this.radiusInput_.getValue();
     textVal = textVal.replace(new RegExp(this.radiusUnitsAbbrv_, 'i'), '');
     var num = goog.string.toNumber(textVal);
-    if (num === NaN) {
-      this.updateRadius(this.defaultRadius_);
-    } else if (num > this.maxRadius_) {
-      this.updateRadius(this.maxRadius_);
-    } else if (num < this.minRadius_) {
-      this.updateRadius(this.minRadius_);
-    } else {
-      this.updateRadius(num);
-    }
-  }, this)
 
-  // this is a hack. I have no idea why goog.ui.LabelInput,
-  // which is a goog.ui.Component, doesn't throw events of the Component
-  // enum
-  goog.events.listen(this.radiusInput_.getElement(), 'change', handleInputChange);
+    // make sure we are always using feet internally
+    if (this.radiusUnitsAbbrv_ === domekit.RadiusUnits.METERS) {
+      num = this.metersToFeet(num)
+    }
+
+    var toRadius;
+    if (num === NaN) {
+      toRadius = this.defaultRadius_
+    } else if (num > this.maxRadius_) {
+      toRadius = this.maxRadius_
+    } else if (num < this.minRadius_) {
+      toRadius = this.minRadius_
+    } else {
+      toRadius = num
+    }
+
+    // ensures that the units are put back, if they were ommitted
+    this.updateRadiusInput(toRadius)
+
+    this.updateRadius(toRadius);
+    this.updateRadiusSlider(toRadius);
+  }
+
+  // HACK: should be able to listen to this component directly with goog.ui.Component events,
+  // rather than generic events on the element
+  goog.events.listen(this.radiusInput_.getElement(), goog.events.EventType.CHANGE, handleInputChange, false, this);
 };
 
+// TODO: Not clear why but these piecemeal non-linear mapping functions don't completely accurately
+// invert each other, it's most pronounced in the values just to the right of the curveDecelPoint
+domekit.RadiusControl.prototype.radiusToValue = function(radius) {
+  var r = radius / this.maxRadius_
+  // the curve decreases acceleration past a portion of its maximum radius
+  // this inverts the valueToRadius function
+  var curveDecelPoint = this.valueToRadius(0.9 * this.maxSliderVal_) / this.maxRadius_
+
+  // scale the curve up to elongate the period of smaller reference sizes
+  var scaleUp = 2.0
+
+  if (r < curveDecelPoint) {
+    var curve = Math.pow(scaleUp*r, 1/4)
+    var value = curve * this.maxSliderVal_
+  } else {
+    var extraAmt = (r-curveDecelPoint) / (1-curveDecelPoint)
+    var interm = (scaleUp * r) / (1 + extraAmt)
+    var curve = Math.pow(interm, 1/4)
+    var value = curve * this.maxSliderVal_
+  }
+
+  return value;
+};
+
+domekit.RadiusControl.prototype.valueToRadius = function(value) {
+  var v = value / this.maxSliderVal_
+  // the curve increases acceleration past a portion of its maximum value
+  var curveAccelPoint = 0.9
+  // scale the curve down to elongate the period of smaller reference sizes
+  var scaleDown = 2.0
+
+  if (v < curveAccelPoint) {
+    var curve = Math.pow(v, 4)/scaleDown
+    var radius = curve * this.maxRadius_
+  } else {
+    var curve = Math.pow(v, 4)/scaleDown
+    var extra = curve * ((v-curveAccelPoint) / (1-curveAccelPoint))
+    var radius = (curve + extra) * this.maxRadius_
+  }
+
+  return radius;
+}
+
+domekit.RadiusControl.prototype.metersToFeet = function(meters) {
+  return meters / 0.3048;
+}
+
+domekit.RadiusControl.prototype.feetToMeters = function(feet) {
+  return feet * 0.3048;
+}
+
 domekit.RadiusControl.prototype.updateRadius = function(radius) {
-  this.updateRadiusInput(radius);
-  this.radiusSlider_.setValue(radius);
+  this.radius_ = radius;
   this.controller_.setRadius(radius);
+};
+
+domekit.RadiusControl.prototype.updateRadiusInput = function(radius) {
+  if (this.radiusUnitsAbbrv_ === domekit.RadiusUnits.METERS) {
+    radius = this.feetToMeters(radius)
+  }
+  this.radiusInput_.setValue(radius + this.radiusUnitsAbbrv_);
+};
+
+domekit.RadiusControl.prototype.updateRadiusSlider = function(radius) {
+  var value = this.radiusToValue(radius)
+  this.radiusSlider_.setValue(value);
 };
 
 /**
 * @param {domekit.RadiusUnits} units */
 domekit.RadiusControl.prototype.setRadiusUnits = function(units) {
-  var sliderVal = this.radiusSlider_.getValue();
   this.radiusUnitsAbbrv_ = units;
-  this.updateRadius(sliderVal);
-};
-
-domekit.RadiusControl.prototype.updateRadiusInput = function(radius) {
-  this.radiusInput_.setValue(radius + this.radiusUnitsAbbrv_);
+  this.updateRadius(this.radius_);
+  this.updateRadiusInput(this.radius_)
+  this.updateRadiusSlider(this.radius_)
 };
 
 /** @constructor
@@ -308,12 +389,14 @@ domekit.Generator = function() {
 
   var feetButton = goog.dom.getElement('imperial');
   var metersButton = goog.dom.getElement('metric');
-  goog.events.listen(feetButton, goog.events.EventType.CLICK, function() {
+  goog.events.listen(feetButton, goog.events.EventType.CLICK, function(event) {
+    event.preventDefault()
     goog.dom.classes.remove(metersButton, 'selected');
     goog.dom.classes.add(feetButton, 'selected');
     radiusControl.setRadiusUnits(domekit.RadiusUnits.FEET);
   });
-  goog.events.listen(metersButton, goog.events.EventType.CLICK, function() {
+  goog.events.listen(metersButton, goog.events.EventType.CLICK, function(event) {
+    event.preventDefault()
     goog.dom.classes.remove(feetButton, 'selected');
     goog.dom.classes.add(metersButton, 'selected');
     radiusControl.setRadiusUnits(domekit.RadiusUnits.METERS);
